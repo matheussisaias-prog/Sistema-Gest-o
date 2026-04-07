@@ -1375,6 +1375,34 @@ select.form-control { cursor: pointer; }
 .gantt-header-months { display: flex; border-bottom: 1px solid var(--border); }
 .gantt-month { flex-shrink: 0; font-size: .6rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--text-4); padding: 6px 8px; border-right: 1px dashed var(--border); }
 
+/* ── Botão excluir linha do Gantt (estilo MS Project) ── */
+.gantt-table tbody tr { position: relative; }
+.gantt-row-del {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 20px; height: 20px; padding: 0;
+  margin-right: 6px;
+  background: transparent; color: var(--text-4);
+  border: 1px solid transparent; border-radius: 3px;
+  font-size: 1rem; font-weight: 700; line-height: 1;
+  cursor: pointer; vertical-align: middle;
+  opacity: 0; visibility: hidden;
+  transition: all .12s;
+}
+.gantt-table tbody tr:hover .gantt-row-del { opacity: 1; visibility: visible; }
+.gantt-row-del:hover {
+  background: #ef4444; color: #fff;
+  border-color: #dc2626;
+  box-shadow: 0 1px 3px rgba(239,68,68,.4);
+}
+.gantt-row-num {
+  display: inline-block;
+  min-width: 20px; padding: 1px 5px;
+  font-size: .58rem; font-weight: 700;
+  color: var(--text-4); background: var(--surface2);
+  border: 1px solid var(--border); border-radius: 3px;
+  margin-right: 6px; vertical-align: middle;
+}
+
 /* ═══════════════════════════════════════════════
    CALENDARIO
 ═══════════════════════════════════════════════ */
@@ -1924,6 +1952,10 @@ select.form-control { cursor: pointer; }
       <span class="nav-icon"><i class="fa-solid fa-clock-rotate-left"></i></span>
       <span>Histórico</span>
     </a>
+    <a class="nav-item" onclick="switchView('relatorio', this)" data-tooltip="Relatório PDF">
+      <span class="nav-icon"><i class="fa-solid fa-file-pdf"></i></span>
+      <span>Relatório PDF</span>
+    </a>
   </div>
 
   <div class="sidebar-spacer"></div>
@@ -2226,6 +2258,9 @@ select.form-control { cursor: pointer; }
           <button class="btn-secondary" style="font-size:.75rem" onclick="clearGanttFilters()">
             <i class="fa-solid fa-xmark"></i> Limpar
           </button>
+          <button class="btn-secondary" id="gantt-group-btn" style="font-size:.75rem" onclick="toggleGanttGroup()">
+            <i class="fa-solid fa-layer-group"></i> Agrupar por projeto
+          </button>
           <span style="margin-left:auto;font-size:.7rem;color:var(--text-4)" id="gantt-count"></span>
         </div>
         <div class="gantt-wrap" id="gantt-wrap">
@@ -2305,12 +2340,21 @@ select.form-control { cursor: pointer; }
 
         <!-- CHAT -->
         <div class="ia-chat-panel">
-          <div class="ia-chat-header">
+          <div class="ia-chat-header" style="display:flex;align-items:center;gap:10px;">
             <div class="ia-chat-header-icon">🤖</div>
-            <div>
+            <div style="flex:1;min-width:0;">
               <div class="ia-chat-header-title">Assistente de Projeto</div>
               <div class="ia-chat-header-sub" id="ia-chat-header-sub">Carregando contexto...</div>
             </div>
+            <button
+              id="ia-clear-btn"
+              onclick="iaConfirmarLimpar()"
+              title="Limpar conversa"
+              style="background:transparent;border:1px solid var(--border,#cbd5e1);color:var(--text-3,#64748b);width:30px;height:30px;border-radius:6px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;transition:all .15s;"
+              onmouseover="this.style.background='rgba(239,68,68,.1)';this.style.borderColor='#ef4444';this.style.color='#ef4444';"
+              onmouseout="this.style.background='transparent';this.style.borderColor='var(--border,#cbd5e1)';this.style.color='var(--text-3,#64748b)';">
+              <i class="fa-solid fa-trash-can"></i>
+            </button>
           </div>
 
           <div class="ia-chat-messages" id="ia-chat-messages"></div>
@@ -2494,6 +2538,135 @@ select.form-control { cursor: pointer; }
         <div class="card-body" style="padding:10px 20px">
           <div id="hist-list">
             <div class="empty-state"><i class="fa-solid fa-clock-rotate-left"></i><p>Nenhuma alteração registrada</p></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════ RELATÓRIO PDF ══════════════════ -->
+    <div class="view" id="view-relatorio">
+      <div class="card">
+        <div class="card-header">
+          <i class="fa-solid fa-file-pdf" style="color:var(--red);font-size:.95rem"></i>
+          <span class="card-title">Relatório PDF para Cliente</span>
+          <span class="card-subtitle">Gere um relatório profissional com cronograma Gantt</span>
+        </div>
+        <div class="card-body" style="padding:24px">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;max-width:900px">
+
+            <!-- Coluna esquerda: dados do cabeçalho -->
+            <div>
+              <h3 style="font-size:.85rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-3);margin-bottom:14px;border-bottom:1px solid var(--border);padding-bottom:8px">
+                <i class="fa-solid fa-id-card" style="color:var(--blue);margin-right:6px"></i>Dados do Relatório
+              </h3>
+
+              <div class="form-group">
+                <label class="form-label">Título do Relatório</label>
+                <input class="form-control" id="rel-titulo" value="Cronograma de Projetos" placeholder="Ex: Cronograma Mensal de Obras"/>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Subtítulo / Descrição <span style="color:var(--text-4);font-weight:400">(opcional)</span></label>
+                <input class="form-control" id="rel-subtitulo" placeholder="Ex: Status de execução — Abril 2026"/>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Cliente</label>
+                <input class="form-control" id="rel-cliente" placeholder="Nome do cliente / empresa"/>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Preparado por</label>
+                <input class="form-control" id="rel-preparado" placeholder="Seu nome ou empresa"/>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Data do Relatório</label>
+                <input class="form-control" type="date" id="rel-data"/>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Cor de destaque</label>
+                <input class="form-control" type="color" id="rel-cor" value="#2563eb" style="width:80px;height:38px;padding:4px;cursor:pointer"/>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Logo da empresa <span style="color:var(--text-4);font-weight:400">(opcional)</span></label>
+                <div style="display:flex;gap:8px;align-items:center">
+                  <input class="form-control" type="file" id="rel-logo" accept="image/png,image/jpeg,image/svg+xml,image/webp" onchange="loadRelLogo(event)" style="flex:1;font-size:.72rem"/>
+                  <button type="button" class="btn-secondary" onclick="clearRelLogo()" style="font-size:.7rem;padding:6px 10px" title="Remover logo">
+                    <i class="fa-solid fa-xmark"></i>
+                  </button>
+                </div>
+                <div id="rel-logo-preview" style="margin-top:8px;display:none;padding:10px;background:#0f172a;border-radius:6px;text-align:center">
+                  <img id="rel-logo-img" style="max-width:120px;max-height:60px;object-fit:contain"/>
+                </div>
+                <small style="color:var(--text-4);font-size:.7rem">PNG/SVG transparente recomendado. Aparece na capa do PDF.</small>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Assinatura <span style="color:var(--text-4);font-weight:400">(opcional)</span></label>
+                <input class="form-control" id="rel-assinatura-nome" placeholder="Nome do responsável"/>
+                <input class="form-control" id="rel-assinatura-cargo" placeholder="Cargo / função" style="margin-top:6px"/>
+              </div>
+            </div>
+
+            <!-- Coluna direita: opções de conteúdo -->
+            <div>
+              <h3 style="font-size:.85rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-3);margin-bottom:14px;border-bottom:1px solid var(--border);padding-bottom:8px">
+                <i class="fa-solid fa-list-check" style="color:var(--blue);margin-right:6px"></i>Conteúdo do Relatório
+              </h3>
+
+              <div class="form-group">
+                <label class="form-label">Projetos a incluir</label>
+                <select class="form-control" id="rel-projetos" multiple style="height:140px">
+                </select>
+                <small style="color:var(--text-4);font-size:.7rem">Segure Ctrl/Cmd para selecionar vários. Vazio = todos.</small>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Seções incluídas</label>
+                <div style="display:flex;flex-direction:column;gap:8px;background:var(--surface2);padding:12px;border-radius:8px;border:1px solid var(--border)">
+                  <label style="display:flex;align-items:center;gap:8px;font-size:.78rem;cursor:pointer">
+                    <input type="checkbox" id="rel-sec-capa" checked/> Capa profissional
+                  </label>
+                  <label style="display:flex;align-items:center;gap:8px;font-size:.78rem;cursor:pointer">
+                    <input type="checkbox" id="rel-sec-toc" checked/> Sumário (índice)
+                  </label>
+                  <label style="display:flex;align-items:center;gap:8px;font-size:.78rem;cursor:pointer">
+                    <input type="checkbox" id="rel-sec-resumo" checked/> Resumo executivo (KPIs)
+                  </label>
+                  <label style="display:flex;align-items:center;gap:8px;font-size:.78rem;cursor:pointer">
+                    <input type="checkbox" id="rel-sec-gantt" checked/> Cronograma Gantt visual
+                  </label>
+                  <label style="display:flex;align-items:center;gap:8px;font-size:.78rem;cursor:pointer">
+                    <input type="checkbox" id="rel-sec-tabela" checked/> Tabela de atividades
+                  </label>
+                  <label style="display:flex;align-items:center;gap:8px;font-size:.78rem;cursor:pointer">
+                    <input type="checkbox" id="rel-sec-rodape" checked/> Rodapé com paginação
+                  </label>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Orientação</label>
+                <select class="form-control" id="rel-orient">
+                  <option value="landscape" selected>Paisagem (recomendado p/ Gantt)</option>
+                  <option value="portrait">Retrato</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Botão gerar -->
+          <div style="margin-top:24px;padding-top:20px;border-top:1px solid var(--border);display:flex;gap:10px;align-items:center">
+            <button class="btn-primary" onclick="generatePrintReport()" style="font-size:.85rem;padding:12px 24px">
+              <i class="fa-solid fa-file-pdf"></i> Gerar Relatório PDF
+            </button>
+            <span style="font-size:.72rem;color:var(--text-4)">
+              <i class="fa-solid fa-info-circle"></i>
+              Abre a janela de impressão. Em "Destino" escolha "Salvar como PDF".
+            </span>
           </div>
         </div>
       </div>
@@ -3904,7 +4077,8 @@ function switchView(name, el) {
     projetos:'Projetos', equipe:'Equipe', graficos:'Gráficos',
     gantt:'Gantt', portfolio:'Portfólio', recursos:'Recursos',
     'cal-atividades':'Calendário de Atividades', 'cal-equipe':'Calendário da Equipe',
-    importar:'Importar / Exportar', historico:'Histórico', 'ia-chat':'Assistente IA'
+    importar:'Importar / Exportar', historico:'Histórico', 'ia-chat':'Assistente IA',
+    relatorio:'Relatório PDF'
   };
   document.getElementById('page-title').textContent = titles[name]||name;
   if (name==='graficos')        renderFullCharts();
@@ -3918,6 +4092,7 @@ function switchView(name, el) {
   if (name==='cal-equipe')      renderCalEquipe();
   if (name==='historico')       renderHistorico();
   if (name==='ia-chat')          iaInitChat();
+  if (name==='relatorio')       renderRelatorio();
 }
 
 function closeModal(id) {
@@ -4192,7 +4367,11 @@ function renderGantt() {
     if (diff < 0 && a.status !== 'Concluído') barStyle += ';background:var(--red)';
 
     return `<tr>
-      <td style="min-width:160px;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600;color:var(--text-1)">${esc(a.description)}</td>
+      <td style="min-width:200px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600;color:var(--text-1)">
+        <button class="gantt-row-del" title="Excluir atividade" onclick="event.stopPropagation();deleteAct('${a.id}')">×</button>
+        <span class="gantt-row-num">${i+1}</span>
+        ${esc(a.description)}
+      </td>
       <td style="min-width:100px"><span class="project-chip"><span class="project-dot" style="background:${color}"></span>${esc(a.project)}</span></td>
       <td style="font-family:var(--font-mono);font-size:.68rem;color:var(--text-3)">${fmtDate(a.startDate)}</td>
       <td style="font-family:var(--font-mono);font-size:.68rem;color:${diffDays(a.dueDate)<0?'var(--red)':'var(--text-3)'}">${fmtDate(a.dueDate)}</td>
@@ -4569,7 +4748,7 @@ Regras:
         'anthropic-dangerous-direct-browser-access': 'true',
       },
       body: JSON.stringify({
-        model:      'claude-sonnet-4-20250514',
+        model:      'claude-sonnet-4-6',
         max_tokens: 4000,
         messages: [{
           role: 'user',
@@ -4583,7 +4762,7 @@ Regras:
 
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
-      throw new Error(err.error?.message || 'HTTP ' + res.status);
+      throw new Error(iaTraduzirErro(res.status, err.error?.message));
     }
 
     const data    = await res.json();
@@ -4686,6 +4865,33 @@ function iaSanitizarApiKey(raw) {
 function iaGetApiKey() {
   const raw = localStorage.getItem('tf_apikey') || '';
   return iaSanitizarApiKey(raw);
+}
+
+/**
+ * iaTraduzirErro(status, mensagemApi)
+ * Converte erros da API Anthropic em mensagens amigáveis em PT-BR.
+ */
+function iaTraduzirErro(status, mensagemApi = '') {
+  const msg = String(mensagemApi).toLowerCase();
+  if (status === 401 || msg.includes('authentication') || msg.includes('invalid api key') || msg.includes('invalid x-api-key'))
+    return '🔑 API Key inválida. Verifique se colou a chave correta em Importar → PDF com IA.';
+  if (status === 403)
+    return '🚫 Acesso negado. Sua API Key não tem permissão para este modelo.';
+  if (status === 404)
+    return '❓ Modelo não encontrado. O ID do modelo pode estar desatualizado.';
+  if (status === 400 && (msg.includes('credit') || msg.includes('balance')))
+    return '💳 Créditos insuficientes na sua conta Anthropic. Recarregue em console.anthropic.com.';
+  if (status === 400)
+    return '⚠️ Requisição inválida: ' + (mensagemApi || 'formato incorreto.');
+  if (status === 429)
+    return '⏳ Limite de requisições excedido. Aguarde alguns segundos e tente de novo.';
+  if (status === 529 || status === 503)
+    return '🔧 Servidores da Anthropic sobrecarregados agora. Tente novamente em instantes.';
+  if (status === 500 || status === 502)
+    return '🛠️ Erro interno na Anthropic. Tente de novo em alguns segundos.';
+  if (status === 0 || msg.includes('failed to fetch') || msg.includes('network'))
+    return '📡 Sem conexão com a API. Verifique sua internet.';
+  return '❌ Erro ' + (status || '') + ': ' + (mensagemApi || 'falha desconhecida');
 }
 
 let iaChatAnexo = null; // { tipo, nome, conteudo, mediaType }
@@ -4909,6 +5115,88 @@ let iaChatHistory  = [];   // histórico da conversa (role/content)
 let iaAtividadesGeradas = []; // atividades no preview
 let iaIsTyping     = false;
 
+/* ── Gestão de histórico (pontos 3, 4, 5) ─────────────
+ * 3) Remove arquivos (base64) de mensagens antigas antes de enviar
+ *    → só a última mensagem do usuário carrega o arquivo
+ * 4) Limita o histórico enviado às últimas IA_MAX_TURNS mensagens
+ * 5) Persiste histórico em localStorage (sobrevive ao F5)
+ */
+const IA_MAX_TURNS      = 20;              // nº máximo de mensagens mantidas
+const IA_HISTORY_KEY    = 'tf_ia_history'; // chave do localStorage
+
+function iaSalvarHistorico() {
+  try {
+    // Não salva blocos binários pesados — guarda só texto legível
+    const leve = iaChatHistory.map(m => ({
+      role: m.role,
+      content: iaStripAnexos(m.content)
+    }));
+    localStorage.setItem(IA_HISTORY_KEY, JSON.stringify(leve));
+  } catch(e) { console.warn('Falha ao salvar histórico IA:', e); }
+}
+
+function iaCarregarHistorico() {
+  try {
+    const raw = localStorage.getItem(IA_HISTORY_KEY);
+    if (raw) iaChatHistory = JSON.parse(raw) || [];
+  } catch(e) { iaChatHistory = []; }
+}
+
+function iaLimparHistorico() {
+  iaChatHistory = [];
+  localStorage.removeItem(IA_HISTORY_KEY);
+  const wrap = document.getElementById('ia-chat-messages');
+  if (wrap) wrap.innerHTML = '';
+  iaInitChat();
+}
+
+function iaConfirmarLimpar() {
+  if (iaChatHistory.length === 0) {
+    if (typeof toast === 'function') toast('Conversa já está vazia', 'info');
+    return;
+  }
+  if (confirm('Apagar toda a conversa com o assistente? Isso não pode ser desfeito.')) {
+    iaLimparHistorico();
+    if (typeof toast === 'function') toast('Conversa limpa', 'success');
+  }
+}
+
+/**
+ * iaStripAnexos(content)
+ * Remove blocos pesados (document/image base64) e retorna só o texto.
+ * Usado para: (a) salvar histórico leve no localStorage,
+ *             (b) enviar mensagens antigas sem reenviar o arquivo.
+ */
+function iaStripAnexos(content) {
+  if (typeof content === 'string') return content;
+  if (!Array.isArray(content))     return String(content ?? '');
+  return content
+    .map(p => {
+      if (p.type === 'text')     return p.text;
+      if (p.type === 'document') return '[arquivo PDF anexado anteriormente]';
+      if (p.type === 'image')    return '[imagem anexada anteriormente]';
+      return '';
+    })
+    .filter(Boolean)
+    .join('\n');
+}
+
+/**
+ * iaPrepararMessagesParaEnvio()
+ * Monta a lista de mensagens que vai na requisição:
+ * - Mantém a ÚLTIMA mensagem intacta (com arquivo se houver)
+ * - Strippa arquivos de todas as mensagens anteriores
+ * - Corta para as últimas IA_MAX_TURNS
+ */
+function iaPrepararMessagesParaEnvio() {
+  const recorte = iaChatHistory.slice(-IA_MAX_TURNS);
+  const ultimoIdx = recorte.length - 1;
+  return recorte.map((m, i) => {
+    if (i === ultimoIdx) return m; // última mensagem: envia como está
+    return { role: m.role, content: iaStripAnexos(m.content) };
+  });
+}
+
 /**
  * iaGerarSystemPrompt()
  * Gera o system prompt dinamicamente incluindo TODOS os dados
@@ -4958,10 +5246,47 @@ function iaGerarSystemPrompt() {
     ? Math.round(todasAtividades.reduce((s,a) => s + (a.progress||0), 0) / totalAtiv)
     : 0;
 
-  return `Você é um assistente especializado em gerenciamento de projetos integrado ao TaskFlow PRO.
+  return `Você é o assistente oficial do TaskFlow PRO — um sistema de gerenciamento de projetos. Você ajuda o usuário de DUAS formas: (1) tirando dúvidas sobre o próprio sistema (como usar, onde fica cada coisa) e (2) analisando/criando dados de projetos dele.
 
 ════════════════════════════════════════
-CONTEXTO ATUAL DO TASKFLOW (leia com atenção)
+SOBRE O TASKFLOW PRO (conheça o sistema)
+════════════════════════════════════════
+
+O TaskFlow PRO tem as seguintes seções (abas no menu lateral):
+
+• **Dashboard** — visão geral: KPIs, gráficos resumidos, atividades recentes
+• **Atividades** — lista completa de tarefas com filtros, status, datas, responsáveis, % de conclusão
+• **Kanban** — board visual (Pendente / Em Andamento / Concluído) com drag-and-drop
+• **Projetos** — gestão dos projetos: criar, editar, pastas personalizadas, baseline (planejado vs real)
+• **Equipe** — cadastro de membros, alocação, detecção de conflitos de agenda
+• **Gráficos** — análises visuais detalhadas (Chart.js)
+• **Gantt** — cronograma hierárquico com WBS numerado, barras de progresso, dependências
+• **Portfólio** — timeline consolidada de todos os projetos
+• **Recursos** — heatmap de alocação da equipe, identifica sobrecarga
+• **Calendário de Atividades** / **Calendário da Equipe** — visões mensais com barras multi-dia
+• **Importar / Exportar** — importação via PDF com IA, CSV, JSON; exportação em vários formatos
+• **Histórico** — log de alterações
+• **Assistente IA** (você) — chat para análises, criação e organização
+• **Relatório PDF** — gera relatórios executivos em PDF
+
+RECURSOS ESPECIAIS que o usuário pode usar:
+- **Alertas via Telegram bot** — notificações automáticas de prazos e atrasos (configurado em Importar)
+- **Importação de PDF com IA** — você lê um PDF e extrai atividades automaticamente
+- **Calculadora de horas úteis** — considera feriados brasileiros
+- **Baseline** — compara planejado × realizado em cada atividade
+- **Detecção de conflitos** — avisa quando um responsável tem tarefas sobrepostas
+- **Anexos em atividades** — arquivos e anotações por tarefa
+- **Detecção de duplicatas** — ao importar, evita atividades repetidas
+- **API Key** da Anthropic fica salva em Importar → PDF com IA (campo reutilizado por este chat)
+
+COMO RESPONDER DÚVIDAS SOBRE O SISTEMA:
+- Se o usuário perguntar "onde vejo X?" ou "como faço Y?", responda indicando a aba exata (ex: "Vai em Gantt no menu lateral...")
+- Se ele perguntar sobre um recurso que existe, explique de forma objetiva
+- Se for algo que o sistema NÃO tem, diga isso claramente e sugira uma alternativa dentro do que existe
+- Seja direto e em português brasileiro
+
+════════════════════════════════════════
+CONTEXTO ATUAL DO TASKFLOW (dados do usuário)
 ════════════════════════════════════════
 
 PROJETOS CADASTRADOS:
@@ -5006,8 +5331,9 @@ Resposta amigável aqui...
 }
 
 Regras de datas:
-- Mês/ano atual: março/2026
-- "próximo mês" = abril/2026
+- Hoje é: ${(() => { const d=new Date(); return d.toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'long',year:'numeric'}); })()}
+- Data ISO de hoje: ${new Date().toISOString().slice(0,10)}
+- Use SEMPRE esta data como referência para "hoje", "amanhã", "semana que vem", "próximo mês" etc.
 - Distribua atividades em sequência lógica
 - Duração mínima 1 dia, máxima 30 dias
 
@@ -5038,6 +5364,21 @@ Regras gerais:
 }
 
 function iaInitChat() {
+  // Carrega histórico persistido do localStorage (ponto 5)
+  if (iaChatHistory.length === 0) {
+    iaCarregarHistorico();
+  }
+
+  const wrap = document.getElementById('ia-chat-messages');
+
+  // Se já há histórico carregado e a tela está vazia, re-renderiza
+  if (iaChatHistory.length > 0 && wrap && wrap.children.length === 0) {
+    iaChatHistory.forEach(m => {
+      const texto = iaStripAnexos(m.content);
+      iaAddMessage(m.role === 'user' ? 'user' : 'ia', texto);
+    });
+  }
+
   if (iaChatHistory.length === 0) {
     // Gera boas-vindas contextualizada com os dados reais
     const todasAtiv  = (typeof activities !== 'undefined') ? activities : [];
@@ -5129,6 +5470,7 @@ async function iaEnviar() {
 
   // Adiciona ao histórico (armazena só o texto para o histórico futuro)
   iaChatHistory.push({ role: 'user', content: userContent });
+  iaSalvarHistorico();
 
   // Mostra typing
   iaIsTyping = true;
@@ -5145,16 +5487,16 @@ async function iaEnviar() {
         'anthropic-dangerous-direct-browser-access': 'true',
       },
       body: JSON.stringify({
-        model:      'claude-sonnet-4-20250514',
+        model:      'claude-sonnet-4-6',
         max_tokens: 3000,
         system:     iaGerarSystemPrompt(),  // sempre atualizado com dados atuais
-        messages:   iaChatHistory,
+        messages:   iaPrepararMessagesParaEnvio(),
       })
     });
 
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
-      throw new Error(err.error?.message || 'HTTP ' + res.status);
+      throw new Error(iaTraduzirErro(res.status, err.error?.message));
     }
 
     const data      = await res.json();
@@ -5162,6 +5504,7 @@ async function iaEnviar() {
 
     // Salva no histórico
     iaChatHistory.push({ role: 'assistant', content: resposta });
+    iaSalvarHistorico();
 
     // Separa texto e JSON
     const partes = resposta.split('===JSON===');
@@ -5205,7 +5548,11 @@ async function iaEnviar() {
 
   } catch(err) {
     typingEl.remove();
-    iaAddMessage('ia', '❌ Erro ao conectar com a IA: ' + err.message);
+    // err.message já vem traduzido do iaTraduzirErro; fallback para falhas de rede
+    const msgFinal = err.message && err.message.startsWith('Failed to fetch')
+      ? iaTraduzirErro(0, err.message)
+      : (err.message || 'Erro desconhecido');
+    iaAddMessage('ia', msgFinal);
   } finally {
     iaIsTyping = false;
     document.getElementById('ia-send-btn').disabled = false;
@@ -5213,45 +5560,117 @@ async function iaEnviar() {
 }
 
 /* ── Render mensagens ─────────────────────────── */
+
+/**
+ * iaRenderMarkdown(texto)
+ * Converte markdown para HTML com suporte a:
+ * headers, bold, itálico, código inline, blocos de código,
+ * listas (- e *), listas numeradas, links.
+ */
+function iaRenderMarkdown(texto) {
+  // Escapa HTML primeiro
+  let t = texto
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+
+  // Blocos de código ```...```
+  t = t.replace(/```(\w*)\n?([\s\S]*?)```/g, (_, lang, code) =>
+    `<pre style="background:#1e293b;color:#e2e8f0;padding:10px;border-radius:6px;overflow-x:auto;font-size:12px;margin:6px 0;"><code>${code.trim()}</code></pre>`
+  );
+
+  // Código inline `xxx`
+  t = t.replace(/`([^`\n]+)`/g, '<code style="background:rgba(148,163,184,.18);padding:1px 5px;border-radius:4px;font-size:.9em;">$1</code>');
+
+  // Headers ###, ##, #
+  t = t.replace(/^### (.+)$/gm, '<div style="font-weight:700;font-size:1.02em;margin:8px 0 4px;">$1</div>');
+  t = t.replace(/^## (.+)$/gm,  '<div style="font-weight:700;font-size:1.08em;margin:10px 0 4px;">$1</div>');
+  t = t.replace(/^# (.+)$/gm,   '<div style="font-weight:700;font-size:1.15em;margin:12px 0 6px;">$1</div>');
+
+  // Bold e itálico
+  t = t.replace(/\*\*(.+?)\*\*/g, '<b>$1</b>');
+  t = t.replace(/(^|[\s(])\*([^*\n]+)\*/g, '$1<i>$2</i>');
+
+  // Links [texto](url)
+  t = t.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" style="color:#3b82f6;text-decoration:underline;">$1</a>');
+
+  // Listas não-ordenadas (- ou *)
+  t = t.replace(/(?:^|\n)((?:[ \t]*[-*] .+\n?)+)/g, (bloco) => {
+    const itens = bloco.trim().split('\n').map(l =>
+      '<li>' + l.replace(/^[ \t]*[-*] /, '') + '</li>'
+    ).join('');
+    return '\n<ul style="margin:4px 0 4px 18px;padding:0;">' + itens + '</ul>\n';
+  });
+
+  // Listas numeradas (1. 2. 3.)
+  t = t.replace(/(?:^|\n)((?:[ \t]*\d+\. .+\n?)+)/g, (bloco) => {
+    const itens = bloco.trim().split('\n').map(l =>
+      '<li>' + l.replace(/^[ \t]*\d+\. /, '') + '</li>'
+    ).join('');
+    return '\n<ol style="margin:4px 0 4px 20px;padding:0;">' + itens + '</ol>\n';
+  });
+
+  // Quebras de linha restantes (fora de tags de bloco)
+  t = t.replace(/\n(?!<\/?(ul|ol|li|pre|div))/g, '<br>');
+
+  return t;
+}
+
 function iaAddMessage(role, texto, rawHtml = false) {
-  const wrap = document.getElementById('ia-chat-messages');
   const hora  = new Date().toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'});
 
-  const el = document.createElement('div');
-  el.className = 'ia-msg ' + role;
+  // Converte markdown (ou usa html raw)
+  const html = rawHtml ? texto : iaRenderMarkdown(texto);
 
-  // Converte markdown simples (ou usa html raw)
-  const html = rawHtml ? texto : texto
-    .replace(/\*\*(.*?)\*\*/g, '<b>$1</b>')
-    .replace(/\*(.*?)\*/g, '<i>$1</i>')
-    .replace(/\n/g, '<br>')
-    .replace(/• /g, '• ');
+  // Renderiza em TODOS os containers ativos (tab + bolha flutuante)
+  const containers = [
+    document.getElementById('ia-chat-messages'),
+    document.getElementById('fab-messages')
+  ].filter(Boolean);
 
-  el.innerHTML = `
-    <div class="ia-msg-avatar">${role === 'ia' ? '🤖' : '<i class="fa-solid fa-user" style="font-size:10px"></i>'}</div>
-    <div>
-      <div class="ia-msg-bubble">${html}</div>
-      <div class="ia-msg-time">${hora}</div>
-    </div>`;
+  let elRef = null;
+  containers.forEach(wrap => {
+    const el = document.createElement('div');
+    el.className = 'ia-msg ' + role;
+    el.innerHTML = `
+      <div class="ia-msg-avatar">${role === 'ia' ? '🤖' : '<i class="fa-solid fa-user" style="font-size:10px"></i>'}</div>
+      <div>
+        <div class="ia-msg-bubble">${html}</div>
+        <div class="ia-msg-time">${hora}</div>
+      </div>`;
+    wrap.appendChild(el);
+    wrap.scrollTop = wrap.scrollHeight;
+    elRef = el; // retorna o último (compatível com código existente)
+  });
 
-  wrap.appendChild(el);
-  wrap.scrollTop = wrap.scrollHeight;
-  return el;
+  return elRef;
 }
 
 function iaShowTyping() {
-  const wrap = document.getElementById('ia-chat-messages');
-  const el = document.createElement('div');
-  el.className = 'ia-msg ia';
-  el.innerHTML = `
-    <div class="ia-msg-avatar">🤖</div>
-    <div class="ia-typing">
-      <div class="ia-typing-dots"><span></span><span></span><span></span></div>
-      Pensando...
-    </div>`;
-  wrap.appendChild(el);
-  wrap.scrollTop = wrap.scrollHeight;
-  return el;
+  const containers = [
+    document.getElementById('ia-chat-messages'),
+    document.getElementById('fab-messages')
+  ].filter(Boolean);
+
+  const created = [];
+  containers.forEach(wrap => {
+    const el = document.createElement('div');
+    el.className = 'ia-msg ia ia-typing-msg';
+    el.innerHTML = `
+      <div class="ia-msg-avatar">🤖</div>
+      <div class="ia-typing">
+        <div class="ia-typing-dots"><span></span><span></span><span></span></div>
+        Pensando...
+      </div>`;
+    wrap.appendChild(el);
+    wrap.scrollTop = wrap.scrollHeight;
+    created.push(el);
+  });
+
+  // Retorna um objeto com .remove() que apaga os elementos em ambos containers
+  return {
+    remove: () => created.forEach(el => el.remove())
+  };
 }
 
 /* ── Render preview de atividades ─────────────── */
@@ -6010,6 +6429,80 @@ window.calcDurFromDates = calcDurFromDates;
 .resource-person-card .meta .badge{font-size:.58rem}
 .gantt-inline-btn{margin-left:8px;border:none;background:var(--blue-dim);color:var(--blue);width:22px;height:22px;border-radius:6px;cursor:pointer}
 .gantt-inline-btn:hover{background:var(--blue);color:#fff}
+.gantt-inline-del{background:rgba(239,68,68,.12);color:#ef4444;opacity:0;visibility:hidden;transition:all .12s}
+.gantt-table tbody tr:hover .gantt-inline-del{opacity:1;visibility:visible}
+.gantt-inline-del:hover{background:#ef4444;color:#fff;box-shadow:0 1px 4px rgba(239,68,68,.4)}
+
+/* ── Agrupamento por projeto ── */
+.gantt-project-header{
+  background:var(--surface2);
+  transition:background .15s;
+}
+.gantt-project-header:hover td{
+  filter:brightness(1.08);
+}
+.gantt-project-header td{
+  border-bottom:1px solid var(--border);
+  border-top:1px solid var(--border);
+}
+.gantt-project-header .gantt-bar-cell{
+  cursor:default;
+}
+.gantt-summary-bar{
+  height:14px !important;
+  top:14px !important;
+  border-radius:3px !important;
+  border:1px solid rgba(0,0,0,.2);
+  box-shadow:0 1px 3px rgba(0,0,0,.15);
+}
+.gantt-summary-bar::before,
+.gantt-summary-bar::after{
+  content:'';position:absolute;top:100%;width:0;height:0;
+  border-left:5px solid transparent;border-right:5px solid transparent;
+}
+.gantt-summary-bar::before{ left:0; border-top:5px solid currentColor; }
+.gantt-summary-bar::after{ right:0; border-top:5px solid currentColor; }
+
+/* Botão "Agrupar" ativo */
+#gantt-group-btn.active{
+  background:var(--blue);
+  color:#fff;
+  border-color:var(--blue);
+}
+#gantt-group-btn.active i{ color:#fff; }
+
+/* ── Alças de redimensionamento estilo Excel ── */
+.gantt-col-resize{
+  position:absolute;right:-2px;top:0;bottom:0;width:6px;
+  cursor:col-resize;background:transparent;z-index:10;
+  user-select:none;
+}
+.gantt-col-resize:hover,.gantt-col-resize:active{
+  background:var(--blue);box-shadow:0 0 0 1px var(--blue);
+}
+.gantt-row-resize{
+  position:absolute;left:0;right:0;bottom:-2px;height:6px;
+  cursor:row-resize;background:transparent;z-index:10;
+  user-select:none;
+}
+.gantt-row-resize:hover,.gantt-row-resize:active{
+  background:var(--blue);box-shadow:0 0 0 1px var(--blue);
+}
+/* Modo expandido — mostra todo texto, quebrando linha */
+.gantt-table.gantt-rows-expanded tbody td{
+  white-space:normal !important;
+  overflow:visible !important;
+  text-overflow:clip !important;
+  vertical-align:top !important;
+  padding-top:8px !important;
+  padding-bottom:8px !important;
+}
+.gantt-table.gantt-rows-expanded tbody td > div{
+  white-space:normal !important;
+}
+.gantt-table.gantt-rows-expanded tbody td span{
+  white-space:normal !important;
+}
 .portfolio-info{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;font-size:.76rem;color:var(--text-3);margin-bottom:12px}
 .portfolio-list{display:grid;grid-template-columns:1fr;gap:12px;margin-top:12px}
 .portfolio-row{display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr;gap:12px;align-items:center;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px 16px}
@@ -6653,8 +7146,1219 @@ window.assignProjectToFolder = assignProjectToFolder;
     renderGantt();
   };
 
+  /* ── Agrupamento por projeto ── */
+  window.toggleGanttGroup = function() {
+    const cur = localStorage.getItem('gantt_group_by_project') === '1';
+    if (cur) localStorage.removeItem('gantt_group_by_project');
+    else localStorage.setItem('gantt_group_by_project', '1');
+    renderGantt();
+    // Atualiza visual do botão
+    const btn = document.getElementById('gantt-group-btn');
+    if (btn) btn.classList.toggle('active', !cur);
+  };
+
+  window.toggleGanttGroupCollapse = function(key) {
+    if (!window._ganttCollapsedGroups) window._ganttCollapsedGroups = new Set();
+    if (window._ganttCollapsedGroups.has(key)) window._ganttCollapsedGroups.delete(key);
+    else window._ganttCollapsedGroups.add(key);
+    // Salva estado
+    localStorage.setItem('gantt_collapsed_groups', JSON.stringify([...window._ganttCollapsedGroups]));
+    renderGantt();
+  };
+
+  // Restaura estado de grupos colapsados ao carregar
+  try {
+    const saved = JSON.parse(localStorage.getItem('gantt_collapsed_groups') || '[]');
+    window._ganttCollapsedGroups = new Set(saved);
+  } catch(e) { window._ganttCollapsedGroups = new Set(); }
+
+  /* ══════════════════════════════════════════════════
+     RELATÓRIO PDF — exportação profissional
+  ══════════════════════════════════════════════════ */
+  window.renderRelatorio = function() {
+    // Popula select de projetos
+    const sel = document.getElementById('rel-projetos');
+    if (sel) {
+      const projs = [...new Set(activities.map(a => a.project).filter(Boolean))].sort();
+      sel.innerHTML = projs.map(p => `<option value="${esc(p)}">${esc(p)}</option>`).join('');
+    }
+    // Data padrão = hoje
+    const dataEl = document.getElementById('rel-data');
+    if (dataEl && !dataEl.value) dataEl.value = todayISO();
+    // Preparado por padrão = se houver
+    const prepEl = document.getElementById('rel-preparado');
+    if (prepEl && !prepEl.value) prepEl.value = localStorage.getItem('rel_preparado_default') || '';
+    // Restaura cliente, assinatura e logo salvos
+    const cliEl  = document.getElementById('rel-cliente');
+    if (cliEl && !cliEl.value) cliEl.value = localStorage.getItem('rel_cliente_default') || '';
+    const asgN = document.getElementById('rel-assinatura-nome');
+    if (asgN && !asgN.value) asgN.value = localStorage.getItem('rel_assinatura_nome') || '';
+    const asgC = document.getElementById('rel-assinatura-cargo');
+    if (asgC && !asgC.value) asgC.value = localStorage.getItem('rel_assinatura_cargo') || '';
+    const corEl = document.getElementById('rel-cor');
+    if (corEl) corEl.value = localStorage.getItem('rel_cor_default') || '#2563eb';
+    // Restaura preview do logo
+    const savedLogo = localStorage.getItem('rel_logo_data');
+    if (savedLogo) {
+      const img = document.getElementById('rel-logo-img');
+      const prev = document.getElementById('rel-logo-preview');
+      if (img && prev) { img.src = savedLogo; prev.style.display = 'block'; }
+    }
+  };
+
+  window.loadRelLogo = function(ev) {
+    const file = ev.target.files[0];
+    if (!file) return;
+    if (file.size > 500*1024) {
+      toast('Logo muito grande. Use uma imagem com menos de 500KB.', 'warning');
+      ev.target.value = '';
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = e => {
+      const data = e.target.result;
+      try {
+        localStorage.setItem('rel_logo_data', data);
+      } catch(err) {
+        toast('Não foi possível salvar o logo (storage cheio)', 'error');
+        return;
+      }
+      const img = document.getElementById('rel-logo-img');
+      const prev = document.getElementById('rel-logo-preview');
+      if (img && prev) { img.src = data; prev.style.display = 'block'; }
+      toast('✓ Logo carregado', 'success');
+    };
+    reader.readAsDataURL(file);
+  };
+
+  window.clearRelLogo = function() {
+    localStorage.removeItem('rel_logo_data');
+    const inp = document.getElementById('rel-logo');
+    const prev = document.getElementById('rel-logo-preview');
+    if (inp) inp.value = '';
+    if (prev) prev.style.display = 'none';
+    toast('Logo removido', 'info');
+  };
+
+  window.generatePrintReport = function() {
+    // ── Coleta opções ──
+    const titulo    = (document.getElementById('rel-titulo').value    || 'Cronograma de Projetos').trim();
+    const subtitulo = (document.getElementById('rel-subtitulo').value || '').trim();
+    const cliente   = (document.getElementById('rel-cliente').value   || '').trim();
+    const preparado = (document.getElementById('rel-preparado').value || '').trim();
+    const dataRel   = document.getElementById('rel-data').value || todayISO();
+    const corDest   = document.getElementById('rel-cor').value || '#2563eb';
+    const orient    = document.getElementById('rel-orient').value || 'landscape';
+    const asgNome   = (document.getElementById('rel-assinatura-nome').value  || '').trim();
+    const asgCargo  = (document.getElementById('rel-assinatura-cargo').value || '').trim();
+    const logoData  = localStorage.getItem('rel_logo_data') || '';
+
+    const incCapa   = document.getElementById('rel-sec-capa').checked;
+    const incToc    = document.getElementById('rel-sec-toc').checked;
+    const incResumo = document.getElementById('rel-sec-resumo').checked;
+    const incGantt  = document.getElementById('rel-sec-gantt').checked;
+    const incTabela = document.getElementById('rel-sec-tabela').checked;
+    const incRodape = document.getElementById('rel-sec-rodape').checked;
+
+    // Salva defaults para próxima vez
+    if (preparado) localStorage.setItem('rel_preparado_default', preparado);
+    if (cliente)   localStorage.setItem('rel_cliente_default', cliente);
+    if (asgNome)   localStorage.setItem('rel_assinatura_nome', asgNome);
+    if (asgCargo)  localStorage.setItem('rel_assinatura_cargo', asgCargo);
+    if (corDest)   localStorage.setItem('rel_cor_default', corDest);
+
+    // ── Filtra atividades pelos projetos selecionados ──
+    const selEl = document.getElementById('rel-projetos');
+    const projsSelecionados = [...selEl.selectedOptions].map(o => o.value);
+    let acts = projsSelecionados.length
+      ? activities.filter(a => projsSelecionados.includes(a.project))
+      : [...activities];
+
+    if (!acts.length) {
+      toast('Nenhuma atividade encontrada para gerar o relatório', 'warning');
+      return;
+    }
+
+    // Ordena por projeto + data início
+    acts.sort((a,b) => {
+      const pc = (a.project||'').localeCompare(b.project||'');
+      if (pc !== 0) return pc;
+      return (a.startDate||'').localeCompare(b.startDate||'');
+    });
+
+    // ── KPIs ──
+    const total      = acts.length;
+    const concluidas = acts.filter(a => a.status === 'Concluído').length;
+    const vencidas   = acts.filter(a => diffDays(a.dueDate) < 0 && a.status !== 'Concluído').length;
+    const emAndam    = acts.filter(a => a.status === 'Em Andamento' || a.status === 'Em andamento').length;
+    const pctConcl   = total ? Math.round((concluidas/total)*100) : 0;
+    const projetosUnq = [...new Set(acts.map(a => a.project).filter(Boolean))];
+
+    // ── Datas para o Gantt ──
+    const allDates = acts.flatMap(a => [a.startDate, a.dueDate].filter(Boolean)).sort();
+    const minDate  = allDates.length ? new Date(allDates[0] + 'T00:00:00') : new Date();
+    const maxDate  = allDates.length ? new Date(allDates[allDates.length-1] + 'T00:00:00') : new Date();
+    minDate.setDate(minDate.getDate() - 3);
+    maxDate.setDate(maxDate.getDate() + 7);
+    const totalDays = Math.max(1, Math.round((maxDate - minDate) / 86400000));
+
+    // Largura disponível em mm para Gantt (A4 paisagem = 297mm, margens ~15mm cada lado, label ~75mm)
+    const ganttWidthMM = orient === 'landscape' ? 195 : 100;
+    const dayWmm = ganttWidthMM / totalDays;
+
+    // Header de meses + anos
+    let monthsHtml = '';
+    let yearsHtml = '';
+    let cur = new Date(minDate);
+    const yearWidths = {};
+    while (cur < maxDate) {
+      const start = new Date(cur);
+      const end   = new Date(cur.getFullYear(), cur.getMonth()+1, 1);
+      const days  = Math.max(1, Math.round((Math.min(end, maxDate) - start) / 86400000));
+      const w     = days * dayWmm;
+      const monthName = start.toLocaleDateString('pt-BR',{month:'long'}).toUpperCase();
+      monthsHtml += `<div class="rel-gantt-month" style="width:${w}mm">${monthName}</div>`;
+      yearWidths[start.getFullYear()] = (yearWidths[start.getFullYear()] || 0) + w;
+      cur = new Date(cur.getFullYear(), cur.getMonth()+1, 1);
+    }
+    Object.entries(yearWidths).forEach(([year, w]) => {
+      yearsHtml += `<div class="rel-gantt-year" style="width:${w}mm">${year}</div>`;
+    });
+
+    // Bandas de fim de semana (faixas verticais sutis)
+    let weekendBandsHtml = '';
+    const cursor = new Date(minDate);
+    for (let i = 0; i < totalDays; i++) {
+      const dow = cursor.getDay();
+      if (dow === 0 || dow === 6) {
+        weekendBandsHtml += `<div class="rel-weekend-band" style="left:${i * dayWmm}mm;width:${dayWmm}mm"></div>`;
+      }
+      cursor.setDate(cursor.getDate() + 1);
+    }
+
+    // Linha de hoje
+    const today = new Date(todayISO() + 'T00:00:00');
+    const todayInRange = today >= minDate && today <= maxDate;
+    const todayLeftMM = todayInRange ? Math.round((today - minDate) / 86400000) * dayWmm : -1;
+
+    // Data formatada por extenso (estilo brasileiro)
+    const meses = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+    const dRel = new Date(dataRel + 'T00:00:00');
+    const dataLongFmt = `${String(dRel.getDate()).padStart(2,'0')} de ${meses[dRel.getMonth()]} de ${dRel.getFullYear()}`;
+
+    // Referência do documento
+    const docRef = `REL-${dRel.getFullYear()}${String(dRel.getMonth()+1).padStart(2,'0')}${String(dRel.getDate()).padStart(2,'0')}-${String(Math.floor(Math.random()*900)+100)}`;
+
+    // ── Numeração dinâmica de seções (só conta as que estão ativas) ──
+    const secList = [];
+    if (incResumo) secList.push({ id: 'sec-resumo', titulo: 'Resumo Executivo',     sub: 'Visão Geral do Portfólio' });
+    if (incGantt)  secList.push({ id: 'sec-gantt',  titulo: 'Cronograma Visual',    sub: 'Diagrama de Gantt' });
+    if (incTabela) secList.push({ id: 'sec-tabela', titulo: 'Detalhamento por Projeto', sub: 'Lista de Atividades' });
+    function secNum(id) {
+      const i = secList.findIndex(s => s.id === id);
+      return i >= 0 ? String(i+1).padStart(2,'0') : '';
+    }
+
+    // ── Linhas do Gantt ──
+    const ganttRows = acts.map((a, i) => {
+      const sd_d = new Date((a.startDate || a.dueDate) + 'T00:00:00');
+      const ed_d = new Date((a.dueDate   || a.startDate) + 'T00:00:00');
+      const left = Math.max(0, Math.round((sd_d - minDate) / 86400000)) * dayWmm;
+      const bw   = Math.max(0.8, Math.round((ed_d - sd_d) / 86400000 + 1)) * dayWmm;
+      const pct  = a.progress || 0;
+      const isDone = a.status === 'Concluído';
+      const isOver = diffDays(a.dueDate) < 0 && !isDone;
+      const color = isOver ? '#dc2626' : isDone ? '#16a34a' : (typeof projColor === 'function' ? projColor(a.project) : corDest);
+      const rowBg = i % 2 === 0 ? '#fafafa' : '#ffffff';
+
+      return `<tr>
+        <td class="rel-cell-num">${String(i+1).padStart(2,'0')}</td>
+        <td class="rel-cell-desc"><strong>${esc(a.description)}</strong><br><span class="rel-cell-meta">${esc(a.project||'—')} · ${esc(a.responsible||'—')}</span></td>
+        <td class="rel-cell-date">${fmtDate(a.startDate)}</td>
+        <td class="rel-cell-date">${fmtDate(a.dueDate)}</td>
+        <td class="rel-cell-pct">${pct}%</td>
+        <td class="rel-cell-bar">
+          <div class="rel-bar-bg" style="width:${ganttWidthMM}mm">
+            ${weekendBandsHtml}
+            ${todayInRange ? `<div class="rel-today-line" style="left:${todayLeftMM}mm"></div>` : ''}
+            <div class="rel-bar" style="left:${left}mm;width:${bw}mm;background:${color}">
+              ${pct > 0 ? `<div class="rel-bar-progress" style="width:${pct}%"></div>` : ''}
+            </div>
+          </div>
+        </td>
+      </tr>`;
+    }).join('');
+
+    // ── Linhas da tabela detalhada (agrupada por projeto) ──
+    const grupos = {};
+    acts.forEach(a => {
+      const k = a.project || 'Sem projeto';
+      if (!grupos[k]) grupos[k] = [];
+      grupos[k].push(a);
+    });
+
+    const tabelaHtml = Object.entries(grupos).map(([proj, items]) => {
+      const projConcl = items.filter(a => a.status === 'Concluído').length;
+      const projPct = Math.round((projConcl / items.length) * 100);
+      const projColor2 = typeof projColor === 'function' ? projColor(proj) : corDest;
+
+      const linhas = items.map(a => {
+        const isDone = a.status === 'Concluído';
+        const isOver = diffDays(a.dueDate) < 0 && !isDone;
+        const statusColor = isDone ? '#16a34a' : isOver ? '#dc2626' : '#2563eb';
+        return `<tr>
+          <td>${esc(a.description)}</td>
+          <td style="white-space:nowrap">${esc(a.responsible||'—')}</td>
+          <td style="white-space:nowrap">${fmtDate(a.startDate)}</td>
+          <td style="white-space:nowrap">${fmtDate(a.dueDate)}</td>
+          <td><span class="rel-status" style="background:${statusColor}1a;color:${statusColor};border:1px solid ${statusColor}40">${esc(a.status||'—')}</span></td>
+          <td style="text-align:right;white-space:nowrap"><strong>${a.progress||0}%</strong></td>
+        </tr>`;
+      }).join('');
+
+      return `<div class="rel-grupo">
+        <div class="rel-grupo-header" style="border-left:5px solid ${projColor2}">
+          <span class="rel-grupo-nome">${esc(proj)}</span>
+          <span class="rel-grupo-stats">${items.length} atividade${items.length!==1?'s':''} · ${projConcl} concluída${projConcl!==1?'s':''} · <strong>${projPct}%</strong></span>
+        </div>
+        <table class="rel-tabela">
+          <thead>
+            <tr>
+              <th style="width:40%">Atividade</th>
+              <th>Responsável</th>
+              <th>Início</th>
+              <th>Término</th>
+              <th>Status</th>
+              <th style="text-align:right">Progresso</th>
+            </tr>
+          </thead>
+          <tbody>${linhas}</tbody>
+        </table>
+      </div>`;
+    }).join('');
+
+    // ── Monta HTML completo do relatório ──
+    const dataFmt = fmtDate(dataRel);
+    const html = `<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>${esc(titulo)}${cliente ? ' — ' + esc(cliente) : ''}</title>
+<style>
+@page {
+  size: A4 ${orient};
+  margin: 18mm 14mm 18mm 14mm;
+  ${incRodape ? `@bottom-left { content: "${esc(titulo).replace(/"/g,'')}"; font-family: Helvetica, Arial, sans-serif; font-size: 7pt; color: #94a3b8; }
+  @bottom-center { content: counter(page) " / " counter(pages); font-family: Helvetica, Arial, sans-serif; font-size: 7pt; color: #94a3b8; }
+  @bottom-right { content: "${dataFmt}"; font-family: Helvetica, Arial, sans-serif; font-size: 7pt; color: #94a3b8; }` : ''}
+}
+@page :first {
+  ${incCapa ? `margin: 0;
+  @bottom-left { content: ""; }
+  @bottom-center { content: ""; }
+  @bottom-right { content: ""; }` : ''}
+}
+@media print {
+  .no-print { display: none !important; }
+  .capa, .toc-page, .section, * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    color-adjust: exact !important;
+  }
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0; padding: 0;
+  -webkit-print-color-adjust: exact !important;
+  print-color-adjust: exact !important;
+  color-adjust: exact !important;
+}
+html, body {
+  background: #fff;
+  -webkit-print-color-adjust: exact !important;
+  print-color-adjust: exact !important;
+}
+body {
+  font-family: -apple-system, "Helvetica Neue", Helvetica, Arial, sans-serif;
+  color: #0f172a;
+  font-size: 9pt;
+  line-height: 1.45;
+  -webkit-font-smoothing: antialiased;
+}
+.serif { font-family: Georgia, "Times New Roman", serif; }
+
+.no-print {
+  position: fixed; top: 0; left: 0; right: 0;
+  background: #0f172a; color: #fff;
+  padding: 14px 24px;
+  font-size: 13px; font-weight: 500;
+  z-index: 9999;
+  display: flex; align-items: center; gap: 16px;
+  box-shadow: 0 4px 16px rgba(0,0,0,.3);
+  border-bottom: 3px solid ${corDest};
+}
+.no-print-icon {
+  font-size: 22px;
+}
+.no-print-text { flex: 1; line-height: 1.4; }
+.no-print-text strong { color: ${corDest}; font-weight: 700; }
+.no-print-btn {
+  background: ${corDest}; color: #fff;
+  padding: 10px 20px; border: none; border-radius: 4px;
+  font-size: 13px; font-weight: 700; cursor: pointer;
+  letter-spacing: .04em; text-transform: uppercase;
+  white-space: nowrap;
+}
+.no-print-btn:hover { background: #fff; color: ${corDest}; }
+body.has-banner { padding-top: 70px; }
+@media print { body.has-banner { padding-top: 0; } }
+
+/* ═══════════════════════════════════════
+   CAPA
+═══════════════════════════════════════ */
+.capa {
+  page-break-after: always;
+  position: relative;
+  width: ${orient === 'landscape' ? '297mm' : '210mm'};
+  height: ${orient === 'landscape' ? '210mm' : '297mm'};
+  padding: 0;
+  overflow: hidden;
+  background: #fff;
+}
+.capa-side {
+  position: absolute;
+  top: 0; left: 0; bottom: 0;
+  width: ${orient === 'landscape' ? '90mm' : '70mm'};
+  background: #0f172a;
+  color: #fff;
+  padding: 30mm 16mm;
+  display: flex; flex-direction: column; justify-content: space-between;
+}
+.capa-side::before {
+  content: '';
+  position: absolute;
+  top: 0; right: 0; width: 6mm; height: 100%;
+  background: ${corDest};
+}
+.capa-monogram {
+  font-family: Georgia, serif;
+  font-size: 48pt;
+  font-weight: 400;
+  color: ${corDest};
+  line-height: 1;
+  letter-spacing: -.02em;
+}
+.capa-side-info {
+  font-size: 7.5pt;
+  color: rgba(255,255,255,.6);
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  line-height: 1.8;
+}
+.capa-side-info strong {
+  display: block;
+  color: #fff;
+  font-size: 9pt;
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+  margin-top: 1mm;
+}
+.capa-side-divider {
+  height: 0.5mm; width: 16mm; background: ${corDest}; margin: 4mm 0;
+}
+
+.capa-main {
+  position: absolute;
+  top: 0; right: 0; bottom: 0;
+  left: ${orient === 'landscape' ? '90mm' : '70mm'};
+  padding: 30mm 22mm 24mm 22mm;
+  display: flex; flex-direction: column; justify-content: space-between;
+  background: #fff;
+}
+.capa-eyebrow {
+  font-size: 7.5pt; font-weight: 700; text-transform: uppercase;
+  letter-spacing: .25em; color: ${corDest}; margin-bottom: 14mm;
+  position: relative; padding-left: 14mm;
+}
+.capa-eyebrow::before {
+  content: ''; position: absolute; left: 0; top: 50%;
+  width: 10mm; height: 1px; background: ${corDest};
+}
+.capa-titulo {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: ${orient === 'landscape' ? '36pt' : '42pt'};
+  font-weight: 400;
+  color: #0f172a;
+  line-height: 1.05;
+  letter-spacing: -.015em;
+  margin-bottom: 8mm;
+}
+.capa-subtitulo {
+  font-size: 12pt;
+  color: #475569;
+  font-weight: 300;
+  line-height: 1.4;
+  max-width: 140mm;
+  border-top: 1px solid #e2e8f0;
+  padding-top: 6mm;
+  margin-top: 4mm;
+}
+.capa-meta-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8mm 12mm;
+  margin-top: auto;
+  padding-top: 16mm;
+  border-top: 1px solid #e2e8f0;
+}
+.capa-meta-item {
+  font-size: 8pt;
+}
+.capa-meta-label {
+  text-transform: uppercase;
+  letter-spacing: .12em;
+  color: #94a3b8;
+  font-size: 6.5pt;
+  font-weight: 600;
+  margin-bottom: 1.5mm;
+}
+.capa-meta-value {
+  color: #0f172a;
+  font-size: 11pt;
+  font-weight: 500;
+}
+
+/* ═══════════════════════════════════════
+   CABEÇALHO DE SEÇÃO
+═══════════════════════════════════════ */
+.section { margin-bottom: 12mm; page-break-inside: avoid; }
+.section-hd {
+  display: flex; align-items: baseline; gap: 6mm;
+  margin-bottom: 8mm;
+  border-bottom: 1px solid #0f172a;
+  padding-bottom: 3mm;
+}
+.section-num {
+  font-family: Georgia, serif;
+  font-size: 22pt;
+  font-weight: 400;
+  color: ${corDest};
+  line-height: 1;
+}
+.section-titulo {
+  font-family: Georgia, serif;
+  font-size: 16pt;
+  font-weight: 400;
+  color: #0f172a;
+  letter-spacing: -.01em;
+}
+.section-sub {
+  margin-left: auto;
+  font-size: 7.5pt;
+  text-transform: uppercase;
+  letter-spacing: .15em;
+  color: #94a3b8;
+  font-weight: 600;
+}
+
+/* ═══════════════════════════════════════
+   KPIs
+═══════════════════════════════════════ */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 0;
+  border: 1px solid #e2e8f0;
+  border-radius: 1mm;
+  overflow: hidden;
+}
+.kpi-card {
+  padding: 6mm 5mm;
+  border-right: 1px solid #e2e8f0;
+  position: relative;
+  background: #fff;
+}
+.kpi-card:last-child { border-right: 0; }
+.kpi-card::before {
+  content: ''; position: absolute;
+  top: 0; left: 0; right: 0; height: 1mm;
+  background: #cbd5e1;
+}
+.kpi-card.is-accent::before { background: ${corDest}; }
+.kpi-card.is-success::before { background: #16a34a; }
+.kpi-card.is-warning::before { background: #d97706; }
+.kpi-card.is-danger::before { background: #dc2626; }
+.kpi-label {
+  font-size: 7pt;
+  text-transform: uppercase;
+  letter-spacing: .1em;
+  color: #94a3b8;
+  font-weight: 700;
+  margin-bottom: 3mm;
+}
+.kpi-value {
+  font-family: Georgia, serif;
+  font-size: 26pt;
+  font-weight: 400;
+  color: #0f172a;
+  line-height: 1;
+  letter-spacing: -.02em;
+}
+.kpi-card.is-accent .kpi-value { color: ${corDest}; }
+.kpi-card.is-success .kpi-value { color: #16a34a; }
+.kpi-card.is-warning .kpi-value { color: #d97706; }
+.kpi-card.is-danger .kpi-value { color: #dc2626; }
+
+.progress-block {
+  margin-top: 8mm;
+  padding: 6mm 7mm;
+  background: #f8fafc;
+  border-left: 3px solid ${corDest};
+}
+.progress-block-label {
+  font-size: 7pt;
+  text-transform: uppercase;
+  letter-spacing: .12em;
+  color: #64748b;
+  font-weight: 700;
+  margin-bottom: 3mm;
+}
+.progress-block-bar {
+  display: flex; align-items: center; gap: 6mm;
+}
+.progress-bar-track {
+  flex: 1;
+  height: 4mm;
+  background: #e2e8f0;
+  border-radius: 0;
+  overflow: hidden;
+}
+.progress-bar-fill {
+  height: 100%;
+  background: ${corDest};
+}
+.progress-bar-pct {
+  font-family: Georgia, serif;
+  font-size: 18pt;
+  font-weight: 400;
+  color: ${corDest};
+  min-width: 22mm;
+  text-align: right;
+  line-height: 1;
+}
+
+/* ═══════════════════════════════════════
+   GANTT
+═══════════════════════════════════════ */
+.rel-gantt-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 7.5pt;
+  border: 1px solid #cbd5e1;
+}
+.rel-gantt-table thead th {
+  background: #0f172a;
+  color: #fff;
+  padding: 2.8mm 2mm;
+  font-weight: 600;
+  font-size: 7pt;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  border-right: 1px solid #1e293b;
+  text-align: left;
+  vertical-align: bottom;
+}
+.rel-gantt-table thead th:last-child { border-right: 0; padding: 0; }
+.rel-gantt-table tbody td {
+  border-bottom: 1px solid #f1f5f9;
+  border-right: 1px solid #f1f5f9;
+  padding: 2.5mm 2mm;
+  vertical-align: middle;
+}
+.rel-gantt-table tbody tr:nth-child(even) td { background: #fafbfc; }
+.rel-gantt-table tbody tr:last-child td { border-bottom: 1px solid #cbd5e1; }
+
+.rel-cell-num {
+  width: 9mm;
+  text-align: center;
+  color: #94a3b8;
+  font-size: 7pt;
+  font-family: Georgia, serif;
+  font-weight: 400;
+}
+.rel-cell-desc { width: 60mm; max-width: 60mm; overflow: hidden; }
+.rel-cell-desc strong {
+  font-size: 8pt;
+  color: #0f172a;
+  font-weight: 600;
+  display: block;
+  letter-spacing: -.01em;
+}
+.rel-cell-meta {
+  font-size: 6.5pt;
+  color: #94a3b8;
+  font-weight: 400;
+  letter-spacing: .02em;
+}
+.rel-cell-date {
+  width: 18mm;
+  font-size: 7pt;
+  color: #475569;
+  text-align: center;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.rel-cell-pct {
+  width: 12mm;
+  font-size: 7.5pt;
+  text-align: right;
+  font-weight: 600;
+  color: #0f172a;
+  font-variant-numeric: tabular-nums;
+  font-family: Georgia, serif;
+}
+.rel-cell-bar { padding: 0 !important; border-right: 0 !important; }
+
+.rel-bar-bg {
+  position: relative;
+  height: 8mm;
+  background: #fff;
+}
+.rel-weekend-band {
+  position: absolute;
+  top: 0; bottom: 0;
+  background: #f1f5f9;
+  pointer-events: none;
+}
+.rel-bar {
+  position: absolute;
+  top: 2mm;
+  height: 4mm;
+  border-radius: 0.5mm;
+  min-width: 0.6mm;
+  box-shadow: 0 0.3mm 0.8mm rgba(15,23,42,.18);
+  overflow: hidden;
+  z-index: 2;
+}
+.rel-bar-progress {
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  background: rgba(255,255,255,.42);
+  border-right: 0.3mm solid rgba(255,255,255,.85);
+}
+.rel-today-line {
+  position: absolute;
+  top: -1mm; bottom: -1mm;
+  width: 0.4mm;
+  background: #dc2626;
+  z-index: 3;
+}
+.rel-today-line::after {
+  content: 'HOJE';
+  position: absolute;
+  top: -2mm; left: 50%;
+  transform: translateX(-50%);
+  font-size: 5pt;
+  font-weight: 700;
+  color: #dc2626;
+  background: #fff;
+  padding: 0 1mm;
+  letter-spacing: .05em;
+}
+
+.rel-gantt-years {
+  display: flex;
+  background: #1e293b;
+  border-bottom: 1px solid #334155;
+}
+.rel-gantt-year {
+  font-size: 7pt;
+  font-weight: 700;
+  color: #fff;
+  padding: 1.2mm 0;
+  text-align: center;
+  letter-spacing: .15em;
+  border-right: 1px solid #334155;
+  font-family: Georgia, serif;
+}
+.rel-gantt-year:last-child { border-right: 0; }
+.rel-gantt-months {
+  display: flex;
+  background: #f8fafc;
+}
+.rel-gantt-month {
+  font-size: 6pt;
+  font-weight: 700;
+  color: #475569;
+  padding: 1.5mm 1mm;
+  border-right: 1px solid #e2e8f0;
+  text-align: center;
+  letter-spacing: .08em;
+}
+.rel-gantt-month:last-child { border-right: 0; }
+
+.rel-legenda {
+  display: flex;
+  gap: 8mm;
+  margin-top: 5mm;
+  padding: 3mm 4mm;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  font-size: 7pt;
+  color: #475569;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.rel-legenda-titulo {
+  font-size: 6.5pt;
+  text-transform: uppercase;
+  letter-spacing: .1em;
+  color: #94a3b8;
+  font-weight: 700;
+}
+.rel-legenda-item {
+  display: flex;
+  align-items: center;
+  gap: 2mm;
+}
+.rel-legenda-cor {
+  display: inline-block;
+  width: 5mm;
+  height: 2.5mm;
+  border-radius: 0.5mm;
+}
+
+/* ═══════════════════════════════════════
+   TABELA DETALHADA
+═══════════════════════════════════════ */
+.rel-grupo {
+  margin-bottom: 8mm;
+  page-break-inside: avoid;
+}
+.rel-grupo-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 4mm 5mm;
+  background: #0f172a;
+  color: #fff;
+  border-left: 4mm solid ${corDest};
+}
+.rel-grupo-nome {
+  font-family: Georgia, serif;
+  font-size: 12pt;
+  font-weight: 400;
+  letter-spacing: -.01em;
+}
+.rel-grupo-stats {
+  font-size: 7.5pt;
+  color: rgba(255,255,255,.7);
+  text-transform: uppercase;
+  letter-spacing: .06em;
+}
+.rel-grupo-stats strong {
+  color: #fff;
+  font-weight: 700;
+  font-size: 9pt;
+  font-family: Georgia, serif;
+  letter-spacing: 0;
+}
+.rel-tabela {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 8pt;
+  border: 1px solid #e2e8f0;
+  border-top: 0;
+}
+.rel-tabela thead th {
+  background: #f8fafc;
+  color: #64748b;
+  padding: 2.5mm 3mm;
+  font-size: 6.5pt;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  border-bottom: 1px solid #cbd5e1;
+  text-align: left;
+}
+.rel-tabela tbody td {
+  padding: 2.5mm 3mm;
+  border-bottom: 1px solid #f1f5f9;
+  color: #334155;
+}
+.rel-tabela tbody tr:last-child td { border-bottom: 0; }
+.rel-status {
+  display: inline-block;
+  padding: 0.5mm 2.5mm;
+  border-radius: 0;
+  font-size: 6pt;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+}
+
+/* ═══════════════════════════════════════
+   LOGO NA CAPA
+═══════════════════════════════════════ */
+.capa-logo-wrap {
+  background: #fff;
+  padding: 6mm 8mm;
+  border-radius: 1mm;
+  display: inline-block;
+  margin-bottom: 6mm;
+  max-width: 60mm;
+}
+.capa-logo-img {
+  max-width: 100%;
+  max-height: 22mm;
+  object-fit: contain;
+  display: block;
+}
+
+/* ═══════════════════════════════════════
+   SUMÁRIO (TOC)
+═══════════════════════════════════════ */
+.toc-page { page-break-after: always; padding-top: 6mm; }
+.toc-titulo {
+  font-family: Georgia, serif;
+  font-size: 28pt;
+  font-weight: 400;
+  color: #0f172a;
+  letter-spacing: -.02em;
+  margin-bottom: 2mm;
+}
+.toc-eyebrow {
+  font-size: 7.5pt;
+  text-transform: uppercase;
+  letter-spacing: .25em;
+  color: ${corDest};
+  font-weight: 700;
+  margin-bottom: 4mm;
+  position: relative;
+  padding-left: 14mm;
+}
+.toc-eyebrow::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 50%;
+  width: 10mm; height: 1px;
+  background: ${corDest};
+}
+.toc-divider {
+  height: 1px;
+  background: #0f172a;
+  margin: 8mm 0 12mm 0;
+}
+.toc-list { list-style: none; padding: 0; margin: 0; }
+.toc-item {
+  display: flex;
+  align-items: baseline;
+  padding: 5mm 0;
+  border-bottom: 1px dotted #cbd5e1;
+  gap: 6mm;
+}
+.toc-item:last-child { border-bottom: 0; }
+.toc-num {
+  font-family: Georgia, serif;
+  font-size: 20pt;
+  font-weight: 400;
+  color: ${corDest};
+  width: 18mm;
+  flex-shrink: 0;
+  line-height: 1;
+}
+.toc-text { flex: 1; }
+.toc-text-titulo {
+  font-family: Georgia, serif;
+  font-size: 14pt;
+  color: #0f172a;
+  font-weight: 400;
+  margin-bottom: 1mm;
+  letter-spacing: -.01em;
+}
+.toc-text-sub {
+  font-size: 7.5pt;
+  text-transform: uppercase;
+  letter-spacing: .12em;
+  color: #94a3b8;
+  font-weight: 600;
+}
+.toc-dots {
+  flex: 0 1 auto;
+  border-bottom: 1px dotted #94a3b8;
+  height: 1px;
+  align-self: center;
+  min-width: 20mm;
+}
+
+/* ═══════════════════════════════════════
+   ASSINATURA
+═══════════════════════════════════════ */
+.assinatura-block {
+  margin-top: 16mm;
+  page-break-inside: avoid;
+}
+.assinatura-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16mm;
+  max-width: 180mm;
+}
+.assinatura-item {
+  text-align: center;
+}
+.assinatura-linha {
+  height: 0.4mm;
+  background: #0f172a;
+  margin-bottom: 3mm;
+}
+.assinatura-nome {
+  font-family: Georgia, serif;
+  font-size: 11pt;
+  font-weight: 400;
+  color: #0f172a;
+  letter-spacing: -.01em;
+}
+.assinatura-cargo {
+  font-size: 7.5pt;
+  text-transform: uppercase;
+  letter-spacing: .12em;
+  color: #64748b;
+  font-weight: 600;
+  margin-top: 1mm;
+}
+.assinatura-local {
+  text-align: right;
+  font-size: 8.5pt;
+  color: #475569;
+  margin-bottom: 12mm;
+  font-style: italic;
+}
+
+/* ═══════════════════════════════════════
+   QUEBRAS
+═══════════════════════════════════════ */
+.page-break { page-break-before: always; }
+</style>
+</head>
+<body class="has-banner">
+
+<div class="no-print">
+  <div class="no-print-icon">📄</div>
+  <div class="no-print-text">
+    <strong>Importante:</strong> ao imprimir, clique em <strong>"Mais configurações"</strong> e <strong>marque a opção "Gráficos de fundo"</strong> — caso contrário as cores não aparecem no PDF.
+  </div>
+  <button class="no-print-btn" onclick="window.print()">🖨️ Imprimir / Salvar PDF</button>
+</div>
+
+${incCapa ? `
+<!-- ═══════════ CAPA ═══════════ -->
+<div class="capa">
+  <div class="capa-side">
+    <div>
+      ${logoData
+        ? `<div class="capa-logo-wrap"><img src="${logoData}" class="capa-logo-img" alt="Logo"/></div>`
+        : `<div class="capa-monogram">P</div>`}
+      <div class="capa-side-divider"></div>
+      <div class="capa-side-info" style="color:rgba(255,255,255,.85);font-weight:600;letter-spacing:.05em">
+        ${preparado ? esc(preparado).split(' ').slice(0,3).join(' ') : 'Project<br>Management'}
+      </div>
+    </div>
+    <div class="capa-side-info">
+      Documento<strong>${docRef}</strong>
+      <br><br>
+      Confidencial<strong>Uso restrito</strong>
+    </div>
+  </div>
+
+  <div class="capa-main">
+    <div>
+      <div class="capa-eyebrow">Relatório de Cronograma</div>
+      <h1 class="capa-titulo">${esc(titulo)}</h1>
+      ${subtitulo ? `<div class="capa-subtitulo">${esc(subtitulo)}</div>` : ''}
+    </div>
+
+    <div class="capa-meta-grid">
+      ${cliente ? `
+      <div class="capa-meta-item">
+        <div class="capa-meta-label">Preparado para</div>
+        <div class="capa-meta-value">${esc(cliente)}</div>
+      </div>` : ''}
+      ${preparado ? `
+      <div class="capa-meta-item">
+        <div class="capa-meta-label">Preparado por</div>
+        <div class="capa-meta-value">${esc(preparado)}</div>
+      </div>` : ''}
+      <div class="capa-meta-item">
+        <div class="capa-meta-label">Data de Emissão</div>
+        <div class="capa-meta-value">${dataLongFmt}</div>
+      </div>
+      <div class="capa-meta-item">
+        <div class="capa-meta-label">Escopo</div>
+        <div class="capa-meta-value">${projetosUnq.length} projeto${projetosUnq.length!==1?'s':''} · ${total} atividade${total!==1?'s':''}</div>
+      </div>
+    </div>
+  </div>
+</div>
+` : ''}
+
+${incCapa && incToc && secList.length > 0 ? `
+<!-- ═══════════ SUMÁRIO ═══════════ -->
+<div class="toc-page">
+  <div class="toc-eyebrow">Sumário</div>
+  <h1 class="toc-titulo">${esc(titulo)}</h1>
+  <div style="font-size:9pt;color:#64748b">${dataLongFmt}${cliente ? ' · ' + esc(cliente) : ''}</div>
+  <div class="toc-divider"></div>
+  <ul class="toc-list">
+    ${secList.map(s => `
+      <li class="toc-item">
+        <span class="toc-num">${secNum(s.id)}</span>
+        <div class="toc-text">
+          <div class="toc-text-titulo">${esc(s.titulo)}</div>
+          <div class="toc-text-sub">${esc(s.sub)}</div>
+        </div>
+      </li>
+    `).join('')}
+  </ul>
+</div>
+` : ''}
+
+${incResumo ? `
+<!-- ═══════════ RESUMO ═══════════ -->
+<div class="section">
+  <div class="section-hd">
+    <div class="section-num">${secNum('sec-resumo')}</div>
+    <div class="section-titulo">Resumo Executivo</div>
+    <div class="section-sub">Visão Geral do Portfólio</div>
+  </div>
+  <div class="kpi-grid">
+    <div class="kpi-card is-accent">
+      <div class="kpi-label">Projetos</div>
+      <div class="kpi-value">${projetosUnq.length}</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Atividades</div>
+      <div class="kpi-value">${total}</div>
+    </div>
+    <div class="kpi-card is-success">
+      <div class="kpi-label">Concluídas</div>
+      <div class="kpi-value">${concluidas}</div>
+    </div>
+    <div class="kpi-card is-warning">
+      <div class="kpi-label">Em Andamento</div>
+      <div class="kpi-value">${emAndam}</div>
+    </div>
+    <div class="kpi-card is-danger">
+      <div class="kpi-label">Vencidas</div>
+      <div class="kpi-value">${vencidas}</div>
+    </div>
+  </div>
+  <div class="progress-block">
+    <div class="progress-block-label">Progresso geral do portfólio</div>
+    <div class="progress-block-bar">
+      <div class="progress-bar-track">
+        <div class="progress-bar-fill" style="width:${pctConcl}%"></div>
+      </div>
+      <div class="progress-bar-pct">${pctConcl}%</div>
+    </div>
+  </div>
+</div>
+` : ''}
+
+${incGantt ? `
+<!-- ═══════════ GANTT ═══════════ -->
+<div class="section ${incResumo ? '' : ''}">
+  <div class="section-hd">
+    <div class="section-num">${secNum('sec-gantt')}</div>
+    <div class="section-titulo">Cronograma Visual</div>
+    <div class="section-sub">Diagrama de Gantt</div>
+  </div>
+  <table class="rel-gantt-table">
+    <thead>
+      <tr>
+        <th>Nº</th>
+        <th>Atividade</th>
+        <th style="text-align:center">Início</th>
+        <th style="text-align:center">Término</th>
+        <th style="text-align:right">%</th>
+        <th>
+          <div class="rel-gantt-years">${yearsHtml}</div>
+          <div class="rel-gantt-months">${monthsHtml}</div>
+        </th>
+      </tr>
+    </thead>
+    <tbody>${ganttRows}</tbody>
+  </table>
+  <div class="rel-legenda">
+    <div class="rel-legenda-titulo">Legenda</div>
+    <div class="rel-legenda-item"><span class="rel-legenda-cor" style="background:${corDest}"></span> Em andamento</div>
+    <div class="rel-legenda-item"><span class="rel-legenda-cor" style="background:#16a34a"></span> Concluída</div>
+    <div class="rel-legenda-item"><span class="rel-legenda-cor" style="background:#dc2626"></span> Vencida</div>
+    <div class="rel-legenda-item"><span class="rel-legenda-cor" style="background:#f1f5f9;border:0.3mm solid #cbd5e1"></span> Fim de semana</div>
+    <div class="rel-legenda-item"><span style="display:inline-block;width:0.5mm;height:3mm;background:#dc2626;vertical-align:middle"></span> Linha de hoje</div>
+  </div>
+</div>
+` : ''}
+
+${incTabela ? `
+<!-- ═══════════ TABELA DETALHADA ═══════════ -->
+<div class="section page-break">
+  <div class="section-hd">
+    <div class="section-num">${secNum('sec-tabela')}</div>
+    <div class="section-titulo">Detalhamento por Projeto</div>
+    <div class="section-sub">Lista de Atividades</div>
+  </div>
+  ${tabelaHtml}
+</div>
+` : ''}
+
+${(asgNome || asgCargo) ? `
+<!-- ═══════════ ASSINATURA ═══════════ -->
+<div class="assinatura-block">
+  <div class="assinatura-local">${cliente ? esc(cliente.split(',')[0]) + ', ' : ''}${dataLongFmt}</div>
+  <div class="assinatura-grid">
+    <div class="assinatura-item">
+      <div class="assinatura-linha"></div>
+      <div class="assinatura-nome">${esc(asgNome || preparado || '—')}</div>
+      <div class="assinatura-cargo">${esc(asgCargo || 'Responsável')}</div>
+    </div>
+    <div class="assinatura-item">
+      <div class="assinatura-linha"></div>
+      <div class="assinatura-nome">${esc(cliente || '—')}</div>
+      <div class="assinatura-cargo">Cliente — Ciente e de acordo</div>
+    </div>
+  </div>
+</div>
+` : ''}
+
+</body>
+</html>`;
+
+    // ── Abre nova janela e imprime ──
+    const win = window.open('', '_blank', 'width=1200,height=800');
+    if (!win) {
+      toast('Pop-up bloqueado! Permita pop-ups para gerar o relatório.', 'error');
+      return;
+    }
+    win.document.open();
+    win.document.write(html);
+    win.document.close();
+
+    // NÃO dispara print automaticamente — usuário precisa ler instruções
+    // sobre habilitar "Gráficos de fundo" e clicar no botão.
+    win.onload = () => { try { win.focus(); } catch(e) {} };
+
+    toast('✓ Relatório aberto em nova aba. Leia as instruções e clique em "Imprimir / Salvar PDF".', 'success');
+  };
+
   window.renderGantt = function(){
     const wrap = document.getElementById('gantt-wrap'); if (!wrap) return;
+
+    /* Sincroniza estado visual do botão de agrupamento */
+    const grpBtn = document.getElementById('gantt-group-btn');
+    if (grpBtn) grpBtn.classList.toggle('active', localStorage.getItem('gantt_group_by_project') === '1');
 
     /* ── Popula selects ── */
     const fpEl = document.getElementById('gantt-f-project');
@@ -6780,7 +8484,10 @@ window.assignProjectToFolder = assignProjectToFolder;
     }
 
     /* ── Linhas ── */
-    const rows = filtered.map(a => {
+    const groupByProject = localStorage.getItem('gantt_group_by_project') === '1';
+    const collapsed = window._ganttCollapsedGroups || (window._ganttCollapsedGroups = new Set());
+
+    function renderActivityRow(a) {
       const wbs    = a._wbs || '—';
       const depth  = (wbs.match(/\./g)||[]).length;
       const isSub  = depth > 0;
@@ -6793,29 +8500,30 @@ window.assignProjectToFolder = assignProjectToFolder;
       const pct  = a.progress || 0;
       const diff = diffDays(a.dueDate);
 
-      /* Cor da barra */
       let barColor = isSub ? 'var(--purple)' : projColor(a.project);
       if (diff < 0 && a.status !== 'Concluído') barColor = 'var(--red)';
       const opacity = a.status === 'Concluído' ? .55 : 1;
       const barStyle = `left:${left}px;width:${bw}px;background:${barColor};opacity:${opacity}`;
 
-      /* Seta de conexão pai → filho */
       const arrowHtml = isSub
         ? `<span style="color:var(--text-4);font-size:.7rem;margin-right:3px;padding-left:${indent-10}px">↳</span>`
         : '';
 
-      /* Barra de progresso interna */
       const progressLayer = pct > 0
         ? `<div style="position:absolute;left:0;top:0;bottom:0;width:${pct}%;background:rgba(255,255,255,.28);border-radius:4px 0 0 4px;pointer-events:none"></div>`
         : '';
 
-      return `<tr style="${isSub ? 'background:rgba(124,58,237,.03)' : ''}">
+      const groupClass = groupByProject ? `gantt-group-row" data-group="${esc(a.project||'__sem__')}` : '';
+      const hiddenStyle = groupByProject && collapsed.has(a.project||'__sem__') ? 'display:none;' : '';
+
+      return `<tr class="${groupClass}" style="${hiddenStyle}${isSub ? 'background:rgba(124,58,237,.03)' : ''}">
         <td style="width:52px;min-width:52px;font-family:var(--font-mono);font-size:.65rem;color:${isSub?'var(--purple)':'var(--text-4)'};font-weight:${isSub?600:500};white-space:nowrap">${wbs}</td>
         <td style="min-width:220px;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
-          <div style="display:flex;align-items:center;padding-left:${indent}px">
+          <div style="display:flex;align-items:center;padding-left:${indent + (groupByProject ? 16 : 0)}px">
             ${arrowHtml}
             <span style="font-weight:${isSub?500:600};color:var(--text-1);font-size:${isSub?'.77rem':'.8rem'}">${esc(a.description)}</span>
             <button class="gantt-inline-btn" onclick="event.stopPropagation();addSubactivityFromGantt('${a.id}')" title="Criar subatividade" style="margin-left:5px"><i class="fa-solid fa-plus"></i></button>
+            <button class="gantt-inline-btn gantt-inline-del" onclick="event.stopPropagation();deleteAct('${a.id}')" title="Excluir atividade" style="margin-left:3px"><i class="fa-solid fa-xmark"></i></button>
           </div>
         </td>
         <td style="min-width:100px"><span class="project-chip"><span class="project-dot" style="background:${projColor(a.project)}"></span>${esc(a.project)}</span></td>
@@ -6831,7 +8539,64 @@ window.assignProjectToFolder = assignProjectToFolder;
           </div>
         </td>
       </tr>`;
-    }).join('');
+    }
+
+    function renderProjectHeader(projName, items) {
+      const key = projName || '__sem__';
+      const isCollapsed = collapsed.has(key);
+      const color = projColor(projName);
+
+      // Calcula span do projeto (menor início, maior término)
+      const starts = items.map(a => isoToDate(a.startDate || a.dueDate)).filter(Boolean);
+      const ends   = items.map(a => isoToDate(a.dueDate   || a.startDate)).filter(Boolean);
+      const ps = starts.length ? new Date(Math.min(...starts)) : null;
+      const pe = ends.length   ? new Date(Math.max(...ends))   : null;
+      const left = ps ? Math.max(0, Math.round((ps - minDate)/86400000)) * pxPerDay : 0;
+      const bw   = (ps && pe) ? Math.max(6, Math.round((pe - ps)/86400000 + 1)) * pxPerDay : 0;
+
+      // Progresso médio
+      const avgPct = items.length ? Math.round(items.reduce((s,a)=>s+(a.progress||0),0)/items.length) : 0;
+      const done   = items.filter(a => a.status === 'Concluído').length;
+
+      const caret = isCollapsed ? 'fa-chevron-right' : 'fa-chevron-down';
+
+      return `<tr class="gantt-project-header" data-group-key="${esc(key)}" onclick="toggleGanttGroupCollapse('${esc(key).replace(/'/g,"\\'")}')">
+        <td colspan="5" style="background:linear-gradient(90deg,${color}22,${color}08);border-left:4px solid ${color};font-weight:700;cursor:pointer;padding:10px 12px">
+          <div style="display:flex;align-items:center;gap:10px">
+            <i class="fa-solid ${caret}" style="color:${color};font-size:.7rem;width:10px"></i>
+            <span class="project-dot" style="background:${color};width:10px;height:10px;border-radius:50%;display:inline-block"></span>
+            <span style="color:var(--text-1);font-size:.82rem">${esc(projName || 'Sem projeto')}</span>
+            <span style="color:var(--text-4);font-size:.7rem;font-weight:500">${items.length} atividade${items.length!==1?'s':''} • ${done} concluída${done!==1?'s':''} • ${avgPct}%</span>
+          </div>
+        </td>
+        <td class="gantt-bar-cell" style="min-width:${totalW}px;background:linear-gradient(90deg,${color}11,transparent);border-left:0">
+          <div class="gantt-bar-bg" style="width:${totalW}px">
+            <div class="gantt-today-line" style="left:${todayLeft}px"></div>
+            ${bw > 0 ? `<div class="gantt-bar gantt-summary-bar" style="left:${left}px;width:${bw}px;background:${color};opacity:.85" title="${esc(projName||'Sem projeto')}: ${items.length} atividades">
+              <div style="position:absolute;left:0;top:0;bottom:0;width:${avgPct}%;background:rgba(255,255,255,.35);border-radius:3px 0 0 3px;pointer-events:none"></div>
+              <span style="position:relative;z-index:1;font-size:.58rem;font-weight:700">${esc(projName||'Sem projeto')} (${avgPct}%)</span>
+            </div>` : ''}
+          </div>
+        </td>
+      </tr>`;
+    }
+
+    let rows;
+    if (groupByProject) {
+      // Agrupa por projeto preservando a ordem do filtered (que já está ordenado)
+      const groups = new Map();
+      filtered.forEach(a => {
+        const k = a.project || '__sem__';
+        if (!groups.has(k)) groups.set(k, []);
+        groups.get(k).push(a);
+      });
+      rows = [...groups.entries()].map(([projName, items]) =>
+        renderProjectHeader(projName === '__sem__' ? '' : projName, items) +
+        items.map(renderActivityRow).join('')
+      ).join('');
+    } else {
+      rows = filtered.map(renderActivityRow).join('');
+    }
 
     /* ── Monta tabela ── */
     wrap.innerHTML = `<table class="gantt-table">
@@ -6847,7 +8612,156 @@ window.assignProjectToFolder = assignProjectToFolder;
       </thead>
       <tbody>${rows}</tbody>
     </table>`;
+
+    /* ── Alças de redimensionamento estilo Excel ── */
+    if (typeof setupGanttResize === 'function') setupGanttResize();
   };
+
+  /* ══ Resize estilo Excel — colunas (horizontal) e linhas (vertical) ══ */
+  function setupGanttResize() {
+    const table = document.querySelector('#gantt-wrap .gantt-table');
+    if (!table) return;
+
+    const COL_KEY = 'gantt_col_widths_v1';
+    const EXPAND_KEY = 'gantt_rows_expanded_v1';
+    const ROW_H_KEY = 'gantt_row_height_v1';
+
+    const savedWidths = JSON.parse(localStorage.getItem(COL_KEY) || '{}');
+    const savedRowH = parseInt(localStorage.getItem(ROW_H_KEY) || '0', 10);
+    const isExpanded = localStorage.getItem(EXPAND_KEY) === '1';
+
+    if (isExpanded) table.classList.add('gantt-rows-expanded');
+
+    const headers = table.querySelectorAll('thead th');
+    const lastIdx = headers.length - 1; // coluna da barra do gantt — não redimensiona
+
+    // Aplica larguras salvas
+    headers.forEach((th, idx) => {
+      if (idx === lastIdx) return;
+      if (savedWidths[idx]) applyColWidth(idx, savedWidths[idx]);
+    });
+
+    // Aplica altura salva
+    if (savedRowH > 0 && !isExpanded) {
+      table.querySelectorAll('tbody tr').forEach(tr => tr.style.height = savedRowH + 'px');
+    }
+
+    function applyColWidth(idx, w) {
+      const th = headers[idx]; if (!th) return;
+      th.style.width = w + 'px';
+      th.style.minWidth = w + 'px';
+      th.style.maxWidth = w + 'px';
+      table.querySelectorAll(`tbody tr > td:nth-child(${idx+1})`).forEach(td => {
+        td.style.width = w + 'px';
+        td.style.minWidth = w + 'px';
+        td.style.maxWidth = w + 'px';
+      });
+    }
+
+    function autofitCol(idx) {
+      const th = headers[idx]; if (!th) return;
+      const cells = [th, ...table.querySelectorAll(`tbody tr > td:nth-child(${idx+1})`)];
+      let maxW = 0;
+      cells.forEach(cell => {
+        const clone = cell.cloneNode(true);
+        clone.querySelectorAll('.gantt-col-resize, .gantt-row-resize').forEach(g => g.remove());
+        clone.style.cssText = `position:absolute;visibility:hidden;width:auto;min-width:0;max-width:none;white-space:nowrap;font:${getComputedStyle(cell).font};padding:${getComputedStyle(cell).padding}`;
+        document.body.appendChild(clone);
+        maxW = Math.max(maxW, clone.offsetWidth);
+        document.body.removeChild(clone);
+      });
+      const finalW = Math.min(700, Math.max(50, maxW + 20));
+      applyColWidth(idx, finalW);
+      savedWidths[idx] = finalW;
+      localStorage.setItem(COL_KEY, JSON.stringify(savedWidths));
+    }
+
+    // Cria alças de coluna em cada th (exceto a última)
+    headers.forEach((th, idx) => {
+      if (idx === lastIdx) return;
+      th.style.position = 'relative';
+      const grip = document.createElement('div');
+      grip.className = 'gantt-col-resize';
+      grip.title = 'Arraste para redimensionar • Duplo-clique para auto-ajustar';
+      th.appendChild(grip);
+
+      grip.addEventListener('mousedown', e => {
+        e.preventDefault(); e.stopPropagation();
+        const startX = e.clientX;
+        const startW = th.offsetWidth;
+        document.body.style.cursor = 'col-resize';
+        document.body.style.userSelect = 'none';
+        function onMove(ev) {
+          const newW = Math.max(40, startW + (ev.clientX - startX));
+          applyColWidth(idx, newW);
+        }
+        function onUp() {
+          document.removeEventListener('mousemove', onMove);
+          document.removeEventListener('mouseup', onUp);
+          document.body.style.cursor = '';
+          document.body.style.userSelect = '';
+          savedWidths[idx] = th.offsetWidth;
+          localStorage.setItem(COL_KEY, JSON.stringify(savedWidths));
+        }
+        document.addEventListener('mousemove', onMove);
+        document.addEventListener('mouseup', onUp);
+      });
+
+      grip.addEventListener('dblclick', e => {
+        e.preventDefault(); e.stopPropagation();
+        autofitCol(idx);
+      });
+    });
+
+    // Cria alça de linha (uma só, na primeira linha — controla altura global)
+    const rows = table.querySelectorAll('tbody tr');
+    rows.forEach(tr => {
+      const firstCell = tr.cells[0]; if (!firstCell) return;
+      firstCell.style.position = 'relative';
+      const grip = document.createElement('div');
+      grip.className = 'gantt-row-resize';
+      grip.title = 'Arraste para redimensionar altura • Duplo-clique para mostrar todo o texto';
+      firstCell.appendChild(grip);
+
+      grip.addEventListener('mousedown', e => {
+        e.preventDefault(); e.stopPropagation();
+        const startY = e.clientY;
+        const startH = tr.offsetHeight;
+        document.body.style.cursor = 'row-resize';
+        document.body.style.userSelect = 'none';
+        // Sai do modo expandido se estiver
+        table.classList.remove('gantt-rows-expanded');
+        localStorage.removeItem(EXPAND_KEY);
+        function onMove(ev) {
+          const newH = Math.max(20, startH + (ev.clientY - startY));
+          rows.forEach(r => r.style.height = newH + 'px');
+        }
+        function onUp() {
+          document.removeEventListener('mousemove', onMove);
+          document.removeEventListener('mouseup', onUp);
+          document.body.style.cursor = '';
+          document.body.style.userSelect = '';
+          localStorage.setItem(ROW_H_KEY, tr.offsetHeight);
+        }
+        document.addEventListener('mousemove', onMove);
+        document.addEventListener('mouseup', onUp);
+      });
+
+      grip.addEventListener('dblclick', e => {
+        e.preventDefault(); e.stopPropagation();
+        // Alterna modo expandido — texto quebra em várias linhas
+        const nowExp = table.classList.toggle('gantt-rows-expanded');
+        if (nowExp) {
+          rows.forEach(r => r.style.height = '');
+          localStorage.setItem(EXPAND_KEY, '1');
+          localStorage.removeItem(ROW_H_KEY);
+        } else {
+          localStorage.removeItem(EXPAND_KEY);
+        }
+      });
+    });
+  }
+  window.setupGanttResize = setupGanttResize;
   function calcAvgResolution(person){
     const done = activities.filter(a => a.responsible===person && a.status==='Concluído');
     if (!done.length) return 0;
@@ -7055,6 +8969,345 @@ Digite: Folga, Férias, Outra atividade, Treinamento ou Limpar`, '');
       </div>
     </div>
   </div>
+
+  <!-- ============================================================ -->
+  <!--           💬 CHAT FLUTUANTE (bolha no canto)                  -->
+  <!-- ============================================================ -->
+  <style>
+    #fab-chat-wrapper { position: fixed; right: 24px; bottom: 24px; z-index: 9999; font-family: inherit; }
+
+    #fab-toggle-btn {
+      width: 60px; height: 60px; border-radius: 50%;
+      background: linear-gradient(135deg, #3b82f6, #6366f1);
+      border: none; color: #fff; font-size: 26px; cursor: pointer;
+      box-shadow: 0 8px 24px rgba(59,130,246,.45);
+      transition: transform .2s, box-shadow .2s;
+      display: flex; align-items: center; justify-content: center;
+      position: relative;
+    }
+    #fab-toggle-btn:hover  { transform: scale(1.06); box-shadow: 0 12px 32px rgba(59,130,246,.55); }
+    #fab-toggle-btn:active { transform: scale(.94); }
+    #fab-toggle-btn::after {
+      content: ''; position: absolute; inset: -4px; border-radius: 50%;
+      background: inherit; opacity: .35; z-index: -1;
+      animation: fab-pulse 2.5s ease-out infinite;
+    }
+    @keyframes fab-pulse {
+      0%   { transform: scale(1);   opacity: .4; }
+      80%  { transform: scale(1.4); opacity: 0;  }
+      100% { transform: scale(1.4); opacity: 0;  }
+    }
+
+    #fab-chat-panel {
+      position: absolute; bottom: 76px; right: 0;
+      width: 380px; height: 560px; max-height: calc(100vh - 120px);
+      background: var(--bg, #fff); color: var(--text, #0f172a);
+      border: 1px solid var(--border, #e2e8f0);
+      border-radius: 16px;
+      box-shadow: 0 24px 64px rgba(0,0,0,.28);
+      display: flex; flex-direction: column;
+      transform-origin: bottom right;
+      transition: transform .25s cubic-bezier(.34,1.56,.64,1), opacity .2s;
+      overflow: hidden;
+    }
+    #fab-chat-panel.fab-closed {
+      transform: scale(.85) translateY(20px); opacity: 0; pointer-events: none;
+    }
+
+    .fab-head {
+      padding: 14px 16px;
+      background: linear-gradient(135deg, #3b82f6, #6366f1);
+      color: #fff;
+      display: flex; align-items: center; gap: 10px;
+      flex-shrink: 0;
+    }
+    .fab-head-avatar { font-size: 22px; }
+    .fab-head-info   { flex: 1; min-width: 0; }
+    .fab-head-title  { font-weight: 700; font-size: 14px; }
+    .fab-head-sub    { font-size: 11px; opacity: .85; margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .fab-icon-btn {
+      background: rgba(255,255,255,.15); border: none; color: #fff;
+      width: 28px; height: 28px; border-radius: 6px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; font-size: 12px;
+      transition: background .15s; flex-shrink: 0;
+    }
+    .fab-icon-btn:hover { background: rgba(255,255,255,.3); }
+
+    #fab-messages {
+      flex: 1; overflow-y: auto; padding: 14px;
+      background: var(--bg-2, #f8fafc);
+      display: flex; flex-direction: column; gap: 10px;
+    }
+    #fab-messages .ia-msg { display: flex; gap: 8px; align-items: flex-start; }
+    #fab-messages .ia-msg.user { flex-direction: row-reverse; }
+    #fab-messages .ia-msg-avatar {
+      width: 26px; height: 26px; border-radius: 50%;
+      background: #e2e8f0; display: flex; align-items: center; justify-content: center;
+      font-size: 14px; flex-shrink: 0;
+    }
+    #fab-messages .ia-msg.user .ia-msg-avatar { background: #3b82f6; color: #fff; }
+    #fab-messages .ia-msg-bubble {
+      background: #fff; border: 1px solid var(--border, #e2e8f0);
+      padding: 8px 12px; border-radius: 12px; font-size: 13px; line-height: 1.5;
+      max-width: 260px; word-wrap: break-word;
+    }
+    #fab-messages .ia-msg.user .ia-msg-bubble {
+      background: #3b82f6; color: #fff; border-color: #3b82f6;
+    }
+    #fab-messages .ia-msg-time { font-size: 10px; color: #94a3b8; margin-top: 3px; padding: 0 4px; }
+    #fab-messages .ia-msg.user .ia-msg-time { text-align: right; }
+    #fab-messages .ia-typing {
+      background: #fff; border: 1px solid var(--border, #e2e8f0);
+      padding: 10px 14px; border-radius: 12px; font-size: 12px; color: #64748b;
+      display: flex; align-items: center; gap: 8px;
+    }
+    #fab-messages .ia-typing-dots { display: flex; gap: 3px; }
+    #fab-messages .ia-typing-dots span {
+      width: 5px; height: 5px; background: #94a3b8; border-radius: 50%;
+      animation: fab-bounce 1.2s infinite ease-in-out;
+    }
+    #fab-messages .ia-typing-dots span:nth-child(2) { animation-delay: .15s; }
+    #fab-messages .ia-typing-dots span:nth-child(3) { animation-delay: .3s;  }
+    @keyframes fab-bounce { 0%,80%,100% { transform: scale(.6); opacity: .5; } 40% { transform: scale(1); opacity: 1; } }
+
+    .fab-input-area {
+      padding: 10px; border-top: 1px solid var(--border, #e2e8f0);
+      display: flex; gap: 8px; align-items: flex-end;
+      background: var(--bg, #fff); flex-shrink: 0;
+    }
+    #fab-input {
+      flex: 1; resize: none; max-height: 100px; min-height: 38px;
+      border: 1px solid var(--border, #e2e8f0); border-radius: 10px;
+      padding: 9px 12px; font-size: 13px; font-family: inherit;
+      background: var(--bg-2, #f8fafc); color: var(--text, #0f172a);
+      outline: none; transition: border-color .15s;
+    }
+    #fab-input:focus { border-color: #3b82f6; }
+    .fab-send-btn {
+      width: 38px; height: 38px; border-radius: 10px; border: none;
+      background: #3b82f6; color: #fff; cursor: pointer; font-size: 13px;
+      display: flex; align-items: center; justify-content: center;
+      transition: background .15s, transform .1s; flex-shrink: 0;
+    }
+    .fab-send-btn:hover   { background: #2563eb; }
+    .fab-send-btn:active  { transform: scale(.92); }
+    .fab-send-btn:disabled { background: #94a3b8; cursor: not-allowed; }
+
+    @media (max-width: 640px) {
+      #fab-chat-wrapper { right: 16px; bottom: 16px; }
+      #fab-chat-panel {
+        width: calc(100vw - 32px); height: calc(100vh - 110px);
+        bottom: 76px; right: 0;
+      }
+      #fab-toggle-btn { width: 54px; height: 54px; font-size: 22px; }
+    }
+  </style>
+
+  <div id="fab-chat-wrapper">
+    <!-- Painel do chat (fechado por padrão) -->
+    <div id="fab-chat-panel" class="fab-closed">
+      <div class="fab-head">
+        <div class="fab-head-avatar">🤖</div>
+        <div class="fab-head-info">
+          <div class="fab-head-title">Assistente TaskFlow</div>
+          <div class="fab-head-sub" id="fab-head-sub">Como posso ajudar?</div>
+        </div>
+        <button class="fab-icon-btn" onclick="fabLimpar()" title="Limpar conversa"><i class="fa-solid fa-trash-can"></i></button>
+        <button class="fab-icon-btn" onclick="fabToggle()" title="Fechar"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div id="fab-messages"></div>
+      <div class="fab-input-area">
+        <textarea id="fab-input" placeholder="Pergunte sobre o sistema ou seus projetos..." rows="1" onkeydown="fabKeyDown(event)"></textarea>
+        <button id="fab-send-btn" class="fab-send-btn" onclick="fabEnviar()"><i class="fa-solid fa-paper-plane"></i></button>
+      </div>
+    </div>
+
+    <!-- Botão flutuante -->
+    <button id="fab-toggle-btn" onclick="fabToggle()" title="Assistente IA">
+      <span id="fab-icon-closed">💬</span>
+      <span id="fab-icon-open" style="display:none;"><i class="fa-solid fa-xmark"></i></span>
+    </button>
+  </div>
+
+  <script>
+    /* ── Estado do chat flutuante ─────────────────── */
+    let fabOpen   = false;
+    let fabTyping = false;
+
+    function fabToggle() {
+      const panel      = document.getElementById('fab-chat-panel');
+      const iconClosed = document.getElementById('fab-icon-closed');
+      const iconOpen   = document.getElementById('fab-icon-open');
+      fabOpen = !fabOpen;
+      if (fabOpen) {
+        panel.classList.remove('fab-closed');
+        iconClosed.style.display = 'none';
+        iconOpen.style.display   = '';
+        fabRenderHistorico();
+        setTimeout(() => document.getElementById('fab-input')?.focus(), 260);
+      } else {
+        panel.classList.add('fab-closed');
+        iconClosed.style.display = '';
+        iconOpen.style.display   = 'none';
+      }
+    }
+
+    /* Re-renderiza o histórico APENAS no fab-messages (sem duplicar no tab) */
+    function fabRenderHistorico() {
+      const wrap = document.getElementById('fab-messages');
+      if (!wrap) return;
+
+      // Carrega do localStorage se ainda vazio em memória
+      if (typeof iaChatHistory !== 'undefined' && iaChatHistory.length === 0) {
+        if (typeof iaCarregarHistorico === 'function') iaCarregarHistorico();
+      }
+
+      wrap.innerHTML = '';
+      const hist = (typeof iaChatHistory !== 'undefined') ? iaChatHistory : [];
+
+      if (hist.length === 0) {
+        // Boas-vindas contextualizada
+        const t = (typeof activities !== 'undefined') ? activities.length : 0;
+        const p = (typeof projects   !== 'undefined') ? projects.length   : 0;
+        let boas = 'Olá! Sou o assistente do TaskFlow PRO. 👋\n\n';
+        boas += 'Posso te ajudar com:\n';
+        boas += '- **Dúvidas sobre o sistema** — onde fica cada recurso, como usar\n';
+        boas += '- **Seus projetos** — analisar, criar, reorganizar atividades\n';
+        boas += '- **Análises** — prazos, riscos, sobrecarga de equipe\n\n';
+        if (t > 0) boas += `📊 Você tem **${p} projeto(s)** e **${t} atividade(s)** carregadas.\n\n`;
+        boas += 'O que você quer saber?';
+        fabRenderOnly('ia', boas);
+      } else {
+        hist.forEach(m => {
+          const texto = (typeof iaStripAnexos === 'function') ? iaStripAnexos(m.content) : String(m.content || '');
+          fabRenderOnly(m.role === 'user' ? 'user' : 'ia', texto);
+        });
+      }
+
+      // Subtítulo do header
+      const sub = document.getElementById('fab-head-sub');
+      if (sub) {
+        const t = (typeof activities !== 'undefined') ? activities.length : 0;
+        const p = (typeof projects   !== 'undefined') ? projects.length   : 0;
+        sub.textContent = t > 0 ? `${p} projeto(s) · ${t} atividade(s)` : 'Como posso ajudar?';
+      }
+    }
+
+    /* Renderiza mensagem APENAS no fab-messages (sem broadcast ao tab) */
+    function fabRenderOnly(role, texto) {
+      const wrap = document.getElementById('fab-messages');
+      if (!wrap) return;
+      const hora = new Date().toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'});
+      const html = (typeof iaRenderMarkdown === 'function') ? iaRenderMarkdown(texto) : texto;
+      const el = document.createElement('div');
+      el.className = 'ia-msg ' + role;
+      el.innerHTML = `
+        <div class="ia-msg-avatar">${role === 'ia' ? '🤖' : '<i class="fa-solid fa-user" style="font-size:10px"></i>'}</div>
+        <div>
+          <div class="ia-msg-bubble">${html}</div>
+          <div class="ia-msg-time">${hora}</div>
+        </div>`;
+      wrap.appendChild(el);
+      wrap.scrollTop = wrap.scrollHeight;
+    }
+
+    function fabKeyDown(e) {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        fabEnviar();
+        return;
+      }
+      // auto-resize
+      setTimeout(() => {
+        const el = document.getElementById('fab-input');
+        if (el) { el.style.height = 'auto'; el.style.height = Math.min(el.scrollHeight, 100) + 'px'; }
+      }, 0);
+    }
+
+    async function fabEnviar() {
+      const input = document.getElementById('fab-input');
+      const texto = input.value.trim();
+      if (!texto || fabTyping) return;
+
+      const apiKey = iaGetApiKey();
+      if (!apiKey) {
+        iaAddMessage('ia', '⚠️ Você precisa informar sua API Key da Anthropic. Vá em **Importar → PDF com IA** e cole sua chave lá.');
+        return;
+      }
+
+      // iaAddMessage faz broadcast para fab-messages E ia-chat-messages
+      iaAddMessage('user', texto);
+      input.value = '';
+      input.style.height = 'auto';
+
+      iaChatHistory.push({ role: 'user', content: texto });
+      iaSalvarHistorico();
+
+      fabTyping = true;
+      document.getElementById('fab-send-btn').disabled = true;
+      const typingEl = iaShowTyping();
+
+      try {
+        const res = await fetch('https://api.anthropic.com/v1/messages', {
+          method: 'POST',
+          headers: {
+            'Content-Type':       'application/json',
+            'x-api-key':          apiKey,
+            'anthropic-version':  '2023-06-01',
+            'anthropic-dangerous-direct-browser-access': 'true',
+          },
+          body: JSON.stringify({
+            model:      'claude-sonnet-4-6',
+            max_tokens: 3000,
+            system:     iaGerarSystemPrompt(),
+            messages:   iaPrepararMessagesParaEnvio(),
+          })
+        });
+
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          throw new Error(iaTraduzirErro(res.status, err.error?.message));
+        }
+
+        const data     = await res.json();
+        const resposta = data.content.find(b => b.type === 'text')?.text || '';
+
+        iaChatHistory.push({ role: 'assistant', content: resposta });
+        iaSalvarHistorico();
+
+        typingEl.remove();
+
+        // Se houver bloco JSON de criação de atividades, mostra só o texto no chat
+        const textoMsg = resposta.split('===JSON===')[0].trim();
+        iaAddMessage('ia', textoMsg);
+
+      } catch (err) {
+        typingEl.remove();
+        const msgFinal = err.message && err.message.startsWith('Failed to fetch')
+          ? iaTraduzirErro(0, err.message)
+          : (err.message || 'Erro desconhecido');
+        iaAddMessage('ia', msgFinal);
+      } finally {
+        fabTyping = false;
+        const btn = document.getElementById('fab-send-btn');
+        if (btn) btn.disabled = false;
+      }
+    }
+
+    function fabLimpar() {
+      if (iaChatHistory.length === 0) return;
+      if (confirm('Apagar toda a conversa com o assistente?')) {
+        iaChatHistory = [];
+        localStorage.removeItem(IA_HISTORY_KEY);
+        const fab = document.getElementById('fab-messages');
+        const tab = document.getElementById('ia-chat-messages');
+        if (fab) fab.innerHTML = '';
+        if (tab) tab.innerHTML = '';
+        fabRenderHistorico();
+        if (typeof toast === 'function') toast('Conversa limpa', 'success');
+      }
+    }
+  </script>
 
 </body>
 </html>
