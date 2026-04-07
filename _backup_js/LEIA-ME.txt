@@ -1,0 +1,18 @@
+ARQUIVOS .JS DE BACKUP
+======================
+
+Estes arquivos NÃO são carregados pelo index.html.
+Todo o JavaScript do app está embutido dentro do próprio index.html
+(em uma tag <script> a partir da linha ~2859).
+
+Eles ficam aqui como referência/backup. Se você quiser um dia
+externalizar o JS, é só mover de volta para a raiz e adicionar:
+
+  <script src="app.js"></script>
+  <script src="script.js"></script>
+  ...
+
+dentro da tag <head> do index.html.
+
+NÃO APAGUE sem ter certeza — o app.js já está atualizado com o
+botão de excluir do Gantt (caso você externalize o JS no futuro).
