@@ -247,7 +247,7 @@ CREATE TABLE ausencias (
   funcionario_id INT UNSIGNED NOT NULL,
   inicio         DATE NOT NULL,
   fim            DATE NOT NULL,
-  tipo           ENUM('Folga','Férias','Treinamento','Outra atividade') NOT NULL,
+  tipo           ENUM('Folga','Férias','Treinamento','Outra atividade','Afastamento – doença ou acidente','Afastamento – outro motivo') NOT NULL,
   detalhe        VARCHAR(200) NULL,
   criado_por     INT UNSIGNED NULL,
   criado_em      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -262,19 +262,29 @@ CREATE TABLE ausencias (
 CREATE TABLE tipos_documento (
   id             INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   empresa_id     INT UNSIGNED NULL,               -- NULL = catálogo padrão do sistema
-  nr             VARCHAR(10)  NULL,               -- 'NR-10'; NULL = documento interno
-  nome           VARCHAR(160) NOT NULL,           -- 'NR-10 Básico (SEP: ver complementar)'
+  nr             VARCHAR(10)  NULL,               -- 'NR-10'; NULL = documento fora das NRs
+  nome           VARCHAR(160) NOT NULL,
   categoria      ENUM('treinamento','exame','autorizacao','ficha','outro') NOT NULL,
-  validade_meses SMALLINT UNSIGNED NULL,          -- NULL = sem prazo fixo na norma
-  prazo_origem   ENUM('norma','empresa','sem_validade','a_confirmar') NOT NULL,
-  referencia     VARCHAR(80)  NULL,               -- item da norma
+  -- Prazo: sempre o da NR. 'norma' fica travado (ver travas.sql e o servidor).
+  prazo_origem   ENUM('norma','sem_prazo_na_norma','sem_validade','validade_no_documento','empresa_preenche') NOT NULL,
+  prazo_valor    SMALLINT UNSIGNED NULL,
+  prazo_unidade  ENUM('dias','meses','anos') NULL,
+  referencia     VARCHAR(80)  NULL,               -- item da norma (só quando conferido)
+  -- Gatilho: o documento deixa de valer depois de um afastamento longo
+  gatilho_afastamento_dias SMALLINT UNSIGNED NULL,  -- vale a partir deste nº de dias
+  gatilho_motivo ENUM('qualquer','doenca_acidente') NULL,
+  gatilho_referencia VARCHAR(80) NULL,
+  observacao     VARCHAR(255) NULL,
   bloqueia_alocacao TINYINT(1) NOT NULL DEFAULT 1,
   aviso_dias     SMALLINT UNSIGNED NOT NULL DEFAULT 30,
   ativo          TINYINT(1) NOT NULL DEFAULT 1,
-  substitui_id   INT UNSIGNED NULL,               -- versão da empresa de um item do catálogo
+  substitui_id   INT UNSIGNED NULL,               -- cópia da empresa de um item do catálogo
   criado_em      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   atualizado_em  DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   KEY ix_tipos_empresa (empresa_id, nr),
+  CONSTRAINT ck_tipos_prazo_norma CHECK (prazo_origem <> 'norma' OR (prazo_valor IS NOT NULL AND prazo_unidade IS NOT NULL)),
+  CONSTRAINT ck_tipos_prazo_par CHECK ((prazo_valor IS NULL) = (prazo_unidade IS NULL)),
+  CONSTRAINT ck_tipos_gatilho_par CHECK ((gatilho_afastamento_dias IS NULL) = (gatilho_motivo IS NULL)),
   CONSTRAINT fk_tipos_empresa FOREIGN KEY (empresa_id) REFERENCES empresas(id),
   CONSTRAINT fk_tipos_subst FOREIGN KEY (substitui_id) REFERENCES tipos_documento(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -300,7 +310,7 @@ CREATE TABLE documentos_funcionario (
   funcionario_id INT UNSIGNED NOT NULL,
   tipo_documento_id INT UNSIGNED NOT NULL,
   emissao        DATE NULL,
-  validade       DATE NULL,                       -- calculada pela emissão + validade_meses; pode ser corrigida
+  validade       DATE NULL,                       -- emissão + prazo da NR; digitada só quando a validade vem no documento
   instituicao    VARCHAR(160) NULL,
   carga_horaria  DECIMAL(5,1) NULL,
   apto           TINYINT(1) NULL,                 -- só para ASO; nunca o laudo
@@ -486,5 +496,31 @@ CREATE TABLE historico (
   CONSTRAINT fk_hist_empresa FOREIGN KEY (empresa_id) REFERENCES empresas(id),
   CONSTRAINT fk_hist_usuario FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ── Situação de cada documento (usada pelos alertas e pelo bloqueio de alocação) ──
+CREATE VIEW v_documentos_situacao AS
+SELECT d.id, d.empresa_id, d.funcionario_id, d.tipo_documento_id, t.nr, t.nome AS documento,
+       t.prazo_origem, d.emissao,
+       CASE
+         WHEN t.prazo_origem IN ('sem_validade','sem_prazo_na_norma') THEN NULL
+         WHEN t.prazo_origem = 'validade_no_documento' THEN d.validade
+         WHEN t.prazo_unidade = 'dias'  THEN DATE_ADD(d.emissao, INTERVAL t.prazo_valor DAY)
+         WHEN t.prazo_unidade = 'meses' THEN DATE_ADD(d.emissao, INTERVAL t.prazo_valor MONTH)
+         WHEN t.prazo_unidade = 'anos'  THEN DATE_ADD(d.emissao, INTERVAL t.prazo_valor YEAR)
+         ELSE d.validade
+       END AS vence_em,
+       (t.prazo_origem = 'empresa_preenche' AND t.prazo_valor IS NULL) AS prazo_pendente,
+       EXISTS (
+         SELECT 1 FROM ausencias a
+         WHERE a.funcionario_id = d.funcionario_id AND a.excluido_em IS NULL
+           AND a.inicio > d.emissao
+           AND t.gatilho_afastamento_dias IS NOT NULL
+           AND (a.tipo = 'Afastamento – doença ou acidente'
+                OR (t.gatilho_motivo = 'qualquer' AND a.tipo = 'Afastamento – outro motivo'))
+           AND DATEDIFF(a.fim, a.inicio) + 1 >= t.gatilho_afastamento_dias
+       ) AS invalidado_por_afastamento
+FROM documentos_funcionario d
+JOIN tipos_documento t ON t.id = d.tipo_documento_id
+WHERE d.excluido_em IS NULL;
 
 SET FOREIGN_KEY_CHECKS = 1;
