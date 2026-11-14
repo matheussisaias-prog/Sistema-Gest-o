@@ -25,7 +25,7 @@ with sync_playwright() as p:
     pg.fill("#a-nome", "Wendell Xavier"); pg.fill("#a-email", "wendell@rawtech.test"); pg.fill("#a-senha", "curta")
     pg.click("#f-admin button[type=submit]"); check("Recusa senha curta", "8 caracteres" in pg.inner_text("#aviso"))
     pg.fill("#a-senha", "Senha-Forte-2026"); check("Medidor de força da senha", pg.get_attribute("#a-senha >> xpath=../../div[@class='forca']", "data-n") in ("3","4"))
-    pg.click("#f-admin button[type=submit]"); check("Passo 3 (equipe) com 2 linhas", pg.is_visible("#v-cadastro-3") and pg.locator(".pessoa").count() == 2)
+    pg.click("#f-admin button[type=submit]"); pg.wait_for_selector("#v-cadastro-3:not([hidden]) .pessoa"); check("Passo 3 (equipe) com 2 linhas", pg.is_visible("#v-cadastro-3") and pg.locator(".pessoa").count() == 2)
     linhas = pg.locator(".pessoa")
     linhas.nth(0).locator(".p-nome").fill("João Paulo"); linhas.nth(0).locator(".p-cargo").fill("Encarregado"); linhas.nth(0).locator(".p-perfil").select_option("encarregado"); linhas.nth(0).locator(".p-email").fill("jp@rawtech.test")
     linhas.nth(1).locator(".p-nome").fill("Carlos"); linhas.nth(1).locator(".p-cargo").fill("Ajudante")
