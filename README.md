@@ -45,3 +45,13 @@ calendario-taskflow.html   calendário de atividades avulso (versão antiga, aut
 - Uma função só pode ser chamada **no carregamento** (fora de outra função) se o arquivo dela já tiver sido carregado.
   Dentro de funções e no `DOMContentLoaded`, qualquer função de qualquer arquivo pode ser usada.
 - Cada função existe em um só lugar. Não redefinir funções com `window.x = ...` por cima de outra versão.
+
+
+## Servidor (Fase 1)
+
+- `api/` — servidor em PHP. Toda chamada passa por `api/index.php`; `api/lib/` não abre pelo navegador.
+- `db/schema.sql` (24 tabelas), `db/catalogo_nrs.sql` (43 documentos de NR), `db/travas.sql` (prazo da NR travado). A pasta `db/` não abre pelo navegador.
+- Configuração: `tf-config.php` fica na pasta do domínio, **ao lado** do `public_html` (modelo em `db/tf-config.exemplo.php`). Nunca colocar a senha do banco no repositório.
+- Primeira instalação: `POST /api/instalar` com o `instalar_token` do `tf-config.php`; depois apagar o token.
+- Testes: `testes/teste_api.py` (57 verificações de ponta a ponta) e `db/teste_banco.sh` (37 regras do banco).
+- Regras: toda consulta filtra pela empresa de quem está logado; toda escrita grava no `historico` com o autor; sessões em cookie HttpOnly + SameSite=Strict; o servidor só aceita JSON.

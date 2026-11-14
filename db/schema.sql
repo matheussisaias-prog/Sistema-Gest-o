@@ -41,6 +41,9 @@ CREATE TABLE usuarios (
   funcionario_id INT UNSIGNED NULL,
   microsoft_id   VARCHAR(64)  NULL,
   email_confirmado_em DATETIME NULL,
+  acao_token_hash CHAR(64) NULL,                  -- link de confirmar e-mail ou redefinir senha
+  acao_tipo      ENUM('confirmar_email','redefinir_senha') NULL,
+  acao_expira    DATETIME NULL,
   tentativas_erradas TINYINT UNSIGNED NOT NULL DEFAULT 0,
   bloqueado_ate  DATETIME NULL,
   ultimo_acesso  DATETIME NULL,
@@ -50,6 +53,7 @@ CREATE TABLE usuarios (
   excluido_em    DATETIME NULL,
   UNIQUE KEY uq_usuarios_email (email),
   UNIQUE KEY uq_usuarios_microsoft (microsoft_id),
+  UNIQUE KEY uq_usuarios_acao (acao_token_hash),
   KEY ix_usuarios_empresa (empresa_id),
   CONSTRAINT fk_usuarios_empresa FOREIGN KEY (empresa_id) REFERENCES empresas(id),
   CONSTRAINT fk_usuarios_funcionario FOREIGN KEY (funcionario_id) REFERENCES funcionarios(id)
