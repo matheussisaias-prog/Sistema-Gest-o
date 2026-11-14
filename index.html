@@ -2736,6 +2736,12 @@ select.form-control { cursor: pointer; }
         </div>
       </div>
       <div class="form-group">
+        <label class="form-label" for="act-critical" style="display:flex;align-items:center;gap:8px;cursor:pointer">
+          <input type="checkbox" id="act-critical" style="width:16px;height:16px;cursor:pointer"/>
+          Atividade crítica (caminho crítico)
+        </label>
+      </div>
+      <div class="form-group">
         <label class="form-label">Observações</label>
         <input class="form-control" id="act-obs" placeholder="Notas adicionais..."/>
       </div>
@@ -2911,34 +2917,19 @@ function isGistSyncEnabled() {
 }
 
 function backupAndResetStaleBrowserData() {
+  // Antes: ao mudar APP_VERSION, apagava atividades e projetos do navegador.
+  // Agora: so registra a versao nova e guarda uma copia de seguranca. Nenhum dado e apagado.
   try {
     const current = localStorage.getItem(STORAGE_VERSION_KEY);
     if (current === APP_VERSION) return;
-
-    const keysToReset = [
-      'tf_activities','tf_projects','taskflow_activities','taskflow_pro_activities',
-      'taskflow_pro_projects','taskflow_pro_colabs','taskflow_pro_history',
-      'taskflow_history','taskflow_projects','taskflow_colabs'
-    ];
-
     const backup = {};
-    keysToReset.forEach((key) => {
-      const value = localStorage.getItem(key);
-      if (value !== null) backup[key] = value;
-    });
-
+    ['tf_activities','tf_projects'].forEach((key) => { const v = localStorage.getItem(key); if (v !== null) backup[key] = v; });
     if (Object.keys(backup).length) {
-      localStorage.setItem(`tf_backup_${Date.now()}`, JSON.stringify({
-        versionBeforeReset: current || 'desconhecida',
-        backup
-      }));
+      localStorage.setItem('tf_backup_ultima_versao', JSON.stringify({ versaoAnterior: current || 'desconhecida', data: new Date().toISOString(), backup }));
     }
-
-    keysToReset.forEach((key) => localStorage.removeItem(key));
     localStorage.setItem(STORAGE_VERSION_KEY, APP_VERSION);
-    window.__tfStorageWasReset = Object.keys(backup).length > 0;
   } catch (e) {
-    console.warn('Storage version reset error:', e);
+    console.warn('Storage version check error:', e);
   }
 }
 
@@ -3678,6 +3669,7 @@ window._openModalActivity = function() {
     document.getElementById('act-due').value   = '';
     document.getElementById('act-status').value   = 'Pendente';
     document.getElementById('act-progress').value = 0;
+    { const c = document.getElementById('act-critical'); if (c) c.checked = false; }
     document.getElementById('modal-activity').classList.add('open');
     setTimeout(()=>document.getElementById('act-description')?.focus(),100);
 };
@@ -3709,6 +3701,7 @@ function editAct(id) {
   document.getElementById('act-status').value      = a.status||'Pendente';
   document.getElementById('act-progress').value    = a.progress||0;
   document.getElementById('act-obs').value         = a.obs||'';
+  { const c = document.getElementById('act-critical'); if (c) c.checked = !!a.isCritical; }
   const durHEl = document.getElementById('act-duration-h');
   if (durHEl) durHEl.value = a.durationH || '';
   document.getElementById('calc-result').style.display = 'none';
@@ -3734,7 +3727,7 @@ function saveActivity() {
     status:      document.getElementById('act-status').value,
     progress:    parseInt(document.getElementById('act-progress').value)||0,
     obs:         document.getElementById('act-obs').value.trim(),
-    isCritical:  false,
+    isCritical:  !!document.getElementById('act-critical')?.checked,
     duration:    durStr,
     durationH:   parseFloat(horasVal)||0,
   };
@@ -6389,6 +6382,7 @@ window.calcDurFromDates = calcDurFromDates;
     document.getElementById('act-due').value = '';
     document.getElementById('act-status').value = 'Pendente';
     document.getElementById('act-progress').value = 0;
+    { const c = document.getElementById('act-critical'); if (c) c.checked = false; }
     document.getElementById('modal-activity').classList.add('open');
     setTimeout(()=>document.getElementById('act-description')?.focus(),100);
   };
@@ -6408,6 +6402,7 @@ window.calcDurFromDates = calcDurFromDates;
     document.getElementById('act-progress').value = a.progress||0;
     document.getElementById('act-obs').value = a.obs||'';
     document.getElementById('act-parent-id').value = a.parentId || '';
+    { const c = document.getElementById('act-critical'); if (c) c.checked = !!a.isCritical; }
     const durHEl = document.getElementById('act-duration-h');
     if (durHEl) durHEl.value = a.durationH || '';
     document.getElementById('calc-result').style.display = 'none';
@@ -6433,7 +6428,7 @@ window.calcDurFromDates = calcDurFromDates;
       status: document.getElementById('act-status').value,
       progress: parseInt(document.getElementById('act-progress').value)||0,
       obs: document.getElementById('act-obs').value.trim(),
-      isCritical: false,
+      isCritical: !!document.getElementById('act-critical')?.checked,
       duration: durStr,
       durationH: parseFloat(horasVal)||0,
       parentId: document.getElementById('act-parent-id')?.value || ''

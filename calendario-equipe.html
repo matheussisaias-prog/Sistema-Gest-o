@@ -830,9 +830,9 @@ input[type=color] { padding:3px 6px; height:36px; cursor:pointer; }
                     </tr>
                   </thead>
                   <tbody>
-                    <tr class="ex-row row-blue"><td><strong>WENDELL XAVIER</strong></td><td>Gerente de Projetos</td><td>Equipe 01</td><td><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="b5c2d0dbd1d0d9d9f5d0d8c5c7d0c6d49bd6dad8">[email&#160;protected]</a></td><td>55 85 99999-0001</td><td><span class="color-chip" style="background:#1D4ED8">#1D4ED8</span></td><td><span class="status-chip chip-ativo">Ativo</span></td><td>Gerente geral</td></tr>
-                    <tr class="ex-row row-green"><td><strong>PAULO MELO</strong></td><td>Eng. Mecânico</td><td>Equipe 02</td><td><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="562637233a3916333b26243325377835393b">[email&#160;protected]</a></td><td>55 85 99999-0002</td><td><span class="color-chip" style="background:#059669">#059669</span></td><td><span class="status-chip chip-ativo">Ativo</span></td><td>Projetos mecânicos</td></tr>
-                    <tr class="ex-row row-amber"><td><strong>CAROLINE BERNARDO</strong></td><td>Analista Compras</td><td>Equipe 03</td><td><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="2d4e4c5f42416d48405d5f485e4c034e4240">[email&#160;protected]</a></td><td>55 85 99999-0003</td><td><span class="color-chip" style="background:#D97706">#D97706</span></td><td><span class="status-chip chip-ativo">Ativo</span></td><td>Aquisições</td></tr>
+                    <tr class="ex-row row-blue"><td><strong>WENDELL XAVIER</strong></td><td>Gerente de Projetos</td><td>Equipe 01</td><td>wendell@empresa.com</td><td>55 85 99999-0001</td><td><span class="color-chip" style="background:#1D4ED8">#1D4ED8</span></td><td><span class="status-chip chip-ativo">Ativo</span></td><td>Gerente geral</td></tr>
+                    <tr class="ex-row row-green"><td><strong>PAULO MELO</strong></td><td>Eng. Mecânico</td><td>Equipe 02</td><td>paulo@empresa.com</td><td>55 85 99999-0002</td><td><span class="color-chip" style="background:#059669">#059669</span></td><td><span class="status-chip chip-ativo">Ativo</span></td><td>Projetos mecânicos</td></tr>
+                    <tr class="ex-row row-amber"><td><strong>CAROLINE BERNARDO</strong></td><td>Analista Compras</td><td>Equipe 03</td><td>carol@empresa.com</td><td>55 85 99999-0003</td><td><span class="color-chip" style="background:#D97706">#D97706</span></td><td><span class="status-chip chip-ativo">Ativo</span></td><td>Aquisições</td></tr>
                     <tr class="ex-row empty-row"><td colspan="8" style="color:var(--text3);font-style:italic;font-size:.72rem">← Adicione seus funcionários abaixo desta linha →</td></tr>
                   </tbody>
                 </table>
@@ -1101,7 +1101,7 @@ input[type=color] { padding:3px 6px; height:36px; cursor:pointer; }
 
 <div class="toast" id="toast"></div>
 
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+<script>
 'use strict';
 
 /* ══════════════════════════════════════════════
@@ -2176,4 +2176,14 @@ document.addEventListener('DOMContentLoaded',()=>{
   updateClock();
   setInterval(updateClock,1000);
   setInterval(()=>{renderCal();},5*60*1000);
-  document.addEventListener('keydown',
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') {
+      closeModalEmp();
+      closeModalRotina();
+      closeLocPopup();
+    }
+  });
+});
+</script>
+</body>
+</html>
