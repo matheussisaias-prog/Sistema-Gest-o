@@ -1,0 +1,13 @@
+# TaskFlow PRO — regras de cache (Hostinger / LiteSpeed)
+# Páginas HTML: o navegador sempre confere se há versão nova antes de usar a guardada.
+# JS e CSS: podem ficar guardados por 1 dia; a cada publicação o ?v= muda e força o download.
+<IfModule mod_headers.c>
+  <FilesMatch "\.html?$">
+    Header set Cache-Control "no-cache, must-revalidate"
+  </FilesMatch>
+  <FilesMatch "\.(js|css)$">
+    Header set Cache-Control "public, max-age=86400"
+  </FilesMatch>
+</IfModule>
+
+DirectoryIndex index.html
