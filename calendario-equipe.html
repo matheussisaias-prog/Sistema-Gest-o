@@ -1876,7 +1876,7 @@ function updateSelects() {
 
   // Projetos datalist (do taskflow)
   try {
-    const acts=JSON.parse(localStorage.getItem('taskflow_activities')||'[]');
+    const acts=JSON.parse(localStorage.getItem('tf_activities')||'[]');
     const projs=[...new Set(acts.map(a=>a.project).filter(Boolean))].sort();
     const dl=document.getElementById('projetos-rot-list');
     if(dl) dl.innerHTML=projs.map(p=>`<option value="${esc(p)}">`).join('');

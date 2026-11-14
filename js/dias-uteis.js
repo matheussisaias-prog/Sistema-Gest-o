@@ -165,10 +165,10 @@ function addDiasUteis(startISO, nDias) {
   let count = 0;
   while (count < nDias) {
     d.setDate(d.getDate() + 1);
-    const iso = d.toISOString().slice(0,10);
+    const iso = dataLocalISO(d);
     if (isDiaUtil(iso)) count++;
   }
-  return d.toISOString().slice(0,10);
+  return dataLocalISO(d);
 }
 
 /** Conta horas úteis entre duas datas */
@@ -179,7 +179,7 @@ function horasUteisEntre(startISO, endISO) {
   const fim     = new Date(endISO   + 'T00:00:00');
   let diasUteis = 0;
   while (cur <= fim) {
-    const iso = cur.toISOString().slice(0,10);
+    const iso = dataLocalISO(cur);
     if (isDiaUtil(iso)) diasUteis++;
     cur.setDate(cur.getDate() + 1);
   }
@@ -226,7 +226,7 @@ function calcPrazo() {
   let cur = new Date(start + 'T00:00:00');
   const fimD = new Date(fim + 'T00:00:00');
   while (cur <= fimD) {
-    const iso = cur.toISOString().slice(0,10);
+    const iso = dataLocalISO(cur);
     const dow = cur.getDay();
     if (cfg2.diasUteis.includes(dow) && cfg2.feriados.find(f=>f.date===iso)) feriadosNoPeriodo++;
     cur.setDate(cur.getDate()+1);

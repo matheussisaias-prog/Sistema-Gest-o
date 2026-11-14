@@ -240,7 +240,7 @@
           <div class="card">
             <div class="card-header">
               <i class="fa-solid fa-robot" style="color:var(--amber);font-size:.85rem"></i>
-              <span class="card-title">Recomendações IA</span>
+              <span class="card-title">Alertas e recomendações</span>
             </div>
             <div class="card-body" style="padding:12px 14px">
               <div class="alert-list" id="alert-list">
@@ -1073,6 +1073,51 @@
     <div class="modal-footer">
       <button class="btn-secondary" onclick="closeModal('modal-config-cal')">Cancelar</button>
       <button class="btn-primary" onclick="saveCalConfig()"><i class="fa-solid fa-floppy-disk"></i> Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: STATUS DA EQUIPE -->
+<div class="modal-overlay" id="modal-team-status" onclick="closeModalOutside(event,'modal-team-status')">
+  <div class="modal" style="max-width:460px">
+    <div class="modal-header">
+      <i class="fa-solid fa-user-clock" style="color:var(--green)"></i>
+      <span class="modal-title">Lançar status da equipe</span>
+      <button class="modal-close" onclick="closeModal('modal-team-status')" aria-label="Fechar"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label" for="ts-pessoa">Funcionário <span class="req">*</span></label>
+        <select class="form-control" id="ts-pessoa"></select>
+      </div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label" for="ts-inicio">De <span class="req">*</span></label>
+          <input class="form-control" type="date" id="ts-inicio"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="ts-fim">Até (opcional)</label>
+          <input class="form-control" type="date" id="ts-fim"/>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="ts-tipo">Status</label>
+        <select class="form-control" id="ts-tipo">
+          <option>Folga</option>
+          <option>Férias</option>
+          <option>Treinamento</option>
+          <option>Outra atividade</option>
+          <option value="__limpar">Limpar (voltar a livre)</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="ts-detalhe">Detalhe (opcional)</label>
+        <input class="form-control" id="ts-detalhe" placeholder="Ex.: visita técnica, apoio na RETIFICA 02"/>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeModal('modal-team-status')">Cancelar</button>
+      <button class="btn-primary" onclick="saveTeamStatus()"><i class="fa-solid fa-floppy-disk"></i> Salvar</button>
     </div>
   </div>
 </div>

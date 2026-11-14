@@ -6,7 +6,10 @@
 /* ══════════════════════════════════════════════════
    UTILS
 ══════════════════════════════════════════════════ */
-function todayISO() { return new Date().toISOString().slice(0,10); }
+function todayISO() {
+  // Data local (antes usava UTC: no Brasil, depois das 21h já virava o dia seguinte)
+  return dataLocalISO(new Date());
+}
 
 function diffDays(iso) {
   if (!iso) return 999;

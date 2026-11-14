@@ -230,6 +230,9 @@ function renderChartDonut() {
 }
 
 function renderFullCharts() {
+  // Recria os gráficos a cada exibição para refletir os dados atuais (antes eram montados uma vez só)
+  [chartStatusFull, chartTeamFull, chartProjFull].forEach(c => { if (c) c.destroy(); });
+  chartStatusFull = null; chartTeamFull = null; chartProjFull = null;
   const c1 = document.getElementById('chart-status-full');
   const c2 = document.getElementById('chart-team-full');
   const c3 = document.getElementById('chart-proj-full');

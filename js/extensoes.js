@@ -81,8 +81,19 @@
     localStorage.setItem(STORAGE_TEAMCAL, JSON.stringify(teamCalendar));
     localStorage.setItem(STORAGE_RESOURCES, JSON.stringify(resourceRegistry));
   }
-  window.load = function(){ originalLoad(); loadExtraStores(); };
-  window.save = function(){ buildEmployeeDatabase(); originalSave(); saveExtraStores(); scheduleGistSave(); };
+  // Liga cada atividade ao projeto pelo id; o nome do projeto passa a ser derivado do id.
+  // Atividades antigas (só com nome) ganham o id na primeira gravação.
+  function vincularAtividadesProjetos(){
+    const porId = new Map(projects.map(p => [p.id, p]));
+    const porNome = new Map(projects.map(p => [p.name, p]));
+    activities.forEach(a => {
+      const p = (a.projectId && porId.get(a.projectId)) || porNome.get(a.project);
+      if (p) { a.projectId = p.id; a.project = p.name; }
+    });
+  }
+  window.vincularAtividadesProjetos = vincularAtividadesProjetos;
+  window.load = function(){ originalLoad(); loadExtraStores(); vincularAtividadesProjetos(); };
+  window.save = function(){ vincularAtividadesProjetos(); buildEmployeeDatabase(); originalSave(); saveExtraStores(); scheduleGistSave(); };
 
   function ensureProjectStatusOptions(){
     const sel = document.getElementById('proj-status');
@@ -201,7 +212,8 @@
       isCritical: !!document.getElementById('act-critical')?.checked,
       duration: durStr,
       durationH: parseFloat(horasVal)||0,
-      parentId: document.getElementById('act-parent-id')?.value || ''
+      parentId: document.getElementById('act-parent-id')?.value || '',
+      projectId: (projects.find(p => p.name === proj) || {}).id
     };
     if (editingActId) {
       const idx = activities.findIndex(a=>a.id===editingActId);
@@ -242,7 +254,7 @@
       const idx = projects.findIndex(p=>p.id===editingProjId);
       const oldName = idx>=0 ? projects[idx].name : name;
       if (idx>=0) projects[idx] = {...projects[idx], ...data};
-      if (oldName !== name) activities.forEach(a => { if (a.project === oldName) a.project = name; });
+      activities.forEach(a => { if (a.projectId === editingProjId || a.project === oldName) { a.project = name; a.projectId = editingProjId; } });
       toast('✓ Projeto atualizado', 'success');
     } else {
       projects.push({ id:uid(), progress:0, ...data });
@@ -1950,7 +1962,7 @@ ${(asgNome || asgCargo) ? `
     const totalW    = totalDays * pxPerDay;
 
     document.getElementById('gantt-range').textContent =
-      `${fmtDate(minDate.toISOString().slice(0,10))} → ${fmtDate(maxDate.toISOString().slice(0,10))}`;
+      `${fmtDate(dataLocalISO(minDate))} → ${fmtDate(dataLocalISO(maxDate))}`;
 
     /* ── Header meses ── */
     let monthsHtml = '';
@@ -2416,21 +2428,42 @@ ${(asgNome || asgCargo) ? `
     wrap.classList.add('print-section');
     wrap.innerHTML = `<div class="cal-header"><button class="btn-secondary" onclick="calNav(-1,'cal-equipe-wrap')"><i class="fa-solid fa-chevron-left"></i></button><span class="cal-title">${firstDay.toLocaleDateString('pt-BR',{month:'long',year:'numeric'})}</span><button class="btn-secondary" onclick="calNav(1,'cal-equipe-wrap')"><i class="fa-solid fa-chevron-right"></i></button><button class="btn-secondary" onclick="calToday('cal-equipe-wrap')">Hoje</button></div><div class="team-calendar-matrix"><table class="team-calendar-table"><thead><tr><th>Funcionário</th>${headDays}</tr></thead><tbody>${rows || `<tr><td colspan="${totalDays+1}"><div class="empty-state"><i class="fa-solid fa-users"></i><p>Nenhum colaborador cadastrado</p></div></td></tr>`}</tbody></table></div>`;
   };
-  window.setTeamDayStatus = function(name, dateStr){
-    const type = prompt(`Defina o status de ${name} em ${fmtDate(dateStr)}:
-
-Digite: Folga, Férias, Outra atividade, Treinamento ou Limpar`, '');
-    if (type === null) return;
+  // Status da equipe: formulário (antes eram caixas prompt() do navegador)
+  function abrirStatusEquipe(name, dateStr){
+    const sel = document.getElementById('ts-pessoa'); if (!sel) return;
+    sel.innerHTML = '<option value="">Selecione o funcionário</option>' + employeeOptionsHtml(name || '');
+    const data = dateStr || todayISO();
+    document.getElementById('ts-inicio').value = data;
+    document.getElementById('ts-fim').value = '';
+    const atual = name ? teamCalendar[normalizeName(name)]?.[data] : null;
+    document.getElementById('ts-tipo').value = atual?.type && ['Folga','Férias','Treinamento','Outra atividade'].includes(atual.type) ? atual.type : 'Folga';
+    document.getElementById('ts-detalhe').value = atual && atual.label && atual.label !== atual.type ? atual.label : '';
+    document.getElementById('modal-team-status').classList.add('open');
+    setTimeout(() => (name ? document.getElementById('ts-tipo') : sel).focus(), 100);
+  }
+  window.setTeamDayStatus = function(name, dateStr){ abrirStatusEquipe(name, dateStr); };
+  window.openTeamStatusPrompt = function(){ renderTeamCalendarSelector(); abrirStatusEquipe('', todayISO()); };
+  window.saveTeamStatus = function(){
+    const name = document.getElementById('ts-pessoa').value;
+    const ini = document.getElementById('ts-inicio').value;
+    const fim = document.getElementById('ts-fim').value || ini;
+    const tipo = document.getElementById('ts-tipo').value;
+    const detalhe = document.getElementById('ts-detalhe').value.trim();
+    if (!name) return toast('Escolha o funcionário', 'error');
+    if (!ini) return toast('Informe a data', 'error');
+    if (fim < ini) return toast('A data final está antes da inicial', 'error');
     const key = normalizeName(name); if (!teamCalendar[key]) teamCalendar[key] = {};
-    const value = type.trim();
-    if (!value || /^limpar$/i.test(value)) { delete teamCalendar[key][dateStr]; save(); renderCalEquipe(); return; }
-    const label = prompt('Detalhe opcional (ex: Férias, Visita externa, Apoio no projeto X):', value) || value;
-    teamCalendar[key][dateStr] = { type: value, label };
-    save(); renderCalEquipe(); toast('Status lançado no calendário da equipe', 'success');
+    let dias = 0;
+    for (let d = new Date(ini + 'T12:00:00'); dias < 366; d.setDate(d.getDate() + 1)) {
+      const ds = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+      if (ds > fim) break;
+      if (tipo === '__limpar') delete teamCalendar[key][ds];
+      else teamCalendar[key][ds] = { type: tipo, label: detalhe || tipo };
+      dias++;
+    }
+    save(); renderCalEquipe(); closeModal('modal-team-status');
+    toast(tipo === '__limpar' ? `Status removido (${dias} dia(s))` : `Status lançado para ${dias} dia(s)`, 'success');
   };
-  window.openTeamStatusPrompt = function(){
-    renderTeamCalendarSelector();
-    const person = prompt('Digite exatamente o nome do funcionário para lançar um status:'); if (!person) return; const canonical = getCanonicalEmployeeName(person); const dateStr = prompt('Data no formato AAAA-MM-DD:', todayISO()); if (!dateStr) return; setTeamDayStatus(canonical, dateStr); };
   window.exportCalAtivPdf = function(){
     const section = document.getElementById('cal-ativ-wrap'); if (!section) return;
     const win = window.open('', '_blank');

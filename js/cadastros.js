@@ -77,7 +77,7 @@ function projAddDiasUteis(startISO, nDias) {
   if (nDias <= 1) {
     // garante que o dia de início seja útil
     while (d.getDay() === 0 || d.getDay() === 6) d.setDate(d.getDate() + 1);
-    return d.toISOString().slice(0, 10);
+    return dataLocalISO(d);
   }
   // Avança a partir do dia seguinte ao início
   let started = false;
@@ -86,7 +86,7 @@ function projAddDiasUteis(startISO, nDias) {
     started = true;
     if (d.getDay() !== 0 && d.getDay() !== 6) count++;
   }
-  return d.toISOString().slice(0, 10);
+  return dataLocalISO(d);
 }
 
 /** Conta dias úteis entre duas datas (inclusivo) */

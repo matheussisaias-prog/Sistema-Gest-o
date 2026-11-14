@@ -37,9 +37,6 @@ window.addEventListener('DOMContentLoaded', async () => {
   buildColorPicker();
   loadHistory();
 
-  if (window.__tfStorageWasReset) {
-    setTimeout(() => toast('ℹ Dados locais antigos deste navegador foram reiniciados para evitar abrir versão desatualizada.', 'warning'), 1800);
-  }
 
   if (!isGistSyncEnabled()) {
     console.info('Gist sync desativado: usando apenas dados locais deste navegador.');

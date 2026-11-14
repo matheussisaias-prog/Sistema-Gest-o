@@ -424,7 +424,7 @@ O TaskFlow PRO tem as seguintes seções (abas no menu lateral):
 • **Projetos** — gestão dos projetos: criar, editar, pastas personalizadas, baseline (planejado vs real)
 • **Equipe** — cadastro de membros, alocação, detecção de conflitos de agenda
 • **Gráficos** — análises visuais detalhadas (Chart.js)
-• **Gantt** — cronograma hierárquico com WBS numerado, barras de progresso, dependências
+• **Gantt** — cronograma hierárquico com WBS numerado, barras de progresso e subatividades (ainda sem dependências entre tarefas)
 • **Portfólio** — timeline consolidada de todos os projetos
 • **Recursos** — heatmap de alocação da equipe, identifica sobrecarga
 • **Calendário de Atividades** / **Calendário da Equipe** — visões mensais com barras multi-dia
@@ -436,9 +436,8 @@ O TaskFlow PRO tem as seguintes seções (abas no menu lateral):
 RECURSOS ESPECIAIS que o usuário pode usar:
 - **Importação de PDF com IA** — você lê um PDF e extrai atividades automaticamente
 - **Calculadora de horas úteis** — considera feriados brasileiros
-- **Baseline** — compara planejado × realizado em cada atividade
 - **Detecção de conflitos** — avisa quando um responsável tem tarefas sobrepostas
-- **Anexos em atividades** — arquivos e anotações por tarefa
+- **Anotações em atividades** — notas por tarefa (anexar arquivos ainda não existe)
 - **Detecção de duplicatas** — ao importar, evita atividades repetidas
 - **API Key** da Anthropic fica salva em Importar → PDF com IA (campo reutilizado por este chat)
 
@@ -495,7 +494,7 @@ Resposta amigável aqui...
 
 Regras de datas:
 - Hoje é: ${(() => { const d=new Date(); return d.toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'long',year:'numeric'}); })()}
-- Data ISO de hoje: ${new Date().toISOString().slice(0,10)}
+- Data ISO de hoje: ${todayISO()}
 - Use SEMPRE esta data como referência para "hoje", "amanhã", "semana que vem", "próximo mês" etc.
 - Distribua atividades em sequência lógica
 - Duração mínima 1 dia, máxima 30 dias

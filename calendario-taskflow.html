@@ -822,8 +822,8 @@
 'use strict';
 
 /* ── CONFIG ── */
-const STORAGE_KEY = 'taskflow_activities';
-const PROJECTS_KEY = 'taskflow_projects';
+const STORAGE_KEY = 'tf_activities';   // mesmas chaves do sistema principal
+const PROJECTS_KEY = 'tf_projects';
 
 /* ── STATE ── */
 let activities = [];
@@ -1163,7 +1163,7 @@ function renderMonth() {
 
     for (let i = si; i <= ei; i++) {
       dayBars[i].push({
-        act,
+        act: a,
         slot,
         isStart:     i === si && realStart,
         isEnd:       i === ei && realEnd,
