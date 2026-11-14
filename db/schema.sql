@@ -1,6 +1,6 @@
 -- ═══════════════════════════════════════════════════════════════
 -- TaskFlow PRO · Fase 1 · Banco de dados (MySQL 8 / MariaDB 10.6+)
--- 21 tabelas em 5 blocos: Acesso, Planejamento, Equipe, Campo,
+-- 24 tabelas em 5 blocos: Acesso, Planejamento, Equipe, Campo,
 -- Comunicação e histórico.
 -- Regras:
 --   * toda tabela de dados tem empresa_id (isolamento por empresa)
@@ -13,8 +13,13 @@ SET FOREIGN_KEY_CHECKS = 0;
 -- ── Bloco 1 · Acesso ────────────────────────────────────────────
 CREATE TABLE empresas (
   id            INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-  nome          VARCHAR(160) NOT NULL,
+  nome          VARCHAR(160) NOT NULL,          -- nome fantasia
+  razao_social  VARCHAR(200) NULL,
   cnpj          VARCHAR(18)  NULL,
+  telefone      VARCHAR(30)  NULL,
+  cidade        VARCHAR(100) NULL,
+  uf            CHAR(2)      NULL,
+  cadastrada_por INT UNSIGNED NULL,               -- quem fez o cadastro (vira administrador)
   logo          VARCHAR(255) NULL,
   plano         VARCHAR(30)  NOT NULL DEFAULT 'teste',
   situacao      ENUM('teste','ativo','suspenso') NOT NULL DEFAULT 'teste',
@@ -32,9 +37,10 @@ CREATE TABLE usuarios (
   nome           VARCHAR(160) NOT NULL,
   email          VARCHAR(190) NOT NULL,
   senha_hash     VARCHAR(255) NULL,
-  perfil         ENUM('administrador','gestor','encarregado','funcionario','cliente') NOT NULL,
+  perfil         ENUM('administrador','gestor','encarregado','funcionario') NOT NULL,
   funcionario_id INT UNSIGNED NULL,
   microsoft_id   VARCHAR(64)  NULL,
+  email_confirmado_em DATETIME NULL,
   tentativas_erradas TINYINT UNSIGNED NOT NULL DEFAULT 0,
   bloqueado_ate  DATETIME NULL,
   ultimo_acesso  DATETIME NULL,
@@ -47,6 +53,27 @@ CREATE TABLE usuarios (
   KEY ix_usuarios_empresa (empresa_id),
   CONSTRAINT fk_usuarios_empresa FOREIGN KEY (empresa_id) REFERENCES empresas(id),
   CONSTRAINT fk_usuarios_funcionario FOREIGN KEY (funcionario_id) REFERENCES funcionarios(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE convites (
+  id             INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  empresa_id     INT UNSIGNED NOT NULL,
+  nome           VARCHAR(160) NOT NULL,
+  email          VARCHAR(190) NOT NULL,
+  perfil         ENUM('administrador','gestor','encarregado','funcionario') NOT NULL,
+  funcionario_id INT UNSIGNED NULL,               -- ficha criada no cadastro da empresa
+  token_hash     CHAR(64) NOT NULL,
+  criado_por     INT UNSIGNED NOT NULL,
+  enviado_em     DATETIME NULL,
+  expira_em      DATETIME NOT NULL,
+  aceito_em      DATETIME NULL,
+  cancelado_em   DATETIME NULL,
+  criado_em      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE KEY uq_convite_token (token_hash),
+  KEY ix_convite_email (email),
+  CONSTRAINT fk_conv_empresa FOREIGN KEY (empresa_id) REFERENCES empresas(id),
+  CONSTRAINT fk_conv_func FOREIGN KEY (funcionario_id) REFERENCES funcionarios(id),
+  CONSTRAINT fk_conv_autor FOREIGN KEY (criado_por) REFERENCES usuarios(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE sessoes (
@@ -68,7 +95,7 @@ CREATE TABLE projeto_membros (
   empresa_id    INT UNSIGNED NOT NULL,
   projeto_id    INT UNSIGNED NOT NULL,
   usuario_id    INT UNSIGNED NOT NULL,
-  papel         ENUM('gestor','encarregado','funcionario','cliente') NOT NULL,
+  papel         ENUM('gestor','encarregado','funcionario') NOT NULL,
   criado_em     DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   UNIQUE KEY uq_membro (projeto_id, usuario_id),
   CONSTRAINT fk_membros_empresa FOREIGN KEY (empresa_id) REFERENCES empresas(id),
@@ -232,13 +259,50 @@ CREATE TABLE ausencias (
   CONSTRAINT fk_aus_autor FOREIGN KEY (criado_por) REFERENCES usuarios(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+CREATE TABLE tipos_documento (
+  id             INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  empresa_id     INT UNSIGNED NULL,               -- NULL = catálogo padrão do sistema
+  nr             VARCHAR(10)  NULL,               -- 'NR-10'; NULL = documento interno
+  nome           VARCHAR(160) NOT NULL,           -- 'NR-10 Básico (SEP: ver complementar)'
+  categoria      ENUM('treinamento','exame','autorizacao','ficha','outro') NOT NULL,
+  validade_meses SMALLINT UNSIGNED NULL,          -- NULL = sem prazo fixo na norma
+  prazo_origem   ENUM('norma','empresa','sem_validade','a_confirmar') NOT NULL,
+  referencia     VARCHAR(80)  NULL,               -- item da norma
+  bloqueia_alocacao TINYINT(1) NOT NULL DEFAULT 1,
+  aviso_dias     SMALLINT UNSIGNED NOT NULL DEFAULT 30,
+  ativo          TINYINT(1) NOT NULL DEFAULT 1,
+  substitui_id   INT UNSIGNED NULL,               -- versão da empresa de um item do catálogo
+  criado_em      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  atualizado_em  DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  KEY ix_tipos_empresa (empresa_id, nr),
+  CONSTRAINT fk_tipos_empresa FOREIGN KEY (empresa_id) REFERENCES empresas(id),
+  CONSTRAINT fk_tipos_subst FOREIGN KEY (substitui_id) REFERENCES tipos_documento(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE exigencias_documento (
+  id             INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  empresa_id     INT UNSIGNED NOT NULL,
+  tipo_documento_id INT UNSIGNED NOT NULL,
+  cargo          VARCHAR(80) NULL,                -- exigido de todo eletricista…
+  projeto_id     INT UNSIGNED NULL,               -- …ou de todos nesta obra (integração do cliente)
+  atividade_id   INT UNSIGNED NULL,               -- …ou de quem for alocado nesta atividade
+  criado_em      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT ck_exig_alvo CHECK (cargo IS NOT NULL OR projeto_id IS NOT NULL OR atividade_id IS NOT NULL),
+  CONSTRAINT fk_exig_empresa FOREIGN KEY (empresa_id) REFERENCES empresas(id),
+  CONSTRAINT fk_exig_tipo FOREIGN KEY (tipo_documento_id) REFERENCES tipos_documento(id),
+  CONSTRAINT fk_exig_projeto FOREIGN KEY (projeto_id) REFERENCES projetos(id),
+  CONSTRAINT fk_exig_ativ FOREIGN KEY (atividade_id) REFERENCES atividades(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 CREATE TABLE documentos_funcionario (
   id             INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   empresa_id     INT UNSIGNED NOT NULL,
   funcionario_id INT UNSIGNED NOT NULL,
-  tipo           VARCHAR(40) NOT NULL,            -- ASO, NR-10, NR-35, NR-12, Integração…
+  tipo_documento_id INT UNSIGNED NOT NULL,
   emissao        DATE NULL,
-  validade       DATE NULL,
+  validade       DATE NULL,                       -- calculada pela emissão + validade_meses; pode ser corrigida
+  instituicao    VARCHAR(160) NULL,
+  carga_horaria  DECIMAL(5,1) NULL,
   apto           TINYINT(1) NULL,                 -- só para ASO; nunca o laudo
   arquivo        VARCHAR(255) NULL,
   restrito       TINYINT(1) NOT NULL DEFAULT 0,   -- 1 = só administrador abre o arquivo
@@ -247,7 +311,8 @@ CREATE TABLE documentos_funcionario (
   excluido_em    DATETIME NULL,
   KEY ix_doc_validade (empresa_id, validade),
   CONSTRAINT fk_doc_empresa FOREIGN KEY (empresa_id) REFERENCES empresas(id),
-  CONSTRAINT fk_doc_func FOREIGN KEY (funcionario_id) REFERENCES funcionarios(id)
+  CONSTRAINT fk_doc_func FOREIGN KEY (funcionario_id) REFERENCES funcionarios(id),
+  CONSTRAINT fk_doc_tipo FOREIGN KEY (tipo_documento_id) REFERENCES tipos_documento(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE recursos (
@@ -275,18 +340,25 @@ CREATE TABLE rdos (
   clima_tarde    ENUM('Bom','Nublado','Chuva','Impraticável') NULL,
   efetivo        SMALLINT UNSIGNED NULL,
   resumo         TEXT NULL,
-  situacao       ENUM('Rascunho','Enviado','Aprovado','Devolvido') NOT NULL DEFAULT 'Rascunho',
-  assinado_por   INT UNSIGNED NULL,
-  assinado_em    DATETIME NULL,
-  aprovado_cliente_em DATETIME NULL,
-  comentario_cliente  TEXT NULL,
+  situacao       ENUM('Rascunho','Fechado','Entregue','Assinado') NOT NULL DEFAULT 'Rascunho',
+  fechado_por    INT UNSIGNED NULL,               -- gestor revisou e gerou o PDF
+  fechado_em     DATETIME NULL,
+  pdf            VARCHAR(255) NULL,               -- PDF de entrega para imprimir
+  entregue_em    DATE NULL,                       -- dia da entrega ao cliente
+  cliente_assinante VARCHAR(160) NULL,            -- quem assinou no papel
+  assinado_cliente_em DATE NULL,                  -- data escrita na folha
+  copia_assinada VARCHAR(255) NULL,               -- foto/scan da folha assinada
+  copia_enviada_por INT UNSIGNED NULL,
+  copia_enviada_em  DATETIME NULL,
   criado_em      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   atualizado_em  DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   excluido_em    DATETIME NULL,
   UNIQUE KEY uq_rdo_dia (projeto_id, data),
   CONSTRAINT fk_rdo_empresa FOREIGN KEY (empresa_id) REFERENCES empresas(id),
   CONSTRAINT fk_rdo_projeto FOREIGN KEY (projeto_id) REFERENCES projetos(id),
-  CONSTRAINT fk_rdo_assinante FOREIGN KEY (assinado_por) REFERENCES usuarios(id)
+  CONSTRAINT ck_rdo_assinado CHECK (situacao <> 'Assinado' OR copia_assinada IS NOT NULL),
+  CONSTRAINT fk_rdo_fechou FOREIGN KEY (fechado_por) REFERENCES usuarios(id),
+  CONSTRAINT fk_rdo_copia FOREIGN KEY (copia_enviada_por) REFERENCES usuarios(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE fotos (
@@ -387,7 +459,7 @@ CREATE TABLE avisos (
   id             BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   empresa_id     INT UNSIGNED NOT NULL,
   usuario_id     INT UNSIGNED NOT NULL,
-  tipo           ENUM('prazo','documento','rdo','mensagem','ocorrencia','sistema') NOT NULL,
+  tipo           ENUM('prazo','documento','rdo','mensagem','ocorrencia','convite','sistema') NOT NULL,
   titulo         VARCHAR(160) NOT NULL,
   link           VARCHAR(255) NULL,
   lido_em        DATETIME NULL,

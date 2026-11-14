@@ -10,13 +10,17 @@ INSERT INTO projetos(id,empresa_id,codigo,nome,inicio,fim) VALUES (1,1,'MAN-001'
 INSERT INTO atividades(id,empresa_id,projeto_id,descricao,responsavel_id,inicio,fim,duracao_horas) VALUES (1,1,1,'Compra de material',1,'2026-10-31','2026-11-19',152),(2,1,1,'Fabricação das peças',1,'2026-11-09','2026-12-09',200),(3,2,2,'Atividade da outra',3,'2026-11-01','2026-11-10',40);
 INSERT INTO dependencias(empresa_id,antes_id,depois_id) VALUES (1,1,2);
 INSERT INTO rdos(empresa_id,projeto_id,data) VALUES (1,1,'2026-11-14');
+INSERT INTO convites(empresa_id,nome,email,perfil,funcionario_id,token_hash,criado_por,expira_em) VALUES (1,'David','david@rawtech.test','funcionario',2,REPEAT('a',64),1,'2026-11-21');
+INSERT INTO tipos_documento(id,empresa_id,nr,nome,categoria,validade_meses,prazo_origem) SELECT 500,1,nr,nome,categoria,validade_meses,prazo_origem FROM tipos_documento WHERE empresa_id IS NULL AND nome='Trabalho em altura';
+INSERT INTO exigencias_documento(empresa_id,tipo_documento_id,atividade_id) VALUES (1,500,2);
+INSERT INTO documentos_funcionario(empresa_id,funcionario_id,tipo_documento_id,emissao,validade) VALUES (1,1,500,'2024-11-01','2026-11-01'),(1,2,500,'2025-06-01','2027-06-01');
 INSERT INTO apontamentos(empresa_id,funcionario_id,projeto_id,atividade_id,data,horas,lancado_por) VALUES (1,1,1,2,'2026-11-14',8,2),(1,2,1,2,'2026-11-14',8,2);
 INSERT INTO fotos(empresa_id,projeto_id,atividade_id,rdo_id,enviada_por,tirada_em,arquivo,miniatura) VALUES (1,1,2,1,2,'2026-11-14 10:30','f/1.jpg','f/1m.jpg');
 INSERT INTO ausencias(empresa_id,funcionario_id,inicio,fim,tipo) VALUES (1,2,'2026-12-01','2026-12-30','Férias');
 INSERT INTO mensagens(empresa_id,de_usuario_id,para_funcionario_id,texto) VALUES (1,1,2,'Amanhã começa a pintura');
 INSERT INTO historico(empresa_id,usuario_id,tabela,registro_id,acao,antes,depois) VALUES (1,2,'atividades',2,'alterou','{\"avanco\":0}','{\"avanco\":30}');
 "
-check "21 tabelas" "$($M -e "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema='tf'")" 21
+check "24 tabelas" "$($M -e "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema='tf'")" 24
 check "Rawtech só vê as suas atividades" "$($M -e "SELECT COUNT(*) FROM atividades WHERE empresa_id=1")" 2
 check "Outra empresa só vê a sua" "$($M -e "SELECT GROUP_CONCAT(descricao) FROM atividades WHERE empresa_id=2")" "Atividade da outra"
 check "Efetivo do RDO pelas horas" "$($M -e "SELECT COUNT(DISTINCT funcionario_id) FROM apontamentos WHERE projeto_id=1 AND data='2026-11-14'")" 2
@@ -34,4 +38,12 @@ deve_falhar "Atividade em obra que não existe" "INSERT INTO atividades(empresa_
 deve_falhar "Mensagem sem destinatário" "INSERT INTO mensagens(empresa_id,de_usuario_id,texto) VALUES (1,1,'oi')"
 deve_falhar "Código de obra repetido na mesma empresa" "INSERT INTO projetos(empresa_id,codigo,nome) VALUES (1,'MAN-001','dup')"
 check "Mesmo código permitido em outra empresa" "$($M -e "INSERT INTO projetos(empresa_id,codigo,nome) VALUES (2,'MAN-001','ok'); SELECT COUNT(*) FROM projetos WHERE codigo='MAN-001'")" 2
+check "Catálogo com 42 documentos de NR" "$($M -e "SELECT COUNT(*) FROM tipos_documento WHERE empresa_id IS NULL")" 42
+check "NR-35 vence em 24 meses" "$($M -e "SELECT validade_meses FROM tipos_documento WHERE empresa_id IS NULL AND nome='Trabalho em altura'")" 24
+check "Bloqueio: quem está com NR-35 vencida na atividade de altura" "$($M -e "SELECT GROUP_CONCAT(f.nome) FROM apontamentos ap JOIN funcionarios f ON f.id=ap.funcionario_id JOIN exigencias_documento e ON e.atividade_id=ap.atividade_id LEFT JOIN documentos_funcionario d ON d.funcionario_id=f.id AND d.tipo_documento_id=e.tipo_documento_id AND d.validade>='2026-11-14' WHERE ap.data='2026-11-14' AND d.id IS NULL")" "João Paulo"
+deve_falhar "Perfil cliente (removido)" "INSERT INTO usuarios(empresa_id,nome,email,perfil) VALUES (1,'C','c@x.test','cliente')"
+deve_falhar "RDO assinado sem a cópia da folha" "UPDATE rdos SET situacao='Assinado' WHERE id=1"
+check "RDO assinado com a cópia da folha" "$($M -e "UPDATE rdos SET situacao='Assinado',copia_assinada='rdo/1-assinado.jpg',cliente_assinante='Eng. Cliente',assinado_cliente_em='2026-11-14' WHERE id=1; SELECT situacao FROM rdos WHERE id=1")" "Assinado"
+deve_falhar "Convite com token repetido" "INSERT INTO convites(empresa_id,nome,email,perfil,token_hash,criado_por,expira_em) VALUES (1,'X','x@x.test','gestor',REPEAT('a',64),1,'2026-11-21')"
+deve_falhar "Exigência sem cargo, obra ou atividade" "INSERT INTO exigencias_documento(empresa_id,tipo_documento_id) VALUES (1,500)"
 echo "RESULTADO: $ok ok, $fail falhas"
