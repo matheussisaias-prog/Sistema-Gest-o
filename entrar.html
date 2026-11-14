@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="light">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Entrar · TaskFlow PRO</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+<link rel="stylesheet" href="css/entrar.css?v=2026.11.14.4"/>
+</head>
+<body>
+<div class="tela">
+
+  <!-- Painel da marca (computador) / faixa do topo (celular) -->
+  <aside class="marca">
+    <div class="marca-logo"><span class="logo-mark">TF</span><span class="logo-nome">TaskFlow PRO</span></div>
+    <div class="marca-texto">
+      <h1>Gestão de obras e serviços de engenharia, à vista.</h1>
+      <p>Planejamento, campo e RDO num lugar só — para a empresa não depender de planilha nem de grupo de mensagem.</p>
+      <ul class="marca-lista">
+        <li><i class="fa-solid fa-chart-gantt"></i>Cronograma, linha de base e atrasos em tempo real</li>
+        <li><i class="fa-solid fa-helmet-safety"></i>Equipe com documentos de NR sempre em dia</li>
+        <li><i class="fa-solid fa-camera"></i>Fotos do campo montando o RDO sozinho</li>
+      </ul>
+    </div>
+    <div class="marca-rodape">Seus dados ficam separados por empresa e protegidos.</div>
+  </aside>
+
+  <main class="area">
+    <div class="cartao">
+
+      <!-- Mensagem geral (erro / sucesso) -->
+      <div class="aviso" id="aviso" role="alert" hidden></div>
+
+      <!-- ENTRAR -->
+      <section class="passo" id="v-entrar">
+        <h2>Entrar</h2>
+        <p class="sub">Use o e-mail e a senha da sua conta.</p>
+        <form id="f-entrar" novalidate>
+          <label class="campo"><span>E-mail</span>
+            <input type="email" id="e-email" autocomplete="username" placeholder="voce@empresa.com.br" required/></label>
+          <label class="campo"><span>Senha</span>
+            <div class="senha"><input type="password" id="e-senha" autocomplete="current-password" placeholder="Sua senha" required/>
+              <button type="button" class="olho" aria-label="Mostrar senha"><i class="fa-regular fa-eye"></i></button></div></label>
+          <div class="linha-entre"><a href="#esqueci" data-ir="esqueci">Esqueci minha senha</a></div>
+          <button class="btn-principal" type="submit"><span>Entrar</span><i class="fa-solid fa-arrow-right"></i></button>
+        </form>
+        <div class="divisor"><span>Primeira vez aqui?</span></div>
+        <button class="btn-secundario" data-ir="cadastro-1"><i class="fa-solid fa-building"></i>Cadastrar minha empresa</button>
+        <p class="nota"><i class="fa-solid fa-tablet-screen-button"></i> Funcionário sem e-mail entra pelo tablet da obra, com o PIN.</p>
+      </section>
+
+      <!-- CADASTRO · 1 EMPRESA -->
+      <section class="passo" id="v-cadastro-1" hidden>
+        <button class="voltar" data-ir="entrar"><i class="fa-solid fa-arrow-left"></i>Voltar</button>
+        <ol class="etapas"><li class="ativa">Empresa</li><li>Você</li><li>Equipe</li></ol>
+        <h2>Dados da empresa</h2>
+        <p class="sub">É o que sai no cabeçalho do RDO e dos relatórios.</p>
+        <form id="f-empresa" novalidate>
+          <label class="campo"><span>Nome da empresa *</span><input id="c-nome" placeholder="Ex.: Rawtech Engenharia" required/></label>
+          <label class="campo"><span>Razão social</span><input id="c-razao" placeholder="Como está no CNPJ"/></label>
+          <div class="duas">
+            <label class="campo"><span>CNPJ</span><input id="c-cnpj" inputmode="numeric" placeholder="00.000.000/0000-00"/></label>
+            <label class="campo"><span>Telefone</span><input id="c-tel" inputmode="tel" placeholder="(81) 90000-0000"/></label>
+          </div>
+          <div class="duas d-cidade">
+            <label class="campo"><span>Cidade</span><input id="c-cidade" placeholder="Recife"/></label>
+            <label class="campo"><span>UF</span><select id="c-uf"></select></label>
+          </div>
+          <button class="btn-principal" type="submit"><span>Continuar</span><i class="fa-solid fa-arrow-right"></i></button>
+        </form>
+      </section>
+
+      <!-- CADASTRO · 2 VOCÊ -->
+      <section class="passo" id="v-cadastro-2" hidden>
+        <button class="voltar" data-ir="cadastro-1"><i class="fa-solid fa-arrow-left"></i>Voltar</button>
+        <ol class="etapas"><li class="feita">Empresa</li><li class="ativa">Você</li><li>Equipe</li></ol>
+        <h2>Seu acesso</h2>
+        <p class="sub">Você será o <b>administrador</b>: define o papel de cada pessoa e pode mudar depois.</p>
+        <form id="f-admin" novalidate>
+          <label class="campo"><span>Seu nome *</span><input id="a-nome" autocomplete="name" placeholder="Nome e sobrenome" required/></label>
+          <label class="campo"><span>Seu e-mail *</span><input type="email" id="a-email" autocomplete="email" placeholder="voce@empresa.com.br" required/></label>
+          <label class="campo"><span>Crie uma senha *</span>
+            <div class="senha"><input type="password" id="a-senha" autocomplete="new-password" placeholder="Pelo menos 8 caracteres" required/>
+              <button type="button" class="olho" aria-label="Mostrar senha"><i class="fa-regular fa-eye"></i></button></div>
+            <div class="forca"><i></i><i></i><i></i><i></i></div></label>
+          <button class="btn-principal" type="submit"><span>Continuar</span><i class="fa-solid fa-arrow-right"></i></button>
+        </form>
+      </section>
+
+      <!-- CADASTRO · 3 EQUIPE -->
+      <section class="passo largo" id="v-cadastro-3" hidden>
+        <button class="voltar" data-ir="cadastro-2"><i class="fa-solid fa-arrow-left"></i>Voltar</button>
+        <ol class="etapas"><li class="feita">Empresa</li><li class="feita">Você</li><li class="ativa">Equipe</li></ol>
+        <h2>Quem é quem na equipe</h2>
+        <p class="sub">Quem tem e-mail recebe um convite para criar a senha. Quem não tem entra pelo tablet da obra. Dá para pular e montar depois.</p>
+        <div class="equipe-cab"><span>Nome</span><span>Cargo</span><span>Perfil</span><span>E-mail (opcional)</span><span></span></div>
+        <div id="equipe"></div>
+        <button class="btn-linha" id="add-pessoa" type="button"><i class="fa-solid fa-plus"></i>Adicionar pessoa</button>
+        <div class="perfis">
+          <div><b>Gestor</b> vê e altera todas as obras</div>
+          <div><b>Encarregado</b> lança avanço, fotos e horas da equipe dele</div>
+          <div><b>Funcionário</b> vê as próprias tarefas e lança o avanço</div>
+        </div>
+        <button class="btn-principal" id="concluir" type="button"><span>Concluir cadastro</span><i class="fa-solid fa-check"></i></button>
+      </section>
+
+      <!-- CADASTRO FEITO -->
+      <section class="passo centro" id="v-feito" hidden>
+        <div class="selo ok"><i class="fa-solid fa-envelope-circle-check"></i></div>
+        <h2>Confira seu e-mail</h2>
+        <p class="sub" id="feito-texto">Enviamos um link para ativar o cadastro. Ele vale por 48 horas.</p>
+        <button class="btn-secundario" data-ir="entrar">Ir para o login</button>
+      </section>
+
+      <!-- ESQUECI A SENHA -->
+      <section class="passo" id="v-esqueci" hidden>
+        <button class="voltar" data-ir="entrar"><i class="fa-solid fa-arrow-left"></i>Voltar</button>
+        <h2>Esqueci minha senha</h2>
+        <p class="sub">Informe o e-mail da conta. Se ele tiver cadastro, enviamos um link para criar uma nova senha.</p>
+        <form id="f-esqueci" novalidate>
+          <label class="campo"><span>E-mail</span><input type="email" id="r-email" autocomplete="username" placeholder="voce@empresa.com.br" required/></label>
+          <button class="btn-principal" type="submit"><span>Enviar link</span><i class="fa-solid fa-paper-plane"></i></button>
+        </form>
+      </section>
+
+      <!-- NOVA SENHA (convite ou redefinir) -->
+      <section class="passo" id="v-senha" hidden>
+        <h2 id="senha-titulo">Criar sua senha</h2>
+        <p class="sub" id="senha-sub">Você foi convidado para o sistema. Crie uma senha para entrar.</p>
+        <form id="f-senha" novalidate>
+          <label class="campo"><span>Nova senha</span>
+            <div class="senha"><input type="password" id="n-senha" autocomplete="new-password" placeholder="Pelo menos 8 caracteres" required/>
+              <button type="button" class="olho" aria-label="Mostrar senha"><i class="fa-regular fa-eye"></i></button></div>
+            <div class="forca"><i></i><i></i><i></i><i></i></div></label>
+          <label class="campo"><span>Repita a senha</span><input type="password" id="n-senha2" autocomplete="new-password" required/></label>
+          <button class="btn-principal" type="submit"><span>Salvar senha</span><i class="fa-solid fa-check"></i></button>
+        </form>
+      </section>
+
+      <!-- CONFIRMANDO E-MAIL -->
+      <section class="passo centro" id="v-confirmando" hidden>
+        <div class="selo"><i class="fa-solid fa-spinner fa-spin"></i></div>
+        <h2>Confirmando seu e-mail…</h2>
+      </section>
+
+    </div>
+    <footer class="rodape">TaskFlow PRO · <a href="mailto:suporte@mercurium.com.br">suporte@mercurium.com.br</a></footer>
+  </main>
+</div>
+
+<template id="t-pessoa">
+  <div class="pessoa">
+    <input class="p-nome" placeholder="Nome" aria-label="Nome"/>
+    <input class="p-cargo" placeholder="Cargo" aria-label="Cargo"/>
+    <select class="p-perfil" aria-label="Perfil">
+      <option value="funcionario">Funcionário</option>
+      <option value="encarregado">Encarregado</option>
+      <option value="gestor">Gestor</option>
+    </select>
+    <input class="p-email" type="email" placeholder="sem e-mail = tablet" aria-label="E-mail"/>
+    <button type="button" class="p-remover" aria-label="Remover"><i class="fa-solid fa-xmark"></i></button>
+  </div>
+</template>
+
+<script src="js/entrar.js?v=2026.11.14.4"></script>
+</body>
+</html>

@@ -1,0 +1,138 @@
+/* TaskFlow PRO · entrar.css — login, cadastro da empresa, convite e senha */
+:root {
+  --navy: #0f1629; --navy2: #1a2744; --blue: #2563eb; --blue-light: #3b82f6; --blue-dim: rgba(37,99,235,.08);
+  --green: #059669; --green-dim: rgba(5,150,105,.1); --red: #dc2626; --red-dim: rgba(220,38,38,.08); --amber: #d97706;
+  --bg: #f1f4f9; --surface: #fff; --surface2: #f8fafc; --border: #e2e8f0; --border2: #cbd5e1;
+  --text-1: #0f172a; --text-2: #334155; --text-3: #64748b; --text-4: #94a3b8;
+  --radius: 12px; --radius-sm: 8px;
+  --font-sans: 'DM Sans', system-ui, sans-serif; --font-head: 'Outfit', system-ui, sans-serif;
+  --trans: .18s cubic-bezier(.4,0,.2,1);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
+body { font-family: var(--font-sans); background: var(--bg); color: var(--text-1); font-size: 15px; -webkit-font-smoothing: antialiased; }
+[hidden] { display: none !important; }
+a { color: var(--blue); text-decoration: none; font-weight: 500; }
+a:hover { text-decoration: underline; }
+
+.tela { display: grid; grid-template-columns: minmax(380px, 44%) 1fr; min-height: 100vh; }
+
+/* ── Painel da marca ───────────────────────────── */
+.marca { background: radial-gradient(120% 90% at 0% 0%, #243356 0%, var(--navy) 60%); color: #e2e8f0;
+  padding: 44px 52px; display: flex; flex-direction: column; justify-content: space-between; position: relative; overflow: hidden; }
+.marca::after { content: ''; position: absolute; right: -120px; bottom: -120px; width: 380px; height: 380px; border-radius: 50%;
+  border: 1px solid rgba(59,130,246,.18); box-shadow: 0 0 0 60px rgba(59,130,246,.04), 0 0 0 130px rgba(59,130,246,.03); }
+.marca-logo { display: flex; align-items: center; gap: 10px; }
+.logo-mark { width: 34px; height: 34px; background: var(--blue); border-radius: 9px; display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-head); font-weight: 800; font-size: .9rem; color: #fff; }
+.logo-nome { font-family: var(--font-head); font-weight: 700; font-size: 1.1rem; color: #fff; letter-spacing: -.01em; }
+.marca-texto h1 { font-family: var(--font-head); font-weight: 700; font-size: 2.05rem; line-height: 1.15; color: #fff; letter-spacing: -.02em; max-width: 440px; }
+.marca-texto p { margin-top: 14px; color: #94a3b8; line-height: 1.55; max-width: 430px; }
+.marca-lista { list-style: none; margin-top: 30px; display: grid; gap: 14px; }
+.marca-lista li { display: flex; gap: 12px; align-items: center; color: #cbd5e1; font-size: .95rem; }
+.marca-lista i { width: 34px; height: 34px; border-radius: 9px; background: rgba(59,130,246,.14); color: #93c5fd;
+  display: flex; align-items: center; justify-content: center; font-size: .9rem; flex-shrink: 0; }
+.marca-rodape { font-size: .8rem; color: #64748b; position: relative; z-index: 1; }
+
+/* ── Área do formulário ────────────────────────── */
+.area { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 24px 24px; }
+.cartao { width: 100%; max-width: 440px; background: var(--surface); border: 1px solid var(--border); border-radius: 18px;
+  padding: 34px 34px 30px; box-shadow: 0 8px 32px rgba(15,22,41,.07); transition: max-width var(--trans); }
+.cartao.largo { max-width: 760px; }
+.rodape { margin-top: 22px; font-size: .78rem; color: var(--text-4); }
+
+.passo { animation: entra .28s ease; }
+@keyframes entra { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+.passo.centro { text-align: center; }
+h2 { font-family: var(--font-head); font-size: 1.55rem; font-weight: 700; letter-spacing: -.015em; }
+.sub { color: var(--text-3); margin-top: 6px; margin-bottom: 22px; line-height: 1.5; font-size: .92rem; }
+.centro .sub { margin-bottom: 24px; }
+
+.campo { display: block; margin-bottom: 14px; }
+.campo > span { display: block; font-size: .8rem; font-weight: 600; color: var(--text-2); margin-bottom: 6px; }
+input, select { width: 100%; height: 44px; padding: 0 13px; border: 1.5px solid var(--border); border-radius: var(--radius-sm);
+  font: inherit; font-size: .95rem; color: var(--text-1); background: var(--surface); transition: border-color var(--trans), box-shadow var(--trans); }
+input::placeholder { color: var(--text-4); }
+input:focus, select:focus { outline: none; border-color: var(--blue); box-shadow: 0 0 0 3px rgba(37,99,235,.14); }
+input.erro, select.erro { border-color: var(--red); box-shadow: 0 0 0 3px var(--red-dim); }
+.duas { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.duas.d-cidade { grid-template-columns: 1fr 96px; }
+
+.senha { position: relative; }
+.senha input { padding-right: 44px; }
+.olho { position: absolute; right: 4px; top: 4px; width: 36px; height: 36px; border: 0; background: none; color: var(--text-4); cursor: pointer; border-radius: 6px; }
+.olho:hover { color: var(--text-2); background: var(--surface2); }
+.forca { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; margin-top: 7px; }
+.forca i { height: 4px; border-radius: 2px; background: var(--border); transition: background var(--trans); }
+.forca[data-n="1"] i:nth-child(-n+1) { background: var(--red); }
+.forca[data-n="2"] i:nth-child(-n+2) { background: var(--amber); }
+.forca[data-n="3"] i:nth-child(-n+3) { background: var(--blue-light); }
+.forca[data-n="4"] i { background: var(--green); }
+
+.linha-entre { display: flex; justify-content: flex-end; margin: -2px 0 18px; font-size: .85rem; }
+
+.btn-principal, .btn-secundario { width: 100%; height: 46px; border-radius: 10px; font: inherit; font-weight: 600; font-size: .95rem;
+  display: flex; align-items: center; justify-content: center; gap: 9px; cursor: pointer; transition: all var(--trans); }
+.btn-principal { border: 0; background: var(--blue); color: #fff; box-shadow: 0 4px 14px rgba(37,99,235,.28); }
+.btn-principal:hover { background: #1d4ed8; }
+.btn-principal:disabled { opacity: .65; cursor: wait; }
+.btn-secundario { border: 1.5px solid var(--border2); background: var(--surface); color: var(--text-1); }
+.btn-secundario:hover { border-color: var(--blue); color: var(--blue); }
+.btn-linha { border: 1.5px dashed var(--border2); background: var(--surface2); color: var(--text-2); height: 40px; width: 100%; border-radius: 9px;
+  font: inherit; font-weight: 600; font-size: .86rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; margin: 4px 0 16px; }
+.btn-linha:hover { border-color: var(--blue); color: var(--blue); }
+
+.divisor { display: flex; align-items: center; gap: 12px; margin: 22px 0 14px; color: var(--text-4); font-size: .8rem; }
+.divisor::before, .divisor::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+.nota { margin-top: 16px; font-size: .8rem; color: var(--text-3); display: flex; gap: 8px; align-items: center; justify-content: center; }
+
+.voltar { border: 0; background: none; color: var(--text-3); font: inherit; font-size: .85rem; font-weight: 500; cursor: pointer;
+  display: inline-flex; gap: 7px; align-items: center; margin-bottom: 14px; padding: 4px 0; }
+.voltar:hover { color: var(--blue); }
+
+.etapas { list-style: none; display: flex; gap: 6px; margin-bottom: 18px; counter-reset: e; }
+.etapas li { flex: 1; font-size: .74rem; font-weight: 600; color: var(--text-4); counter-increment: e; padding-top: 9px; position: relative; }
+.etapas li::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; border-radius: 2px; background: var(--border); }
+.etapas li.ativa { color: var(--blue); } .etapas li.ativa::before { background: var(--blue); }
+.etapas li.feita { color: var(--green); } .etapas li.feita::before { background: var(--green); }
+
+.aviso { border-radius: 10px; padding: 11px 14px; font-size: .88rem; margin-bottom: 18px; display: flex; gap: 10px; align-items: flex-start; line-height: 1.45; }
+.aviso.erro { background: var(--red-dim); color: #991b1b; border: 1px solid rgba(220,38,38,.2); }
+.aviso.ok { background: var(--green-dim); color: #065f46; border: 1px solid rgba(5,150,105,.25); }
+
+/* Equipe */
+.equipe-cab, .pessoa { display: grid; grid-template-columns: 1.4fr 1fr 130px 1.4fr 34px; gap: 8px; align-items: center; }
+.equipe-cab { font-size: .72rem; font-weight: 700; color: var(--text-3); text-transform: uppercase; letter-spacing: .04em; margin-bottom: 6px; padding: 0 2px; }
+.pessoa { margin-bottom: 8px; animation: entra .22s ease; }
+.pessoa input, .pessoa select { height: 40px; font-size: .88rem; padding: 0 10px; }
+.p-remover { width: 34px; height: 34px; border: 0; background: none; color: var(--text-4); border-radius: 8px; cursor: pointer; }
+.p-remover:hover { background: var(--red-dim); color: var(--red); }
+.perfis { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 20px; }
+.perfis div { background: var(--surface2); border: 1px solid var(--border); border-radius: 9px; padding: 9px 11px; font-size: .78rem; color: var(--text-3); line-height: 1.4; }
+.perfis b { color: var(--text-1); display: block; font-size: .82rem; }
+
+.selo { width: 64px; height: 64px; border-radius: 50%; background: var(--blue-dim); color: var(--blue); display: flex; align-items: center;
+  justify-content: center; font-size: 1.6rem; margin: 6px auto 16px; }
+.selo.ok { background: var(--green-dim); color: var(--green); }
+
+/* ── Celular ───────────────────────────────────── */
+@media (max-width: 860px) {
+  .tela { grid-template-columns: 1fr; }
+  .marca { padding: 22px 22px 26px; }
+  .marca::after { display: none; }
+  .marca-texto h1 { font-size: 1.32rem; margin-top: 16px; }
+  .marca-texto p, .marca-lista, .marca-rodape { display: none; }
+  .area { justify-content: flex-start; padding: 0 14px 20px; margin-top: -14px; }
+  .cartao { padding: 24px 20px 22px; border-radius: 16px; }
+  .cartao.largo { max-width: 100%; }
+  .equipe-cab { display: none; }
+  .pessoa { grid-template-columns: 1fr 1fr; background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 10px; position: relative; }
+  .pessoa .p-nome { grid-column: 1 / -1; padding-right: 40px; }
+  .pessoa .p-email { grid-column: 1 / -1; }
+  .p-remover { position: absolute; top: 13px; right: 13px; }
+  .perfis { grid-template-columns: 1fr; }
+}
+@media (max-width: 480px) {
+  .duas:not(.d-cidade) { grid-template-columns: 1fr; gap: 0; }
+  .duas.d-cidade { grid-template-columns: 1fr 88px; }
+}
