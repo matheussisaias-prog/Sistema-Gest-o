@@ -1,3 +1,9 @@
+# Bloqueia a pasta .git e arquivos internos (o deploy da Hostinger copia o repositório inteiro)
+RedirectMatch 404 /\.git
+<FilesMatch "^(README\.md|\.gitignore)$">
+  Require all denied
+</FilesMatch>
+
 # TaskFlow PRO — regras de cache (Hostinger / LiteSpeed)
 # Páginas HTML: o navegador sempre confere se há versão nova antes de usar a guardada.
 # JS e CSS: podem ficar guardados por 1 dia; a cada publicação o ?v= muda e força o download.

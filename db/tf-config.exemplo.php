@@ -1,6 +1,6 @@
 <?php
 /* Modelo do arquivo de configuração do servidor.
-   Copie para  <pasta do domínio>/tf-config.php  — AO LADO do public_html, nunca dentro dele —
+   Crie como  tf-config-gestao.php  na RAIZ da hospedagem ("Todos os arquivos de hospedagem"), fora de qualquer site —
    e preencha com os dados do banco criado no painel da Hostinger.
    Este arquivo NÃO vai para o GitHub (tem a senha do banco). */
 return [

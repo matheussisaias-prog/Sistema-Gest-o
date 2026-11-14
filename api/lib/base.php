@@ -1,8 +1,8 @@
 <?php
 /* ═══════════════════════════════════════════════════════════════
    TaskFlow PRO · servidor · base (configuração, banco, respostas, sessão)
-   A configuração com a senha do banco fica FORA do public_html:
-     <pasta do domínio>/tf-config.php   (ao lado de public_html)
+   A configuração com a senha do banco fica FORA de qualquer site, na raiz da hospedagem:
+     /home/<usuário>/tf-config-gestao.php   ("Todos os arquivos de hospedagem" no Gerenciador)
 ═══════════════════════════════════════════════════════════════ */
 declare(strict_types=1);
 date_default_timezone_set('UTC');
@@ -23,7 +23,8 @@ class ErroApi extends Exception {
 function config(): array {
     static $cfg = null;
     if ($cfg !== null) return $cfg;
-    $caminhos = array_filter([getenv('TF_CONFIG') ?: null, dirname(__DIR__, 3) . '/tf-config.php']);
+    // api/lib -> api -> public_html -> <domínio> -> domains -> raiz da hospedagem
+    $caminhos = array_filter([getenv('TF_CONFIG') ?: null, dirname(__DIR__, 5) . '/tf-config-gestao.php', dirname(__DIR__, 3) . '/tf-config.php']);
     foreach ($caminhos as $c) {
         if (is_file($c)) { $cfg = require $c; return $cfg; }
     }
