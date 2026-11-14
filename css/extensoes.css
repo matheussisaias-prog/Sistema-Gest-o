@@ -1,0 +1,198 @@
+/* TaskFlow PRO · extensoes.css — pastas, Gantt avançado, calendário de equipe e ajustes */
+.kanban-board{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px;align-items:start}
+.kanban-col{min-height:420px;display:flex;flex-direction:column}
+.kanban-cards{display:flex;flex-direction:column;gap:14px;min-height:180px;padding-top:8px}
+.kanban-card{cursor:grab;transition:transform .15s, box-shadow .15s, border-color .15s}
+.kanban-card.dragging{opacity:.55;transform:rotate(1.5deg);cursor:grabbing}
+.kanban-dropzone{min-height:160px;border:1.5px dashed transparent;border-radius:14px;padding:6px;transition:border-color .15s, background .15s}
+.kanban-dropzone.drag-over{border-color:var(--blue);background:var(--blue-dim)}
+.project-folder{display:flex;flex-direction:column;gap:12px;margin-bottom:18px}
+.project-folder-title{display:flex;align-items:center;gap:8px;font-family:var(--font-head);font-size:.92rem;font-weight:800;color:var(--text-1)}
+.project-folder-sub{font-size:.72rem;color:var(--text-4);margin-left:6px}
+.project-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
+
+/* Pastas customizadas */
+.custom-folder {
+  border: 1.5px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 16px;
+  transition: box-shadow .18s;
+}
+.custom-folder:hover { box-shadow: var(--shadow-md); }
+.custom-folder-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  background: var(--surface2);
+  border-bottom: 1.5px solid var(--border);
+  cursor: pointer;
+  user-select: none;
+}
+.custom-folder-icon {
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+.custom-folder-name {
+  font-family: var(--font-head);
+  font-size: .9rem;
+  font-weight: 700;
+  color: var(--text-1);
+  flex: 1;
+}
+.custom-folder-meta {
+  font-size: .68rem;
+  color: var(--text-4);
+}
+.custom-folder-actions {
+  display: flex;
+  gap: 4px;
+  opacity: 0;
+  transition: opacity .15s;
+}
+.custom-folder-header:hover .custom-folder-actions { opacity: 1; }
+.custom-folder-chevron {
+  transition: transform .2s;
+  color: var(--text-4);
+  font-size: .8rem;
+}
+.custom-folder.collapsed .custom-folder-chevron { transform: rotate(-90deg); }
+.custom-folder-body {
+  padding: 14px;
+  background: var(--surface);
+}
+.custom-folder.collapsed .custom-folder-body { display: none; }
+.custom-folder-color-dot {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+/* Drop zone */
+.folder-drop-zone {
+  border: 2px dashed var(--border);
+  border-radius: 8px;
+  padding: 10px;
+  text-align: center;
+  font-size: .72rem;
+  color: var(--text-4);
+  margin-top: 8px;
+  transition: all .15s;
+}
+.folder-drop-zone:hover, .folder-drop-zone.dragover {
+  border-color: var(--blue);
+  background: var(--blue-dim);
+  color: var(--blue);
+}
+/* Cards arrastáveis */
+.card.dragging { opacity: .45; transform: scale(.97); }
+.team-chart-card{margin-bottom:14px}
+.team-calendar-matrix{overflow:auto;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface)}
+.team-calendar-table{border-collapse:collapse;min-width:980px;width:100%}
+.team-calendar-table th,.team-calendar-table td{border-bottom:1px solid var(--border);border-right:1px solid var(--border);padding:7px 8px;vertical-align:top}
+.team-calendar-table th{position:sticky;top:0;background:var(--surface2);z-index:2;font-size:.64rem;text-transform:uppercase;letter-spacing:.06em;color:var(--text-4)}
+.team-calendar-table th:first-child,.team-calendar-table td:first-child{position:sticky;left:0;background:var(--surface);z-index:3;min-width:180px;max-width:180px}
+.team-day-cell{min-width:90px;min-height:70px;cursor:pointer;background:var(--surface);transition:background .15s}
+.team-day-cell:hover{background:var(--surface2)}
+.team-day-stack{display:flex;flex-direction:column;gap:4px}
+.team-pill{font-size:.58rem;line-height:1.25;padding:3px 6px;border-radius:999px;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.team-pill.project{background:var(--blue)}
+.team-pill.folga{background:var(--amber)}
+.team-pill.ferias{background:var(--green)}
+.team-pill.outra{background:var(--purple)}
+.team-pill.treinamento{background:#0ea5e9}
+.cal-event{cursor:pointer}
+.cal-event:hover{filter:brightness(1.05)}
+.cal-day{min-height:124px}
+.cal-day.other-month{background:transparent;border:none}
+.cal-event-more{font-size:.56rem;color:var(--text-4);font-weight:700;margin-top:2px}
+.recursos-db{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;margin:14px 0}
+.resource-person-card{border:1px solid var(--border);border-radius:12px;background:var(--surface);padding:14px;box-shadow:var(--shadow)}
+.resource-person-card h4{font-size:.82rem;margin-bottom:4px}
+.resource-person-card p{font-size:.7rem;color:var(--text-3);margin-bottom:8px}
+.resource-person-card .meta{display:flex;flex-wrap:wrap;gap:6px}
+.resource-person-card .meta .badge{font-size:.58rem}
+.gantt-inline-btn{margin-left:8px;border:none;background:var(--blue-dim);color:var(--blue);width:22px;height:22px;border-radius:6px;cursor:pointer}
+.gantt-inline-btn:hover{background:var(--blue);color:#fff}
+.gantt-inline-del{background:rgba(239,68,68,.12);color:#ef4444;opacity:0;visibility:hidden;transition:all .12s}
+.gantt-table tbody tr:hover .gantt-inline-del{opacity:1;visibility:visible}
+.gantt-inline-del:hover{background:#ef4444;color:#fff;box-shadow:0 1px 4px rgba(239,68,68,.4)}
+
+/* ── Agrupamento por projeto ── */
+.gantt-project-header{
+  background:var(--surface2);
+  transition:background .15s;
+}
+.gantt-project-header:hover td{
+  filter:brightness(1.08);
+}
+.gantt-project-header td{
+  border-bottom:1px solid var(--border);
+  border-top:1px solid var(--border);
+}
+.gantt-project-header .gantt-bar-cell{
+  cursor:default;
+}
+.gantt-summary-bar{
+  height:14px !important;
+  top:14px !important;
+  border-radius:3px !important;
+  border:1px solid rgba(0,0,0,.2);
+  box-shadow:0 1px 3px rgba(0,0,0,.15);
+}
+.gantt-summary-bar::before,
+.gantt-summary-bar::after{
+  content:'';position:absolute;top:100%;width:0;height:0;
+  border-left:5px solid transparent;border-right:5px solid transparent;
+}
+.gantt-summary-bar::before{ left:0; border-top:5px solid currentColor; }
+.gantt-summary-bar::after{ right:0; border-top:5px solid currentColor; }
+
+/* Botão "Agrupar" ativo */
+#gantt-group-btn.active{
+  background:var(--blue);
+  color:#fff;
+  border-color:var(--blue);
+}
+#gantt-group-btn.active i{ color:#fff; }
+
+/* ── Alças de redimensionamento estilo Excel ── */
+.gantt-col-resize{
+  position:absolute;right:-2px;top:0;bottom:0;width:6px;
+  cursor:col-resize;background:transparent;z-index:10;
+  user-select:none;
+}
+.gantt-col-resize:hover,.gantt-col-resize:active{
+  background:var(--blue);box-shadow:0 0 0 1px var(--blue);
+}
+.gantt-row-resize{
+  position:absolute;left:0;right:0;bottom:-2px;height:6px;
+  cursor:row-resize;background:transparent;z-index:10;
+  user-select:none;
+}
+.gantt-row-resize:hover,.gantt-row-resize:active{
+  background:var(--blue);box-shadow:0 0 0 1px var(--blue);
+}
+/* Modo expandido — mostra todo texto, quebrando linha */
+.gantt-table.gantt-rows-expanded tbody td{
+  white-space:normal !important;
+  overflow:visible !important;
+  text-overflow:clip !important;
+  vertical-align:top !important;
+  padding-top:8px !important;
+  padding-bottom:8px !important;
+}
+.gantt-table.gantt-rows-expanded tbody td > div{
+  white-space:normal !important;
+}
+.gantt-table.gantt-rows-expanded tbody td span{
+  white-space:normal !important;
+}
+.portfolio-info{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;font-size:.76rem;color:var(--text-3);margin-bottom:12px}
+.portfolio-list{display:grid;grid-template-columns:1fr;gap:12px;margin-top:12px}
+.portfolio-row{display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr;gap:12px;align-items:center;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px 16px}
+.portfolio-row .title{font-weight:700;color:var(--text-1)}
+.portfolio-row .sub{font-size:.68rem;color:var(--text-4);margin-top:2px}
+.gantt-toolbar-extra,.calendar-toolbar-extra{display:flex;gap:8px;align-items:center;margin-left:auto}
+@media (max-width:980px){.portfolio-row{grid-template-columns:1fr 1fr}.team-calendar-table th:first-child,.team-calendar-table td:first-child{min-width:150px;max-width:150px}}
+@media print{body *{visibility:hidden !important}.print-section,.print-section *{visibility:visible !important}.print-section{position:absolute;left:0;top:0;width:100%;background:#fff;padding:20px}}
