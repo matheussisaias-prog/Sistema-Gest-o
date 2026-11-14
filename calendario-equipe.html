@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>TaskFlow — Calendário de Equipe</title>
+<title>Task Flow — Calendário de Equipe</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%23059669'/><text x='50%' y='54%' font-size='16' text-anchor='middle' dominant-baseline='middle' fill='white'>👥</text></svg>"/>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -684,7 +684,7 @@ input[type=color] { padding:3px 6px; height:36px; cursor:pointer; }
   <div class="sidebar-logo">
     <div class="logo-icon">⬡</div>
     <div>
-      <div class="logo-text">TaskFlow</div>
+      <div class="logo-text">Task Flow</div>
       <div class="logo-sub">Equipe</div>
     </div>
   </div>
@@ -1225,7 +1225,7 @@ function showPanel(name) {
     rotinas:'🔄 Rotinas & Eventos',
     importar:'⇪ Importar Excel',
   };
-  document.getElementById('page-title').textContent = titles[name]||'TaskFlow Equipe';
+  document.getElementById('page-title').textContent = titles[name]||'Task Flow Equipe';
   if (name==='calendario') renderCal();
   if (name==='funcionarios') renderEmployees();
   if (name==='rotinas') renderRotinas();

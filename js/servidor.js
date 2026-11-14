@@ -279,7 +279,7 @@
       .tf-sync.salvando{animation:tfp 1s infinite}.tf-sync.erro{background:var(--red);cursor:pointer}@keyframes tfp{50%{opacity:.35}}
       .tf-sair{border:1px solid var(--border);background:var(--surface);color:var(--text-2);border-radius:8px;height:32px;padding:0 10px;font:inherit;font-size:.78rem;cursor:pointer;display:flex;gap:6px;align-items:center}
       .tf-sair:hover{border-color:var(--red);color:var(--red)}
-      @media(max-width:760px){.tf-user-txt{display:none}.tf-sair span{display:none}}
+      @media(max-width:760px){.tf-user-txt{display:none}.tf-user .tf-sair span{display:none}}
       .tf-imp-fundo{position:fixed;inset:0;background:rgba(15,22,41,.55);display:flex;align-items:center;justify-content:center;z-index:9999;padding:16px}
       .tf-imp{background:var(--surface);border-radius:16px;max-width:460px;width:100%;padding:26px;box-shadow:0 20px 60px rgba(0,0,0,.25);color:var(--text-1)}
       .tf-imp h3{font-family:var(--font-head);font-size:1.15rem;margin:10px 0 8px}.tf-imp p{color:var(--text-2);font-size:.88rem;line-height:1.5;margin-bottom:10px}
@@ -287,7 +287,14 @@
       .tf-imp-ex{display:flex;gap:8px;align-items:center;font-size:.84rem;color:var(--text-2);margin:4px 0 10px}.tf-imp-nota{font-size:.78rem!important;color:var(--text-3)!important}
       .tf-imp-bt{display:flex;gap:10px;justify-content:flex-end;margin-top:14px}
       .tf-k-campo{display:block;font-size:.8rem;font-weight:600;color:var(--text-2);margin-bottom:12px}.tf-k-campo select,.tf-k-campo textarea{display:block;width:100%;margin-top:6px;border:1.5px solid var(--border);border-radius:8px;padding:9px 11px;font:inherit;font-size:.9rem;font-weight:400;background:var(--surface);color:var(--text-1)}
-      .tf-k-campo textarea{resize:vertical;min-height:110px}`;
+      .tf-k-campo textarea{resize:vertical;min-height:110px}
+      .tf-badge{background:var(--red);color:#fff;border-radius:9px;font-size:.66rem;font-weight:700;min-width:18px;height:18px;padding:0 5px;display:inline-flex;align-items:center;justify-content:center}
+      .tf-caixa{max-width:640px;max-height:84vh;display:flex;flex-direction:column}.tf-cx-cab{display:flex;justify-content:space-between;align-items:center}.tf-cx-cab h3{margin:0}
+      .tf-cx-sub{font-size:.82rem!important;color:var(--text-3)!important;margin:6px 0 12px!important}#tf-cx-lista{overflow-y:auto;display:flex;flex-direction:column;gap:10px;padding-right:4px}
+      .tf-cx-item{border:1px solid var(--border);border-left:3px solid var(--blue);border-radius:10px;padding:12px 14px;background:var(--surface2)}.tf-cx-item.ok{border-left-color:var(--green);opacity:.75}
+      .tf-cx-topo{display:flex;justify-content:space-between;gap:10px;font-size:.75rem;color:var(--text-3)}.tf-cx-ass{font-weight:700;color:var(--blue)}.tf-cx-item.ok .tf-cx-ass{color:var(--green)}
+      .tf-cx-de{font-size:.82rem;margin:4px 0 6px;color:var(--text-2)}.tf-cx-de span{color:var(--text-3)}.tf-cx-msg{white-space:pre-wrap;font-size:.86rem!important;color:var(--text-1)!important;margin:0 0 10px!important}
+      .tf-cx-acoes{display:flex;gap:8px;flex-wrap:wrap}.tf-cx-acoes a{text-decoration:none}.tf-cx-vazio{color:var(--text-3)!important;font-size:.88rem!important}`;
     document.head.appendChild(st);
     const cab = document.querySelector('.header'); if (!cab) return;
     const box = document.createElement('div'); box.className = 'tf-user';
@@ -299,13 +306,23 @@
     box.querySelector('b').textContent = E.usuario.nome;
     box.querySelector('.tf-user-txt span').textContent = `${perfis[E.usuario.perfil] || E.usuario.perfil} · ${E.usuario.empresa}`;
     cab.appendChild(box);
+    // rodapé da barra lateral: quem está logado (antes era um nome fixo)
+    const av = document.querySelector('.user-avatar'), un = document.querySelector('.user-name'), ur = document.querySelector('.user-role');
+    const ini = E.usuario.nome.trim().split(/\s+/); 
+    if (av) av.textContent = ((ini[0] || '')[0] + (ini.length > 1 ? ini[ini.length - 1][0] : '')).toUpperCase();
+    if (un) un.textContent = E.usuario.nome;
+    if (ur) ur.textContent = (perfis[E.usuario.perfil] || E.usuario.perfil) + ' · ' + E.usuario.empresa;
     box.querySelector('#tf-sair').onclick = async () => {
       if (E.salvando || E.timer && !E.erro) { await new Promise(r => setTimeout(r, 600)); }
       try { await api('sair', 'POST', {}); } catch (_) {}
       window.location.href = 'entrar.html';
     };
     box.querySelector('#tf-sync').onclick = () => { if (E.erro) gravar(); };
-    box.querySelector('#tf-contato').onclick = abrirContato;
+    if (+E.usuario.dono_plataforma) {
+      const bt = box.querySelector('#tf-contato'); bt.title = 'Caixa do Fale conosco';
+      bt.innerHTML = '<i class="fa-regular fa-envelope"></i><span>Fale conosco</span><b class="tf-badge" id="tf-badge" hidden></b>';
+      bt.onclick = abrirCaixa; contarCaixa();
+    } else box.querySelector('#tf-contato').onclick = abrirContato;
   }
   function abrirContato() {
     const fundo = document.createElement('div'); fundo.className = 'tf-imp-fundo';
@@ -330,6 +347,44 @@
       try { const r = await api('fale-conosco', 'POST', { assunto: fundo.querySelector('#tf-k-assunto').value, mensagem: msg }); fechar(); aviso('✓ ' + r.mensagem, 'success'); }
       catch (e) { b.disabled = false; aviso(e.message, 'error'); }
     };
+  }
+  async function contarCaixa() {
+    try { const r = await api('fale-conosco'); const b = document.getElementById('tf-badge'); if (b) { b.textContent = r.pendentes; b.hidden = !r.pendentes; } return r; } catch (_) { return null; }
+  }
+  async function abrirCaixa() {
+    const fundo = document.createElement('div'); fundo.className = 'tf-imp-fundo';
+    fundo.innerHTML = `<div class="tf-imp tf-caixa" role="dialog" aria-modal="true" aria-labelledby="tf-cx-t">
+      <div class="tf-cx-cab"><h3 id="tf-cx-t">Caixa do Fale conosco</h3><button class="tf-sair" id="tf-cx-fechar" aria-label="Fechar"><i class="fa-solid fa-xmark"></i></button></div>
+      <p class="tf-cx-sub">Mensagens enviadas pela tela de entrada e de dentro do sistema. Responda pelo seu e-mail e marque como respondida.</p>
+      <div id="tf-cx-lista"><p class="tf-cx-vazio"><i class="fa-solid fa-spinner fa-spin"></i> Carregando…</p></div></div>`;
+    document.body.appendChild(fundo);
+    const fechar = () => fundo.remove();
+    fundo.querySelector('#tf-cx-fechar').onclick = fechar;
+    fundo.addEventListener('click', ev => { if (ev.target === fundo) fechar(); });
+    const lista = fundo.querySelector('#tf-cx-lista');
+    const desenhar = (r) => {
+      lista.innerHTML = '';
+      if (!r || !r.mensagens.length) { lista.innerHTML = '<p class="tf-cx-vazio">Nenhuma mensagem por enquanto.</p>'; return; }
+      r.mensagens.forEach(m => {
+        const el = document.createElement('div'); el.className = 'tf-cx-item' + (m.respondido_em ? ' ok' : '');
+        const quando = new Date(m.criado_em.replace(' ', 'T') + 'Z').toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' });
+        el.innerHTML = `<div class="tf-cx-topo"><span class="tf-cx-ass"></span><span class="tf-cx-data"></span></div>
+          <div class="tf-cx-de"><b></b> <span></span></div><p class="tf-cx-msg"></p>
+          <div class="tf-cx-acoes"><a class="tf-sair" target="_blank" rel="noopener"><i class="fa-regular fa-envelope"></i><span>Responder por e-mail</span></a>
+          <button class="tf-sair tf-cx-marca"></button></div>`;
+        el.querySelector('.tf-cx-ass').textContent = m.assunto + (m.respondido_em ? ' · respondida' : '');
+        el.querySelector('.tf-cx-data').textContent = quando;
+        el.querySelector('.tf-cx-de b').textContent = m.nome;
+        el.querySelector('.tf-cx-de span').textContent = `<${m.email}>` + (m.empresa ? ` · ${m.empresa}` : (m.origem === 'login' ? ' · pela tela de entrada' : ''));
+        el.querySelector('.tf-cx-msg').textContent = m.mensagem;
+        el.querySelector('a').href = 'mailto:' + encodeURIComponent(m.email) + '?subject=' + encodeURIComponent('Re: ' + m.assunto + ' (Task Flow)');
+        const bt = el.querySelector('.tf-cx-marca');
+        bt.innerHTML = m.respondido_em ? '<i class="fa-solid fa-rotate-left"></i><span>Reabrir</span>' : '<i class="fa-solid fa-check"></i><span>Marcar como respondida</span>';
+        bt.onclick = async () => { bt.disabled = true; try { await api('fale-conosco/' + m.id, 'PATCH', { respondida: !m.respondido_em }); desenhar(await contarCaixa()); } catch (e) { bt.disabled = false; aviso(e.message, 'error'); } };
+        lista.appendChild(el);
+      });
+    };
+    desenhar(await contarCaixa());
   }
   function indicador(estado, msg) {
     const el = document.getElementById('tf-sync'); if (!el) return;

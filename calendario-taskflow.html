@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>TaskFlow — Calendário</title>
+  <title>Task Flow — Calendário</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%231d4ed8'/><text x='50%' y='54%' font-size='18' text-anchor='middle' dominant-baseline='middle' fill='white'>📅</text></svg>"/>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -698,7 +698,7 @@
   <aside class="sidebar" id="sidebar">
     <div class="sidebar-logo">
       <div class="logo-icon">⬡</div>
-      <span class="logo-text">TaskFlow</span>
+      <span class="logo-text">Task Flow</span>
     </div>
     <a class="back-btn" href="index.html">← Voltar ao Dashboard</a>
     <nav class="sidebar-nav">
@@ -1005,7 +1005,7 @@ function checkAndAlert() {
     overdue.forEach(a => {
       if (!alertsShown.has(a.id + '_overdue')) {
         alertsShown.add(a.id + '_overdue');
-        new Notification('⚠️ TaskFlow — Atividade Vencida', {
+        new Notification('⚠️ Task Flow — Atividade Vencida', {
           body: `${a.project}: ${a.description}\nResponsável: ${a.responsible}`,
           icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><rect width="32" height="32" rx="8" fill="%23ef4444"/><text x="50%" y="54%" font-size="18" text-anchor="middle" dominant-baseline="middle">⚠️</text></svg>',
           tag: a.id + '_overdue',
@@ -1015,7 +1015,7 @@ function checkAndAlert() {
     todayActs.forEach(a => {
       if (!alertsShown.has(a.id + '_today')) {
         alertsShown.add(a.id + '_today');
-        new Notification('🟡 TaskFlow — Vence Hoje', {
+        new Notification('🟡 Task Flow — Vence Hoje', {
           body: `${a.project}: ${a.description}\nResponsável: ${a.responsible}`,
           tag: a.id + '_today',
         });
@@ -1355,7 +1355,7 @@ function renderList() {
       <div class="empty-cal">
         <div class="em-icon">📋</div>
         <h3>Nenhuma atividade neste período</h3>
-        <p>Navegue para outro mês ou crie novas atividades no TaskFlow</p>
+        <p>Navegue para outro mês ou crie novas atividades no Task Flow</p>
       </div>`;
     return;
   }

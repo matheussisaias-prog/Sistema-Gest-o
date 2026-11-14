@@ -47,6 +47,8 @@ $rotas = [
     'PUT ausencias/funcionario/#' => 'rota_ausencias_substituir',
     'POST importar'             => 'rota_importar',
     'POST fale-conosco'         => 'rota_fale_conosco',
+    'GET fale-conosco'          => 'rota_fale_conosco_listar',
+    'PATCH fale-conosco/#'      => 'rota_fale_conosco_marcar',
 ];
 
 try {

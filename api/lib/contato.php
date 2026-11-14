@@ -1,5 +1,5 @@
 <?php
-/* TaskFlow PRO · servidor · Fale conosco (funciona com ou sem login) */
+/* Task Flow · servidor · Fale conosco (funciona com ou sem login) e a caixa do dono da plataforma */
 declare(strict_types=1);
 
 const ASSUNTOS_CONTATO = ['Dúvida', 'Problema no sistema', 'Sugestão', 'Comercial', 'Outro'];
@@ -17,14 +17,32 @@ function rota_fale_conosco(): array {
     $assunto = in_array($d['assunto'] ?? '', ASSUNTOS_CONTATO, true) ? $d['assunto'] : 'Outro';
     $msg = campo($d, 'mensagem', true, 5000);
     if (mb_strlen($msg) < 10) throw new ErroApi('Escreva um pouco mais sobre o que precisa (pelo menos 10 caracteres).');
-    $id = inserir('fale_conosco', ['empresa_id' => $u['empresa_id'] ?? null, 'usuario_id' => $u['id'] ?? null, 'nome' => $nome,
+    inserir('fale_conosco', ['empresa_id' => $u['empresa_id'] ?? null, 'usuario_id' => $u['id'] ?? null, 'nome' => $nome,
         'email' => $email, 'assunto' => $assunto, 'mensagem' => $msg, 'origem' => $u ? 'sistema' : 'login', 'ip' => $ip]);
-    $destino = config()['email_contato'] ?? null;               // quem recebe os avisos (no tf-config)
-    if ($destino) {
-        $emp = $u ? " — {$u['empresa_nome']}" : '';
-        enviar_email($destino, ['assunto' => "[Fale conosco] $assunto — $nome$emp",
-            'texto' => "Nova mensagem pelo Fale conosco (nº $id)\n\nDe: $nome <$email>$emp\nAssunto: $assunto\n\n$msg\n",
-            'html' => null, 'responder_para' => $email]);
-    }
+    // aviso aos donos da plataforma: só avisa e leva ao login; a mensagem é lida dentro do sistema
+    foreach (todos('SELECT nome, email FROM usuarios WHERE dono_plataforma = 1 AND excluido_em IS NULL AND email_confirmado_em IS NOT NULL') as $dono)
+        enviar_email($dono['email'], email_aviso_contato($dono['nome'], $assunto, link_app('/entrar.html')));
     return ['ok' => true, 'mensagem' => 'Mensagem enviada. Vamos responder no seu e-mail.'];
+}
+
+function exigir_dono(): array {
+    $u = exigir_login();
+    if (empty($u['dono_plataforma'])) throw new ErroApi('Só a administração do Task Flow vê esta caixa', 403);
+    return $u;
+}
+/** GET /api/fale-conosco — caixa de mensagens (dono da plataforma) */
+function rota_fale_conosco_listar(): array {
+    exigir_dono();
+    return ['mensagens' => todos('SELECT f.id, f.nome, f.email, f.assunto, f.mensagem, f.origem, f.criado_em, f.respondido_em, e.nome AS empresa
+        FROM fale_conosco f LEFT JOIN empresas e ON e.id = f.empresa_id ORDER BY f.respondido_em IS NOT NULL, f.id DESC LIMIT 300'),
+        'pendentes' => (int)um('SELECT COUNT(*) AS n FROM fale_conosco WHERE respondido_em IS NULL')['n']];
+}
+/** PATCH /api/fale-conosco/{id} {respondida: true|false} */
+function rota_fale_conosco_marcar(int $id): array {
+    $u = exigir_dono();
+    if (!um('SELECT id FROM fale_conosco WHERE id = ?', [$id])) throw new ErroApi('Mensagem não encontrada', 404);
+    $sim = !empty(corpo()['respondida']);
+    q('UPDATE fale_conosco SET respondido_em = ' . ($sim ? 'UTC_TIMESTAMP()' : 'NULL') . ' WHERE id = ?', [$id]);
+    registrar($u, (int)$u['empresa_id'], 'fale_conosco', $id, 'alterou', null, ['respondida' => $sim]);
+    return ['ok' => true];
 }

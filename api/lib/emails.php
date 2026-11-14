@@ -1,6 +1,6 @@
 <?php
 /* ═══════════════════════════════════════════════════════════════
-   TaskFlow PRO · servidor · modelos de e-mail (HTML + texto puro)
+   Task Flow · servidor · modelos de e-mail (HTML + texto puro)
    HTML em tabelas e estilos na própria tag: é o que Gmail, Outlook e celular exibem igual.
 ═══════════════════════════════════════════════════════════════ */
 declare(strict_types=1);
@@ -27,11 +27,8 @@ function email_modelo(array $c): array {
 <div style="display:none;max-height:0;overflow:hidden;opacity:0">' . h($c['previa']) . '</div>
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f1f4f9"><tr><td align="center" style="padding:32px 16px">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;font-family:\'Segoe UI\',Helvetica,Arial,sans-serif">
-  <tr><td style="background:#0f1629;border-radius:14px 14px 0 0;padding:22px 32px">
-    <table role="presentation" cellpadding="0" cellspacing="0"><tr>
-      <td style="width:32px;height:32px;background:#2563eb;border-radius:8px;text-align:center;vertical-align:middle;font-weight:800;font-size:13px;color:#ffffff">TF</td>
-      <td style="padding-left:10px;font-size:17px;font-weight:700;color:#ffffff;letter-spacing:-0.2px">TaskFlow PRO</td>
-    </tr></table>
+  <tr><td style="background:#0b1220;border-radius:14px 14px 0 0;padding:20px 32px">
+    <img src="' . h(link_app('/img/logo-email.png')) . '" width="200" height="40" alt="Task Flow by mercurium" style="display:block;border:0;outline:none;color:#ffffff;font-size:18px;font-weight:700">
   </td></tr>
   <tr><td style="background:#ffffff;padding:36px 32px 30px;border-left:1px solid #e2e8f0;border-right:1px solid #e2e8f0">
     <h1 style="margin:0 0 18px;font-size:23px;line-height:30px;font-weight:700;color:#0f172a">' . h($c['titulo']) . '</h1>
@@ -45,7 +42,7 @@ function email_modelo(array $c): array {
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td style="border-top:1px solid #e2e8f0;padding-top:18px;font-size:13px;line-height:20px;color:#64748b">' . $c['nota'] . '</td></tr></table>
   </td></tr>
   <tr><td style="background:#f8fafc;border:1px solid #e2e8f0;border-top:0;border-radius:0 0 14px 14px;padding:20px 32px;font-size:12px;line-height:19px;color:#94a3b8">
-    <strong style="color:#64748b">TaskFlow PRO</strong> · Gestão de obras e serviços de engenharia<br>
+    <strong style="color:#64748b">Task Flow</strong> by mercurium · Gestão de obras e serviços de engenharia<br>
     Dúvidas? Use o <a href="' . h($contato) . '" style="color:#64748b">Fale conosco</a> no sistema. Este e-mail não recebe respostas.<br>
     ' . h($c['motivo']) . '
   </td></tr>
@@ -54,16 +51,16 @@ function email_modelo(array $c): array {
     $txt = strip_tags(str_replace(['<br>', '</p>'], ["\n", "\n\n"], $c['saudacao'] . "\n\n" . implode("\n\n", $c['paragrafos'])));
     if (!empty($c['lista'])) $txt .= "\n" . implode("\n", array_map(fn($i) => '  - ' . strip_tags($i), $c['lista'])) . "\n";
     $txt = html_entity_decode($txt, ENT_QUOTES, 'UTF-8') . "\n\n" . $c['botao'] . ":\n" . $c['link'] . "\n\n" . html_entity_decode(strip_tags($c['nota']), ENT_QUOTES, 'UTF-8')
-         . "\n\n--\nTaskFlow PRO · Gestão de obras e serviços de engenharia\nDúvidas? Use o Fale conosco no sistema: $contato\nEste e-mail não recebe respostas.\n";
+         . "\n\n--\nTask Flow · Gestão de obras e serviços de engenharia\nDúvidas? Use o Fale conosco no sistema: $contato\nEste e-mail não recebe respostas.\n";
     return ['html' => $html, 'texto' => $txt];
 }
 
 function email_confirmacao(string $nome, string $empresa, string $link): array {
-    return ['assunto' => "Confirme seu e-mail para ativar a $empresa no TaskFlow PRO"] + email_modelo([
+    return ['assunto' => "Confirme seu e-mail para ativar a $empresa no Task Flow"] + email_modelo([
         'previa' => 'Falta um passo: confirme seu e-mail para começar a usar o sistema.',
         'titulo' => 'Confirme seu e-mail',
         'saudacao' => 'Olá, ' . h(primeiro_nome($nome)) . '.',
-        'paragrafos' => ['Recebemos o cadastro da <strong>' . h($empresa) . '</strong> no TaskFlow PRO, com você como <strong>administrador</strong>. Para ativar a conta e começar a usar o sistema, confirme seu e-mail.'],
+        'paragrafos' => ['Recebemos o cadastro da <strong>' . h($empresa) . '</strong> no Task Flow, com você como <strong>administrador</strong>. Para ativar a conta e começar a usar o sistema, confirme seu e-mail.'],
         'lista' => ['Cadastre as obras e o cronograma', 'Convide a equipe e defina o papel de cada pessoa', 'Acompanhe avanço, atrasos e documentos de NR em um só lugar'],
         'botao' => 'Confirmar meu e-mail', 'link' => $link,
         'nota' => 'Este link vale por <strong>48 horas</strong>. Se você não fez este cadastro, ignore este e-mail: nenhuma conta será ativada.',
@@ -79,7 +76,7 @@ function email_convite(string $nome, string $empresa, string $quem, string $perf
         'encarregado' => ['Lançar avanço, fotos e horas da sua equipe', 'Acompanhar as obras em que você atua'],
         'funcionario' => ['Ver as suas tarefas do dia', 'Lançar o avanço do que você executou'],
     ][$perfil] ?? [];
-    return ['assunto' => "$quem convidou você para a $empresa no TaskFlow PRO"] + email_modelo([
+    return ['assunto' => "$quem convidou você para a $empresa no Task Flow"] + email_modelo([
         'previa' => "Crie sua senha para acessar o sistema de gestão da $empresa.",
         'titulo' => 'Você foi convidado',
         'saudacao' => 'Olá, ' . h(primeiro_nome($nome)) . '.',
@@ -92,7 +89,7 @@ function email_convite(string $nome, string $empresa, string $quem, string $perf
 }
 
 function email_redefinir(string $nome, string $email, string $link): array {
-    return ['assunto' => 'Redefinição de senha do TaskFlow PRO'] + email_modelo([
+    return ['assunto' => 'Redefinição de senha do Task Flow'] + email_modelo([
         'previa' => 'Use o link para criar uma nova senha. Ele vale por 1 hora.',
         'titulo' => 'Redefinir sua senha',
         'saudacao' => 'Olá, ' . h(primeiro_nome($nome)) . '.',
@@ -100,5 +97,17 @@ function email_redefinir(string $nome, string $email, string $link): array {
         'botao' => 'Criar nova senha', 'link' => $link,
         'nota' => 'Este link vale por <strong>1 hora</strong> e só pode ser usado uma vez. Se você não pediu a troca, ignore este e-mail: sua senha atual continua valendo.',
         'motivo' => 'Você recebeu este e-mail porque alguém pediu a redefinição de senha da sua conta.',
+    ]);
+}
+
+function email_aviso_contato(string $nome, string $assunto, string $link): array {
+    return ['assunto' => "Nova mensagem no Fale conosco: $assunto"] + email_modelo([
+        'previa' => 'Chegou uma mensagem nova. Entre no Task Flow para ler e responder.',
+        'titulo' => 'Nova mensagem no Fale conosco',
+        'saudacao' => 'Olá, ' . h(primeiro_nome($nome)) . '.',
+        'paragrafos' => ['Chegou uma mensagem nova pelo Fale conosco, com o assunto <strong>' . h($assunto) . '</strong>. Por segurança, o conteúdo não vem por e-mail: entre no sistema e abra a caixa do Fale conosco, no cabeçalho, para ler e responder.'],
+        'botao' => 'Entrar no Task Flow', 'link' => $link,
+        'nota' => 'Você recebe este aviso porque administra a plataforma Task Flow.',
+        'motivo' => 'Aviso automático do Fale conosco.',
     ]);
 }

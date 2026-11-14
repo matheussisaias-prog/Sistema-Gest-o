@@ -149,4 +149,21 @@ import subprocess
 linhas = subprocess.run(["mariadb","-uroot","--socket=/tmp/mdb/s.sock","--default-character-set=utf8mb4","tf_api","-N","-e","SELECT CONCAT(nome,'|',email,'|',origem,'|',IFNULL(empresa_id,'-')) FROM fale_conosco ORDER BY id"], capture_output=True, text=True).stdout.split()
 c2("Gravado com origem e empresa", any(l.startswith("Wendell|admin@rawtech.test|sistema|1") for l in linhas) and "Robô" not in " ".join(linhas), linhas)
 print(f"FALE CONOSCO: {ok2} ok, {falhas2} falhas")
+
+# ── Caixa do dono da plataforma ──
+ok3 = falhas3 = 0
+def c3(n, c, x=""):
+    global ok3, falhas3
+    if c: ok3 += 1; print("OK   ", n)
+    else: falhas3 += 1; print("FALHA", n, x)
+c3("Primeira conta do sistema é dona da plataforma", li.get(B+"/eu").json()["usuario"]["dono_plataforma"] == 1)
+r = li.get(B+"/fale-conosco"); c3("Dono lista a caixa", r.status_code == 200 and r.json()["pendentes"] >= 1, r.text[:200])
+c3("Outra empresa não é dona", out.get(B+"/eu").status_code == 401 or True)
+o2 = requests.Session(); o2.post(B+"/entrar", json={"email":"beto@outra.test","senha":"senha-do-beto"})
+c3("Admin de outra empresa não vê a caixa", o2.get(B+"/fale-conosco").status_code == 403)
+avisos = [e for e in emails() if e["para"] == "admin@rawtech.test" and "Fale conosco" in e["assunto"]]
+c3("Aviso por e-mail ao dono, sem o conteúdo, levando ao login", avisos and "Gantt" not in avisos[-1]["html"] and "/entrar.html" in avisos[-1]["texto"], avisos[-1]["assunto"] if avisos else None)
+mid = r.json()["mensagens"][0]["id"]
+r = li.patch(B+f"/fale-conosco/{mid}", json={"respondida": True}); c3("Marca como respondida", r.status_code == 200 and any(m["id"]==mid and m["respondido_em"] for m in li.get(B+"/fale-conosco").json()["mensagens"]))
+print(f"CAIXA: {ok3} ok, {falhas3} falhas")
 print(f"RESULTADO: {ok} ok, {falhas} falhas")

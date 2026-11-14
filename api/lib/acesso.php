@@ -50,9 +50,10 @@ function rota_cadastro(): array {
         $eid = (int)$pdo->lastInsertId();
 
         $tok = token();
-        q('INSERT INTO usuarios (empresa_id, nome, email, senha_hash, perfil, acao_token_hash, acao_tipo, acao_expira)
-           VALUES (?,?,?,?, "administrador", ?, "confirmar_email", DATE_ADD(UTC_TIMESTAMP(), INTERVAL 2 DAY))',
-          [$eid, $adm_nome, $adm_email, password_hash($adm_senha, PASSWORD_DEFAULT), hash_token($tok)]);
+        $primeira = !um('SELECT id FROM usuarios WHERE dono_plataforma = 1 LIMIT 1');   // a primeira conta do sistema administra a plataforma
+        q('INSERT INTO usuarios (empresa_id, nome, email, senha_hash, perfil, acao_token_hash, acao_tipo, acao_expira, dono_plataforma)
+           VALUES (?,?,?,?, "administrador", ?, "confirmar_email", DATE_ADD(UTC_TIMESTAMP(), INTERVAL 2 DAY), ?)',
+          [$eid, $adm_nome, $adm_email, password_hash($adm_senha, PASSWORD_DEFAULT), hash_token($tok), $primeira ? 1 : 0]);
         $uid = (int)$pdo->lastInsertId();
         q('UPDATE empresas SET cadastrada_por = ? WHERE id = ?', [$uid, $eid]);
         $admin = ['id' => $uid];
@@ -130,7 +131,7 @@ function rota_entrar(): array {
 }
 
 function dados_eu(int $id): array {
-    return um('SELECT u.id, u.nome, u.email, u.perfil, u.funcionario_id, u.empresa_id, e.nome AS empresa
+    return um('SELECT u.id, u.nome, u.email, u.perfil, u.funcionario_id, u.empresa_id, u.dono_plataforma, e.nome AS empresa
                FROM usuarios u JOIN empresas e ON e.id = u.empresa_id WHERE u.id = ?', [$id]);
 }
 function rota_eu(): array { $u = exigir_login(); return ['usuario' => dados_eu((int)$u['id'])]; }

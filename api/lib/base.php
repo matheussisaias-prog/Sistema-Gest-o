@@ -58,6 +58,7 @@ const TF_MIGRACOES = [
             CONSTRAINT fk_fale_empresa FOREIGN KEY (empresa_id) REFERENCES empresas(id),
             CONSTRAINT fk_fale_usuario FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
           ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"],
+    3 => [['coluna', 'usuarios', 'dono_plataforma', "ALTER TABLE usuarios ADD COLUMN dono_plataforma TINYINT(1) NOT NULL DEFAULT 0 AFTER avisos_email"]],
 ];
 function migrar(PDO $pdo): void {
     $alvo = max(array_keys(TF_MIGRACOES));
@@ -68,7 +69,13 @@ function migrar(PDO $pdo): void {
     if (!$tem) return;                       // banco ainda não instalado: o instalador cria tudo já atualizado
     foreach (TF_MIGRACOES as $v => $cmds) {
         if ($v <= $atual) continue;
-        foreach ($cmds as $c) $pdo->exec($c);
+        foreach ($cmds as $c) {
+            if (is_array($c)) {          // ['coluna', tabela, coluna, sql]: só roda se a coluna ainda não existe (vale para MySQL e MariaDB)
+                $st = $pdo->prepare('SELECT COUNT(*) FROM information_schema.columns WHERE table_schema = DATABASE() AND table_name = ? AND column_name = ?');
+                $st->execute([$c[1], $c[2]]);
+                if (!$st->fetchColumn()) $pdo->exec($c[3]);
+            } else $pdo->exec($c);
+        }
     }
     @file_put_contents($marca, (string)$alvo);
 }
@@ -140,7 +147,7 @@ function usuario_atual(): ?array {
     $t = $_COOKIE[TF_SESSAO_COOKIE] ?? '';
     $u = null;
     if ($t === '') return null;
-    $r = um('SELECT u.id, u.empresa_id, u.nome, u.email, u.perfil, u.funcionario_id, e.nome AS empresa_nome
+    $r = um('SELECT u.id, u.empresa_id, u.nome, u.email, u.perfil, u.funcionario_id, u.dono_plataforma, e.nome AS empresa_nome
              FROM sessoes s JOIN usuarios u ON u.id = s.usuario_id JOIN empresas e ON e.id = u.empresa_id
              WHERE s.id = ? AND s.expira_em > UTC_TIMESTAMP() AND u.excluido_em IS NULL AND e.excluido_em IS NULL AND e.situacao <> "suspenso"',
             [hash_token($t)]);
@@ -176,7 +183,7 @@ function enviar_email(string $para, array $m): bool {
     }
     $de = $c['email_remetente'] ?? 'nao-responda@localhost';
     $sep = 'tf-' . bin2hex(random_bytes(8));
-    $cab = "From: =?UTF-8?B?" . base64_encode('TaskFlow PRO') . "?= <$de>\r\n"
+    $cab = "From: =?UTF-8?B?" . base64_encode('Task Flow') . "?= <$de>\r\n"
          . (!empty($m['responder_para']) ? 'Reply-To: ' . $m['responder_para'] . "\r\n" : '')
          . "MIME-Version: 1.0\r\nContent-Type: multipart/alternative; boundary=\"$sep\"\r\n";
     $corpo = "--$sep\r\nContent-Type: text/plain; charset=UTF-8\r\nContent-Transfer-Encoding: base64\r\n\r\n" . chunk_split(base64_encode($m['texto']))

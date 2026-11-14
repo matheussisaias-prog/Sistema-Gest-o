@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════
-   TaskFlow PRO · chat-flutuante.js
+   Task Flow · chat-flutuante.js
    Bolha de chat com a IA no canto da tela
    (separado do index.html na Fase 0 — a ordem de carregamento importa)
 ═══════════════════════════════════════════════════════════════ */
@@ -42,7 +42,7 @@ function fabRenderHistorico() {
     // Boas-vindas contextualizada
     const t = (typeof activities !== 'undefined') ? activities.length : 0;
     const p = (typeof projects   !== 'undefined') ? projects.length   : 0;
-    let boas = 'Olá! Sou o assistente do TaskFlow PRO. 👋\n\n';
+    let boas = 'Olá! Sou o assistente do Task Flow. 👋\n\n';
     boas += 'Posso te ajudar com:\n';
     boas += '- **Dúvidas sobre o sistema** — onde fica cada recurso, como usar\n';
     boas += '- **Seus projetos** — analisar, criar, reorganizar atividades\n';
