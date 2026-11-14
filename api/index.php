@@ -4,6 +4,7 @@
 ═══════════════════════════════════════════════════════════════ */
 declare(strict_types=1);
 require __DIR__ . '/lib/base.php';
+require __DIR__ . '/lib/emails.php';
 require __DIR__ . '/lib/acesso.php';
 require __DIR__ . '/lib/dados.php';
 require __DIR__ . '/lib/instalar.php';

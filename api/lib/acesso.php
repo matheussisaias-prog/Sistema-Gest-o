@@ -75,9 +75,8 @@ function rota_cadastro(): array {
         $pdo->commit();
     } catch (Throwable $e) { $pdo->rollBack(); throw $e; }
 
-    enviar_email($adm_email, 'Confirme seu e-mail no TaskFlow PRO',
-        "Olá, $adm_nome.\n\nPara ativar o cadastro da $nome_emp, abra o link abaixo (vale 48 horas):\n" . link_app("/entrar.html?confirmar=$tok") . "\n");
-    foreach ($convites as $c) enviar_convite($c, $nome_emp);
+    enviar_email($adm_email, email_confirmacao($adm_nome, $nome_emp, link_app("/entrar.html?confirmar=$tok")));
+    foreach ($convites as $c) enviar_convite($c, $nome_emp, $adm_nome);
 
     return ['ok' => true, 'empresa_id' => $eid, 'convites_enviados' => count($convites),
             'mensagem' => 'Cadastro feito. Enviamos um link de confirmação para o seu e-mail.'];
@@ -91,10 +90,8 @@ function criar_convite(array $autor, int $eid, string $nome, string $email, stri
       [$eid, $nome, $email, $perfil, $fid, hash_token($tok), $autor['id'], TF_CONVITE_DIAS]);
     return ['nome' => $nome, 'email' => $email, 'perfil' => $perfil, 'token' => $tok];
 }
-function enviar_convite(array $c, string $empresa): void {
-    enviar_email($c['email'], "Convite para o TaskFlow PRO — $empresa",
-        "Olá, {$c['nome']}.\n\nVocê foi convidado para o sistema de gestão da $empresa como {$c['perfil']}.\n" .
-        "Crie sua senha neste link (vale " . TF_CONVITE_DIAS . " dias):\n" . link_app("/entrar.html?convite={$c['token']}") . "\n");
+function enviar_convite(array $c, string $empresa, string $quem): void {
+    enviar_email($c['email'], email_convite($c['nome'], $empresa, $quem, $c['perfil'], link_app("/entrar.html?convite={$c['token']}"), TF_CONVITE_DIAS));
 }
 
 /** POST /api/confirmar-email {token} */
@@ -151,7 +148,7 @@ function rota_convidar(): array {
     if ($fid && !um('SELECT id FROM funcionarios WHERE id = ? AND empresa_id = ?', [$fid, $u['empresa_id']])) throw new ErroApi('Funcionário não encontrado', 404);
     $c = criar_convite($u, (int)$u['empresa_id'], campo($d, 'nome', true, 160), $email, $perfil, $fid);
     registrar($u, (int)$u['empresa_id'], 'convites', null, 'criou', null, ['email' => $email, 'perfil' => $perfil]);
-    enviar_convite($c, $u['empresa_nome']);
+    enviar_convite($c, $u['empresa_nome'], $u['nome']);
     return ['ok' => true];
 }
 
@@ -183,8 +180,7 @@ function rota_esqueci_senha(): array {
     if ($u) {
         $tok = token();
         q('UPDATE usuarios SET acao_token_hash = ?, acao_tipo = "redefinir_senha", acao_expira = DATE_ADD(UTC_TIMESTAMP(), INTERVAL 1 HOUR) WHERE id = ?', [hash_token($tok), $u['id']]);
-        enviar_email($email, 'Redefinir sua senha do TaskFlow PRO',
-            "Olá, {$u['nome']}.\n\nPara criar uma nova senha, abra o link (vale 1 hora):\n" . link_app("/entrar.html?redefinir=$tok") . "\n\nSe não foi você, ignore este e-mail.\n");
+        enviar_email($email, email_redefinir($u['nome'], $email, link_app("/entrar.html?redefinir=$tok")));
     }
     return ['ok' => true, 'mensagem' => 'Se o e-mail tiver cadastro, enviamos um link para redefinir a senha.'];
 }

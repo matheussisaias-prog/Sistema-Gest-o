@@ -159,14 +159,21 @@ function registrar(?array $u, int $empresa_id, string $tabela, ?int $id, string 
 }
 
 /* ── E-mail ──────────────────────────────────────────────────── */
-function enviar_email(string $para, string $assunto, string $texto): bool {
+/** $m = ['assunto','texto','html'] (de emails.php). Envia HTML com texto puro de reserva. */
+function enviar_email(string $para, array $m): bool {
     $c = config();
     if (($c['email_modo'] ?? 'mail') === 'arquivo') {   // testes: grava em arquivo em vez de enviar
-        file_put_contents($c['email_arquivo'], json_encode(['para' => $para, 'assunto' => $assunto, 'texto' => $texto], JSON_UNESCAPED_UNICODE) . "\n", FILE_APPEND);
+        file_put_contents($c['email_arquivo'], json_encode(['para' => $para, 'assunto' => $m['assunto'], 'texto' => $m['texto'], 'html' => $m['html'] ?? null], JSON_UNESCAPED_UNICODE) . "\n", FILE_APPEND);
         return true;
     }
     $de = $c['email_remetente'] ?? 'nao-responda@localhost';
-    $cab = "From: TaskFlow PRO <$de>\r\nContent-Type: text/plain; charset=UTF-8\r\n";
-    return @mail($para, '=?UTF-8?B?' . base64_encode($assunto) . '?=', $texto, $cab);
+    $sep = 'tf-' . bin2hex(random_bytes(8));
+    $cab = "From: =?UTF-8?B?" . base64_encode('TaskFlow PRO') . "?= <$de>\r\n"
+         . 'Reply-To: ' . ($c['email_suporte'] ?? $de) . "\r\n"
+         . "MIME-Version: 1.0\r\nContent-Type: multipart/alternative; boundary=\"$sep\"\r\n";
+    $corpo = "--$sep\r\nContent-Type: text/plain; charset=UTF-8\r\nContent-Transfer-Encoding: base64\r\n\r\n" . chunk_split(base64_encode($m['texto']))
+           . "--$sep\r\nContent-Type: text/html; charset=UTF-8\r\nContent-Transfer-Encoding: base64\r\n\r\n" . chunk_split(base64_encode($m['html'] ?? nl2br(htmlspecialchars($m['texto']))))
+           . "--$sep--\r\n";
+    return @mail($para, '=?UTF-8?B?' . base64_encode($m['assunto']) . '?=', $corpo, $cab, '-f' . $de);
 }
 function link_app(string $caminho): string { return rtrim(config()['app_url'] ?? '', '/') . $caminho; }
