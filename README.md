@@ -37,6 +37,10 @@ calendario-taskflow.html   calendário de atividades avulso (versão antiga, aut
 
 ## Regras
 
+- **A cada publicação, trocar a versão** (ex.: `2026.11.14.3`) em dois lugares: no `?v=` de todos os
+  `<script>`/`<link>` do `index.html` e em `APP_VERSION` (`js/sincronizacao.js`). Sem isso, o navegador
+  de quem já usa o sistema continua com os arquivos antigos guardados e mistura versões.
+
 - `load()` e `save()` são definidas em `extensoes.js` e chamam `loadBase()` / `saveBase()` de `inicio.js`.
 - Uma função só pode ser chamada **no carregamento** (fora de outra função) se o arquivo dela já tiver sido carregado.
   Dentro de funções e no `DOMContentLoaded`, qualquer função de qualquer arquivo pode ser usada.
