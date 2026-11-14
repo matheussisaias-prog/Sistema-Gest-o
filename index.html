@@ -1327,39 +1327,6 @@ select.form-control { cursor: pointer; }
 }
 
 /* ═══════════════════════════════════════════════
-   TELEGRAM MODAL
-═══════════════════════════════════════════════ */
-.tg-steps { display:flex; flex-direction:column; gap:8px; margin-bottom:16px; }
-.tg-step {
-  display:flex; align-items:flex-start; gap:10px;
-  padding:10px 12px;
-  background:var(--surface2);
-  border:1px solid var(--border);
-  border-radius:var(--radius-sm);
-  font-size:.78rem;
-  color:var(--text-2);
-  line-height:1.45;
-}
-.tg-step-num {
-  width:20px; height:20px;
-  border-radius:50%;
-  background:#2ca5e0;
-  color:#fff;
-  font-size:.65rem;
-  font-weight:700;
-  display:flex; align-items:center; justify-content:center;
-  flex-shrink:0;
-  margin-top:1px;
-}
-.tg-status {
-  padding:8px 12px;
-  border-radius:var(--radius-sm);
-  font-size:.75rem;
-  display:none;
-  margin-top:4px;
-}
-
-/* ═══════════════════════════════════════════════
    GANTT
 ═══════════════════════════════════════════════ */
 .gantt-wrap { overflow-x: auto; }
@@ -1990,10 +1957,6 @@ select.form-control { cursor: pointer; }
     </button>
     <button class="header-btn" onclick="openModal('modal-config-cal')" data-tooltip="Configurar Calendário / Feriados">
       <i class="fa-solid fa-calendar-days" style="color:var(--amber)"></i>
-    </button>
-    <button class="header-btn" id="tg-btn" onclick="openTelegramModal()" data-tooltip="Configurar Telegram" style="position:relative">
-      <i class="fa-brands fa-telegram" style="color:#2ca5e0"></i>
-      <span class="notif-dot" id="tg-dot" style="background:#2ca5e0;display:none"></span>
     </button>
     <button class="theme-toggle" onclick="toggleTheme()" data-tooltip="Alternar tema">
       <i class="fa-solid fa-moon" id="theme-icon"></i>
@@ -2927,58 +2890,6 @@ select.form-control { cursor: pointer; }
   </div>
 </div>
 
-<!-- MODAL TELEGRAM -->
-<div class="modal-overlay" id="modal-telegram" onclick="closeModalOutside(event,'modal-telegram')">
-  <div class="modal" style="max-width:460px">
-    <div class="modal-header">
-      <i class="fa-brands fa-telegram" style="color:#2ca5e0;font-size:1.1rem"></i>
-      <span class="modal-title">Configurar Alertas Telegram</span>
-      <button class="modal-close" onclick="closeModal('modal-telegram')"><i class="fa-solid fa-xmark"></i></button>
-    </div>
-    <div class="modal-body">
-      <div class="tg-steps">
-        <div class="tg-step"><span class="tg-step-num">1</span><span>No Telegram, abra o bot <strong>@TaskeFlowbot</strong> e envie <strong>/start</strong></span></div>
-        <div class="tg-step"><span class="tg-step-num">2</span><span>Cole o Token abaixo e clique <strong>🔍 Detectar Chat ID</strong> — preenchimento automático</span></div>
-        <div class="tg-step"><span class="tg-step-num">3</span><span>Clique <strong>🧪 Testar</strong> para confirmar o recebimento</span></div>
-      </div>
-      <div class="form-group">
-        <label class="form-label">🏢 Nome da Empresa <span style="color:var(--text-4);font-weight:400">(aparece nas mensagens)</span></label>
-        <input class="form-control" id="tg-company" placeholder="Ex: RAWTECH, Terra System..."/>
-      </div>
-      <div class="form-group">
-        <label class="form-label">Token do Bot</label>
-        <input class="form-control" id="tg-token" placeholder="Ex: 8657218565:AAG4uNDArby..." style="font-family:var(--font-mono);font-size:.75rem"/>
-      </div>
-      <div class="form-group">
-        <label class="form-label">Chat ID <span style="color:var(--text-4);font-weight:400">(detectado automaticamente)</span></label>
-        <div style="display:flex;gap:8px">
-          <input class="form-control" id="tg-chatid" placeholder="Clique em Detectar →" style="font-family:var(--font-mono)"/>
-          <button class="btn-secondary" onclick="tgDetect()" style="white-space:nowrap;flex-shrink:0">
-            <i class="fa-solid fa-magnifying-glass"></i> Detectar
-          </button>
-        </div>
-      </div>
-      <div class="form-group">
-        <label class="form-label">Alertas automáticos</label>
-        <select class="form-control" id="tg-auto">
-          <option value="1">Ativado — ao abrir e a cada 30 minutos</option>
-          <option value="0">Desativado</option>
-        </select>
-      </div>
-      <div class="tg-status" id="tg-status"></div>
-    </div>
-    <div class="modal-footer" style="justify-content:space-between">
-      <button class="btn-secondary" onclick="tgTest()"><i class="fa-solid fa-paper-plane"></i> Testar</button>
-      <div style="display:flex;gap:8px">
-        <button class="btn-secondary" onclick="closeModal('modal-telegram')">Cancelar</button>
-        <button class="btn-primary" onclick="tgSave()" style="background:#2ca5e0;box-shadow:0 2px 8px rgba(44,165,224,.3)">
-          <i class="fa-solid fa-floppy-disk"></i> Salvar
-        </button>
-      </div>
-    </div>
-  </div>
-</div>
-
 <!-- TOAST -->
 <div class="toast-wrap" id="toast-wrap"></div>
 
@@ -3165,7 +3076,6 @@ window.addEventListener('DOMContentLoaded', async () => {
 
   renderAll();
   buildColorPicker();
-  scheduleTelegram();
   loadHistory();
 
   if (window.__tfStorageWasReset) {
@@ -4120,188 +4030,6 @@ function toggleNotif() {
   toast(`⚠ ${list.length} atividade(s) vencida(s)`, 'warning');
 }
 
-/* ══════════════════════════════════════════════════
-   TELEGRAM INTEGRATION
-══════════════════════════════════════════════════ */
-const TG_KEY = 'tf_telegram';
-
-function tgLoad() {
-  try { return JSON.parse(localStorage.getItem(TG_KEY) || '{}'); } catch(_) { return {}; }
-}
-
-function openTelegramModal() {
-  const cfg = tgLoad();
-  document.getElementById('tg-company').value = cfg.company || '';
-  document.getElementById('tg-token').value   = cfg.token   || '';
-  document.getElementById('tg-chatid').value  = cfg.chatId  || '';
-  document.getElementById('tg-auto').value    = cfg.auto    || '1';
-  document.getElementById('tg-status').style.display = 'none';
-  document.getElementById('modal-telegram').classList.add('open');
-}
-
-function tgSave() {
-  const token   = document.getElementById('tg-token').value.trim();
-  const chatId  = document.getElementById('tg-chatid').value.trim();
-  const company = document.getElementById('tg-company').value.trim();
-  const auto    = document.getElementById('tg-auto').value;
-  if (!token)  return toast('Cole o Token do bot', 'error');
-  if (!chatId) return toast('Detecte o Chat ID primeiro', 'error');
-  localStorage.setItem(TG_KEY, JSON.stringify({ token, chatId, company, auto }));
-  // Mostra indicador verde no botão
-  const dot = document.getElementById('tg-dot');
-  if (dot) dot.style.display = '';
-  closeModal('modal-telegram');
-  toast('✓ Telegram configurado!', 'success');
-  scheduleTelegram();
-}
-
-async function tgDetect() {
-  const token = document.getElementById('tg-token').value.trim();
-  if (!token) return toast('Cole o Token primeiro', 'error');
-
-  tgStatus('⏳ Buscando Chat ID...', '#64748b');
-
-  try {
-    const res  = await fetch(`https://api.telegram.org/bot${token}/getUpdates`);
-    const data = await res.json();
-
-    if (!data.ok) return tgStatus('✗ Token inválido. Verifique e tente de novo.', 'var(--red)');
-
-    if (!data.result || !data.result.length) {
-      return tgStatus('⚠ Nenhuma mensagem encontrada. Abra o bot @TaskeFlowbot, envie /start e clique Detectar novamente.', 'var(--amber)');
-    }
-
-    const msg    = data.result[data.result.length - 1];
-    const chatId = msg.message?.chat?.id || msg.channel_post?.chat?.id;
-
-    if (!chatId) return tgStatus('✗ Não foi possível extrair o Chat ID. Mande uma mensagem ao bot e tente de novo.', 'var(--red)');
-
-    document.getElementById('tg-chatid').value = chatId;
-    tgStatus(`✅ Chat ID detectado: ${chatId} — clique Salvar!`, 'var(--green)');
-  } catch(e) {
-    tgStatus('✗ Erro: ' + e.message, 'var(--red)');
-  }
-}
-
-async function tgTest() {
-  const token  = document.getElementById('tg-token').value.trim();
-  const chatId = document.getElementById('tg-chatid').value.trim();
-  if (!token || !chatId) return toast('Preencha Token e Chat ID (use Detectar)', 'error');
-
-  tgStatus('⏳ Enviando mensagem de teste...', '#64748b');
-  const ok = await tgSend(token, chatId, '✅ *TaskFlow PRO* — Conexão confirmada\! Alertas ativos.');
-  if (ok) tgStatus('✅ Mensagem enviada! Verifique o Telegram.', 'var(--green)');
-  else    tgStatus('✗ Falhou. Verifique Token e Chat ID.', 'var(--red)');
-}
-
-function tgStatus(msg, color) {
-  const el = document.getElementById('tg-status');
-  if (!el) return;
-  el.style.display = 'block';
-  el.style.color   = color;
-  el.style.background = 'var(--surface2)';
-  el.style.border  = '1px solid var(--border)';
-  el.innerHTML = msg;
-}
-
-async function tgSend(token, chatId, text) {
-  try {
-    const res = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ chat_id: chatId, text, parse_mode: 'Markdown' })
-    });
-    const data = await res.json();
-    return data.ok === true;
-  } catch(e) {
-    console.error('Telegram erro:', e);
-    return false;
-  }
-}
-
-async function tgSendAlerts(triggeredBy) {
-  const cfg = tgLoad();
-  if (!cfg.token || !cfg.chatId) return;
-
-  const empresa = cfg.company || 'TaskFlow PRO';
-
-  // Vencidas
-  const overdue = activities
-    .filter(a => a.status !== 'Concluído' && a.dueDate && diffDays(a.dueDate) < 0)
-    .sort((a,b) => a.dueDate.localeCompare(b.dueDate));
-
-  // Próximas 3 mais próximas de vencer (independente de quanto falta)
-  const upcoming = activities
-    .filter(a => a.status !== 'Concluído' && a.dueDate && diffDays(a.dueDate) >= 0)
-    .sort((a,b) => a.dueDate.localeCompare(b.dueDate))
-    .slice(0, 3);
-
-  if (!overdue.length && !upcoming.length) return;
-
-  const agora = new Date().toLocaleString('pt-BR', { dateStyle:'short', timeStyle:'short' });
-  let msg = `🏢 *${empresa}*\n`;
-  msg += `🕐 ${agora}\n\n`;
-
-  if (overdue.length) {
-    msg += `🔴 *VENCIDAS (${overdue.length})*\n`;
-    overdue.slice(0, 8).forEach(a => {
-      const dias = Math.abs(diffDays(a.dueDate));
-      const tempo = dias === 1 ? '1 dia' : `${dias} dias`;
-      msg += `• *${a.description}*\n`;
-      msg += `  📁 ${a.project || '—'} | 👤 ${a.responsible || '—'}\n`;
-      msg += `  ⏰ Venceu há ${tempo} (${fmtDate(a.dueDate)})\n`;
-    });
-    if (overdue.length > 8) msg += `  _...e mais ${overdue.length - 8}_\n`;
-    msg += '\n';
-  }
-
-  if (upcoming.length) {
-    msg += `🟡 *PRÓXIMAS A VENCER*\n`;
-    upcoming.forEach(a => {
-      const diff = diffDays(a.dueDate);
-      const label = diff === 0 ? 'Hoje' : `Em ${diff} dia(s)`;
-      msg += `• *${a.description}*\n`;
-      msg += `  📁 ${a.project || '—'} | 👤 ${a.responsible || '—'}\n`;
-      msg += `  📅 ${fmtDate(a.dueDate)} — ${label}\n`;
-    });
-  }
-
-  const ok = await tgSend(cfg.token, cfg.chatId, msg);
-  if (ok) {
-    localStorage.setItem('tf_tg_last', Date.now().toString());
-    console.log('[Telegram] Alertas enviados —', triggeredBy);
-  }
-}
-
-function scheduleTelegram() {
-  const cfg = tgLoad();
-  if (!cfg.token || !cfg.chatId || cfg.auto !== '1') return;
-
-  // Mostra dot no botão
-  const dot = document.getElementById('tg-dot');
-  if (dot) dot.style.display = '';
-
-  // Envia ao abrir se passaram 30min
-  const last = parseInt(localStorage.getItem('tf_tg_last') || '0');
-  if (Date.now() - last >= 30 * 60 * 1000) {
-    setTimeout(() => tgSendAlerts('startup'), 2000);
-  }
-
-  // Intervalo de 30 minutos
-  if (!window._tgInterval) {
-    window._tgInterval = setInterval(() => {
-      const c = tgLoad();
-      if (c.auto !== '1') return;
-      const l = parseInt(localStorage.getItem('tf_tg_last') || '0');
-      if (Date.now() - l >= 30 * 60 * 1000) tgSendAlerts('interval');
-    }, 30 * 60 * 1000);
-  }
-}
-
-window.openTelegramModal = openTelegramModal;
-window.tgSave   = tgSave;
-window.tgDetect = tgDetect;
-window.tgTest   = tgTest;
 
 let _toastT;
 function toast(msg, type='info') {
@@ -5270,7 +4998,6 @@ O TaskFlow PRO tem as seguintes seções (abas no menu lateral):
 • **Relatório PDF** — gera relatórios executivos em PDF
 
 RECURSOS ESPECIAIS que o usuário pode usar:
-- **Alertas via Telegram bot** — notificações automáticas de prazos e atrasos (configurado em Importar)
 - **Importação de PDF com IA** — você lê um PDF e extrai atividades automaticamente
 - **Calculadora de horas úteis** — considera feriados brasileiros
 - **Baseline** — compara planejado × realizado em cada atividade

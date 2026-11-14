@@ -825,7 +825,7 @@ input[type=color] { padding:3px 6px; height:36px; cursor:pointer; }
                   <thead>
                     <tr>
                       <th>Nome Completo *</th><th>Cargo *</th><th>Equipe *</th>
-                      <th>Email</th><th>Telefone/WhatsApp</th><th>Cor (hex)</th>
+                      <th>Email</th><th>Telefone</th><th>Cor (hex)</th>
                       <th>Status *</th><th>Observações</th>
                     </tr>
                   </thead>
@@ -974,7 +974,7 @@ input[type=color] { padding:3px 6px; height:36px; cursor:pointer; }
           <input type="email" id="emp-email" placeholder="email@empresa.com"/>
         </div>
         <div class="form-group">
-          <label>Telefone / WhatsApp</label>
+          <label>Telefone</label>
           <input type="tel" id="emp-tel" placeholder="55 85 99999-0000"/>
         </div>
         <div class="form-group">
@@ -1916,7 +1916,7 @@ function processFile(file) {
             cargo:    String(r['Cargo *']||r['Cargo']||'').trim(),
             equipe:   String(r['Equipe *']||r['Equipe']||'').trim(),
             email:    String(r['Email']||'').trim(),
-            tel:      String(r['Telefone/WhatsApp']||r['Telefone']||'').trim(),
+            tel:      String(r['Telefone']||r['Telefone/WhatsApp']||'').trim(),
             color:    String(r['Cor (hex)']||r['Cor']||PALETTE[buf.employees.length%PALETTE.length]).trim(),
             status:   String(r['Status *']||r['Status']||'Ativo').trim(),
             obs:      String(r['Observações']||'').trim(),
@@ -2034,7 +2034,7 @@ function downloadModelo() {
   const wb = XLSX.utils.book_new();
 
   // Funcionários
-  const hdEmp = ['Nome Completo *','Cargo *','Equipe *','Email','Telefone/WhatsApp','Cor (hex)','Status *','Observações'];
+  const hdEmp = ['Nome Completo *','Cargo *','Equipe *','Email','Telefone','Cor (hex)','Status *','Observações'];
   const dataEmp = [
     hdEmp,
     ['WENDELL XAVIER','Gerente de Projetos','Equipe 01','wendell@empresa.com','55 85 99999-0001','#1D4ED8','Ativo','Gerente geral'],
