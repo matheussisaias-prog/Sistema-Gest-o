@@ -50,6 +50,9 @@ h2 { font-family: var(--font-head); font-size: 1.55rem; font-weight: 700; letter
 
 .campo { display: block; margin-bottom: 14px; }
 .campo > span { display: block; font-size: .8rem; font-weight: 600; color: var(--text-2); margin-bottom: 6px; }
+textarea { width: 100%; padding: 11px 13px; border: 1.5px solid var(--border); border-radius: var(--radius-sm); font: inherit; font-size: .95rem; color: var(--text-1); resize: vertical; min-height: 110px; }
+textarea:focus { outline: none; border-color: var(--blue); box-shadow: 0 0 0 3px rgba(37,99,235,.14); }
+.isca { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; }
 input, select { width: 100%; height: 44px; padding: 0 13px; border: 1.5px solid var(--border); border-radius: var(--radius-sm);
   font: inherit; font-size: .95rem; color: var(--text-1); background: var(--surface); transition: border-color var(--trans), box-shadow var(--trans); }
 input::placeholder { color: var(--text-4); }

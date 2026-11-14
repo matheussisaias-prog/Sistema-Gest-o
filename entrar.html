@@ -6,7 +6,7 @@
 <title>Entrar · TaskFlow PRO</title>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet"/>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
-<link rel="stylesheet" href="css/entrar.css?v=2026.11.14.4"/>
+<link rel="stylesheet" href="css/entrar.css?v=2026.11.14.5"/>
 </head>
 <body>
 <div class="tela">
@@ -138,6 +138,21 @@
         </form>
       </section>
 
+      <!-- FALE CONOSCO -->
+      <section class="passo" id="v-contato" hidden>
+        <button class="voltar" data-ir="entrar"><i class="fa-solid fa-arrow-left"></i>Voltar</button>
+        <h2>Fale conosco</h2>
+        <p class="sub">Dúvida, problema ou sugestão? Escreva aqui e respondemos no seu e-mail.</p>
+        <form id="f-contato" novalidate>
+          <label class="campo"><span>Seu nome</span><input id="k-nome" autocomplete="name" placeholder="Nome e sobrenome" required/></label>
+          <label class="campo"><span>Seu e-mail</span><input type="email" id="k-email" autocomplete="email" placeholder="voce@empresa.com.br" required/></label>
+          <label class="campo"><span>Assunto</span><select id="k-assunto"><option>Dúvida</option><option>Problema no sistema</option><option>Sugestão</option><option>Comercial</option><option>Outro</option></select></label>
+          <label class="campo"><span>Mensagem</span><textarea id="k-msg" rows="5" placeholder="Conte o que precisa" required></textarea></label>
+          <input type="text" id="k-site" tabindex="-1" autocomplete="off" class="isca" aria-hidden="true"/>
+          <button class="btn-principal" type="submit"><span>Enviar mensagem</span><i class="fa-solid fa-paper-plane"></i></button>
+        </form>
+      </section>
+
       <!-- CONFIRMANDO E-MAIL -->
       <section class="passo centro" id="v-confirmando" hidden>
         <div class="selo"><i class="fa-solid fa-spinner fa-spin"></i></div>
@@ -145,7 +160,7 @@
       </section>
 
     </div>
-    <footer class="rodape">TaskFlow PRO · <a href="mailto:suporte@mercurium.com.br">suporte@mercurium.com.br</a></footer>
+    <footer class="rodape">TaskFlow PRO · <a href="#contato" data-ir="contato">Fale conosco</a></footer>
   </main>
 </div>
 
@@ -163,6 +178,6 @@
   </div>
 </template>
 
-<script src="js/entrar.js?v=2026.11.14.4"></script>
+<script src="js/entrar.js?v=2026.11.14.5"></script>
 </body>
 </html>

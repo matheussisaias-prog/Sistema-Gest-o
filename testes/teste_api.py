@@ -28,7 +28,7 @@ an = sessao()
 r = J(an, "get", "/saude"); check("Saúde responde sem banco instalado? (deve falhar ao consultar)", r.status_code in (200, 500))
 r = J(an, "post", "/instalar", json={"token": "errado"}); check("Instalador recusa token errado", r.status_code == 403)
 r = J(an, "post", "/instalar", json={"token": "token-de-instalacao-de-teste-123456"})
-d = r.json(); check("Instalador cria o banco", r.status_code == 200 and d.get("tabelas") == 24 and d.get("documentos_nr") == 43, d)
+d = r.json(); check("Instalador cria o banco", r.status_code == 200 and d.get("tabelas") == 25 and d.get("documentos_nr") == 43, d)
 check("Trava de prazo da NR instalada no banco", d.get("trava_no_banco") is True, d)
 r = J(an, "post", "/instalar", json={"token": "token-de-instalacao-de-teste-123456"}); check("Instalador não roda duas vezes", r.status_code == 409)
 r = J(an, "get", "/saude"); check("Saúde: banco conectado", r.json().get("banco") is True)
@@ -129,5 +129,24 @@ r = J(adm, "get", "/eu"); check("Redefinir senha encerra as sessões abertas", r
 r = J(adm, "post", "/entrar", json={"email": "admin@rawtech.test", "senha": "nova-senha-adm"}); check("Entra com a senha nova", r.status_code == 200)
 r = J(adm, "post", "/sair"); r = J(adm, "get", "/eu"); check("Sair encerra a sessão", r.status_code == 401)
 
+
+# ── Fale conosco ──
+ok2 = falhas2 = 0
+def c2(n, c, x=""):
+    global ok2, falhas2
+    if c: ok2 += 1; print("OK   ", n)
+    else: falhas2 += 1; print("FALHA", n, x)
+v = requests.Session()
+r = v.post(B+"/fale-conosco", json={"nome":"Visitante","email":"v@x.test","assunto":"Comercial","mensagem":"Quero conhecer o sistema para minha empresa."}); c2("Fale conosco sem login", r.status_code == 200, r.text)
+r = v.post(B+"/fale-conosco", json={"nome":"V","email":"invalido","mensagem":"mensagem longa o bastante"}); c2("Recusa e-mail inválido", r.status_code == 400)
+r = v.post(B+"/fale-conosco", json={"nome":"V","email":"v@x.test","mensagem":"curta"}); c2("Recusa mensagem curta", r.status_code == 400)
+r = v.post(B+"/fale-conosco", json={"nome":"Robô","email":"r@x.test","mensagem":"spam spam spam spam","site":"http://spam"}); c2("Robô (campo isca) é ignorado em silêncio", r.status_code == 200)
+for i in range(4): v.post(B+"/fale-conosco", json={"nome":"V","email":"v@x.test","mensagem":"mensagem número %d ok" % i})
+r = v.post(B+"/fale-conosco", json={"nome":"V","email":"v@x.test","mensagem":"mais uma mensagem aqui"}); c2("Limite de 5 por hora sem login", r.status_code == 429, r.status_code)
+li = requests.Session(); li.post(B+"/entrar", json={"email":"admin@rawtech.test","senha":"nova-senha-adm"})
+r = li.post(B+"/fale-conosco", json={"assunto":"Problema no sistema","mensagem":"O Gantt não abriu hoje de manhã."}); c2("Fale conosco logado usa nome e e-mail da conta", r.status_code == 200, r.text)
+import subprocess
+linhas = subprocess.run(["mariadb","-uroot","--socket=/tmp/mdb/s.sock","--default-character-set=utf8mb4","tf_api","-N","-e","SELECT CONCAT(nome,'|',email,'|',origem,'|',IFNULL(empresa_id,'-')) FROM fale_conosco ORDER BY id"], capture_output=True, text=True).stdout.split()
+c2("Gravado com origem e empresa", any(l.startswith("Wendell|admin@rawtech.test|sistema|1") for l in linhas) and "Robô" not in " ".join(linhas), linhas)
+print(f"FALE CONOSCO: {ok2} ok, {falhas2} falhas")
 print(f"RESULTADO: {ok} ok, {falhas} falhas")
-sys.exit(1 if falhas else 0)

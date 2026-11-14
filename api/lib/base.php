@@ -50,6 +50,14 @@ function db(): PDO {
 /* ── Atualizações do banco (rodam sozinhas, uma vez, na primeira chamada depois de publicar) ── */
 const TF_MIGRACOES = [
     1 => ["ALTER TABLE projetos MODIFY situacao ENUM('Planejamento','Em andamento','Pausado','Concluído','Arquivado') NOT NULL DEFAULT 'Em andamento'"],
+    2 => ["CREATE TABLE IF NOT EXISTS fale_conosco (
+            id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY, empresa_id INT UNSIGNED NULL, usuario_id INT UNSIGNED NULL,
+            nome VARCHAR(160) NOT NULL, email VARCHAR(190) NOT NULL, assunto VARCHAR(40) NOT NULL, mensagem TEXT NOT NULL,
+            origem ENUM('login','sistema') NOT NULL, ip VARCHAR(45) NULL, respondido_em DATETIME NULL,
+            criado_em DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, KEY ix_fale_ip (ip, criado_em),
+            CONSTRAINT fk_fale_empresa FOREIGN KEY (empresa_id) REFERENCES empresas(id),
+            CONSTRAINT fk_fale_usuario FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
+          ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"],
 ];
 function migrar(PDO $pdo): void {
     $alvo = max(array_keys(TF_MIGRACOES));
@@ -169,7 +177,7 @@ function enviar_email(string $para, array $m): bool {
     $de = $c['email_remetente'] ?? 'nao-responda@localhost';
     $sep = 'tf-' . bin2hex(random_bytes(8));
     $cab = "From: =?UTF-8?B?" . base64_encode('TaskFlow PRO') . "?= <$de>\r\n"
-         . 'Reply-To: ' . ($c['email_suporte'] ?? $de) . "\r\n"
+         . (!empty($m['responder_para']) ? 'Reply-To: ' . $m['responder_para'] . "\r\n" : '')
          . "MIME-Version: 1.0\r\nContent-Type: multipart/alternative; boundary=\"$sep\"\r\n";
     $corpo = "--$sep\r\nContent-Type: text/plain; charset=UTF-8\r\nContent-Transfer-Encoding: base64\r\n\r\n" . chunk_split(base64_encode($m['texto']))
            . "--$sep\r\nContent-Type: text/html; charset=UTF-8\r\nContent-Transfer-Encoding: base64\r\n\r\n" . chunk_split(base64_encode($m['html'] ?? nl2br(htmlspecialchars($m['texto']))))

@@ -6,7 +6,7 @@
 declare(strict_types=1);
 
 function h(string $s): string { return htmlspecialchars($s, ENT_QUOTES, 'UTF-8'); }
-function email_suporte(): string { return config()['email_suporte'] ?? 'suporte@mercurium.com.br'; }
+function link_contato(): string { return link_app('/entrar.html#contato'); }
 function primeiro_nome(string $n): string { return explode(' ', trim($n))[0] ?: $n; }
 
 /**
@@ -14,7 +14,7 @@ function primeiro_nome(string $n): string { return explode(' ', trim($n))[0] ?: 
  * $c = [previa, titulo, saudacao, paragrafos[], lista[] (opcional), botao, link, nota, motivo]
  */
 function email_modelo(array $c): array {
-    $sup = email_suporte();
+    $contato = link_contato();
     $ps = ''; foreach ($c['paragrafos'] as $p) $ps .= '<p style="margin:0 0 16px;font-size:15px;line-height:24px;color:#334155">' . $p . '</p>';
     $lista = '';
     if (!empty($c['lista'])) {
@@ -46,7 +46,7 @@ function email_modelo(array $c): array {
   </td></tr>
   <tr><td style="background:#f8fafc;border:1px solid #e2e8f0;border-top:0;border-radius:0 0 14px 14px;padding:20px 32px;font-size:12px;line-height:19px;color:#94a3b8">
     <strong style="color:#64748b">TaskFlow PRO</strong> · Gestão de obras e serviços de engenharia<br>
-    Dúvidas? Fale com <a href="mailto:' . h($sup) . '" style="color:#64748b">' . h($sup) . '</a><br>
+    Dúvidas? Use o <a href="' . h($contato) . '" style="color:#64748b">Fale conosco</a> no sistema. Este e-mail não recebe respostas.<br>
     ' . h($c['motivo']) . '
   </td></tr>
 </table></td></tr></table></body></html>';
@@ -54,7 +54,7 @@ function email_modelo(array $c): array {
     $txt = strip_tags(str_replace(['<br>', '</p>'], ["\n", "\n\n"], $c['saudacao'] . "\n\n" . implode("\n\n", $c['paragrafos'])));
     if (!empty($c['lista'])) $txt .= "\n" . implode("\n", array_map(fn($i) => '  - ' . strip_tags($i), $c['lista'])) . "\n";
     $txt = html_entity_decode($txt, ENT_QUOTES, 'UTF-8') . "\n\n" . $c['botao'] . ":\n" . $c['link'] . "\n\n" . html_entity_decode(strip_tags($c['nota']), ENT_QUOTES, 'UTF-8')
-         . "\n\n--\nTaskFlow PRO · Gestão de obras e serviços de engenharia\nDúvidas? $sup\n";
+         . "\n\n--\nTaskFlow PRO · Gestão de obras e serviços de engenharia\nDúvidas? Use o Fale conosco no sistema: $contato\nEste e-mail não recebe respostas.\n";
     return ['html' => $html, 'texto' => $txt];
 }
 

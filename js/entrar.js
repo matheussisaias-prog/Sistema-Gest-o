@@ -179,6 +179,21 @@
     finally { ocupado(b, false); }
   });
 
+  /* ── Fale conosco ────────────────────────────── */
+  $('#f-contato').addEventListener('submit', async e => {
+    e.preventDefault(); const f = e.target; limparErros(f);
+    const nome = $('#k-nome'), email = $('#k-email'), msg = $('#k-msg');
+    if (!nome.value.trim()) return marcarErro(nome, 'Informe seu nome.');
+    if (!emailOk(email.value)) return marcarErro(email, 'Digite um e-mail válido para a resposta.');
+    if (msg.value.trim().length < 10) return marcarErro(msg, 'Escreva um pouco mais sobre o que precisa.');
+    const b = f.querySelector('button[type=submit]'); ocupado(b, true);
+    try {
+      const r = await api('fale-conosco', { nome: nome.value.trim(), email: email.value.trim(), assunto: $('#k-assunto').value, mensagem: msg.value.trim(), site: $('#k-site').value });
+      f.reset(); ir('entrar'); avisar(r.mensagem, 'ok');
+    } catch (err) { avisar(err.message); }
+    finally { ocupado(b, false); }
+  });
+
   /* ── Início: links que chegam por e-mail ─────── */
   async function iniciar() {
     const q = new URLSearchParams(location.search);
@@ -196,8 +211,13 @@
       ir('senha'); return;
     }
     if (location.hash === '#cadastro') { ir('cadastro-1'); return; }
+    if (location.hash === '#contato') { ir('contato'); return; }
     ir('entrar');
     try { await api('eu'); window.location.href = 'index.html'; } catch (_) { /* não está logado: fica no login */ }
   }
+  window.addEventListener('hashchange', () => {
+    if (location.hash === '#contato') ir('contato');
+    else if (location.hash === '#cadastro') ir('cadastro-1');
+  });
   iniciar();
 })();

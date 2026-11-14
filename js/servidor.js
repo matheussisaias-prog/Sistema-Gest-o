@@ -285,13 +285,16 @@
       .tf-imp h3{font-family:var(--font-head);font-size:1.15rem;margin:10px 0 8px}.tf-imp p{color:var(--text-2);font-size:.88rem;line-height:1.5;margin-bottom:10px}
       .tf-imp-ic{width:46px;height:46px;border-radius:12px;background:var(--blue-dim);color:var(--blue);display:flex;align-items:center;justify-content:center;font-size:1.2rem}
       .tf-imp-ex{display:flex;gap:8px;align-items:center;font-size:.84rem;color:var(--text-2);margin:4px 0 10px}.tf-imp-nota{font-size:.78rem!important;color:var(--text-3)!important}
-      .tf-imp-bt{display:flex;gap:10px;justify-content:flex-end;margin-top:14px}`;
+      .tf-imp-bt{display:flex;gap:10px;justify-content:flex-end;margin-top:14px}
+      .tf-k-campo{display:block;font-size:.8rem;font-weight:600;color:var(--text-2);margin-bottom:12px}.tf-k-campo select,.tf-k-campo textarea{display:block;width:100%;margin-top:6px;border:1.5px solid var(--border);border-radius:8px;padding:9px 11px;font:inherit;font-size:.9rem;font-weight:400;background:var(--surface);color:var(--text-1)}
+      .tf-k-campo textarea{resize:vertical;min-height:110px}`;
     document.head.appendChild(st);
     const cab = document.querySelector('.header'); if (!cab) return;
     const box = document.createElement('div'); box.className = 'tf-user';
     const perfis = { administrador: 'Administrador', gestor: 'Gestor', encarregado: 'Encarregado', funcionario: 'Funcionário' };
     box.innerHTML = `<span class="tf-sync" id="tf-sync" title="Tudo salvo no servidor"></span>
       <div class="tf-user-txt"><b></b><span></span></div>
+      <button class="tf-sair" id="tf-contato" title="Fale conosco"><i class="fa-regular fa-comment-dots"></i><span>Fale conosco</span></button>
       <button class="tf-sair" id="tf-sair" title="Sair"><i class="fa-solid fa-right-from-bracket"></i><span>Sair</span></button>`;
     box.querySelector('b').textContent = E.usuario.nome;
     box.querySelector('.tf-user-txt span').textContent = `${perfis[E.usuario.perfil] || E.usuario.perfil} · ${E.usuario.empresa}`;
@@ -302,6 +305,31 @@
       window.location.href = 'entrar.html';
     };
     box.querySelector('#tf-sync').onclick = () => { if (E.erro) gravar(); };
+    box.querySelector('#tf-contato').onclick = abrirContato;
+  }
+  function abrirContato() {
+    const fundo = document.createElement('div'); fundo.className = 'tf-imp-fundo';
+    fundo.innerHTML = `<form class="tf-imp" role="dialog" aria-modal="true" aria-labelledby="tf-k-t" novalidate>
+      <div class="tf-imp-ic"><i class="fa-regular fa-comment-dots"></i></div>
+      <h3 id="tf-k-t">Fale conosco</h3>
+      <p>Dúvida, problema ou sugestão? Respondemos no seu e-mail (<b></b>).</p>
+      <label class="tf-k-campo">Assunto<select id="tf-k-assunto"><option>Dúvida</option><option>Problema no sistema</option><option>Sugestão</option><option>Comercial</option><option>Outro</option></select></label>
+      <label class="tf-k-campo">Mensagem<textarea id="tf-k-msg" rows="5" placeholder="Conte o que precisa"></textarea></label>
+      <div class="tf-imp-bt"><button type="button" class="btn-secondary" id="tf-k-nao">Cancelar</button><button type="submit" class="btn-primary"><i class="fa-solid fa-paper-plane"></i> Enviar</button></div></form>`;
+    fundo.querySelector('p b').textContent = E.usuario.email;
+    document.body.appendChild(fundo);
+    const fechar = () => fundo.remove();
+    fundo.querySelector('#tf-k-nao').onclick = fechar;
+    fundo.addEventListener('click', ev => { if (ev.target === fundo) fechar(); });
+    fundo.querySelector('#tf-k-msg').focus();
+    fundo.querySelector('form').onsubmit = async ev => {
+      ev.preventDefault();
+      const msg = fundo.querySelector('#tf-k-msg').value.trim();
+      if (msg.length < 10) { aviso('Escreva um pouco mais sobre o que precisa.', 'warning'); return; }
+      const b = ev.submitter || fundo.querySelector('[type=submit]'); b.disabled = true;
+      try { const r = await api('fale-conosco', 'POST', { assunto: fundo.querySelector('#tf-k-assunto').value, mensagem: msg }); fechar(); aviso('✓ ' + r.mensagem, 'success'); }
+      catch (e) { b.disabled = false; aviso(e.message, 'error'); }
+    };
   }
   function indicador(estado, msg) {
     const el = document.getElementById('tf-sync'); if (!el) return;
