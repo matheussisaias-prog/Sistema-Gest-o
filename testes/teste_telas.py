@@ -10,6 +10,8 @@ def check(n, c, x=""):
 with sync_playwright() as p:
     nav = p.chromium.launch(executable_path="/usr/bin/google-chrome")
     pg = nav.new_page(viewport={"width": 1366, "height": 800}); rotas(pg)
+    STUB = "window.Chart=function(){return{destroy(){},update(){},data:{datasets:[]}}};window.Chart.register=function(){};window.Chart.defaults={font:{},plugins:{legend:{labels:{}},tooltip:{}},scale:{grid:{}}};"
+    pg.route("**/chart.umd.min.js", lambda r: r.fulfill(body=STUB, content_type="application/javascript"))
     erros = []; pg.on("pageerror", lambda e: erros.append(str(e)))
     pg.goto(B + "/entrar.html"); pg.wait_for_selector("#v-entrar:not([hidden])")
     check("Abre na tela de login", pg.is_visible("#f-entrar"))

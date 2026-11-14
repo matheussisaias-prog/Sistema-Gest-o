@@ -7,6 +7,7 @@ require __DIR__ . '/lib/base.php';
 require __DIR__ . '/lib/acesso.php';
 require __DIR__ . '/lib/dados.php';
 require __DIR__ . '/lib/instalar.php';
+require __DIR__ . '/lib/sincronia.php';
 
 $metodo = $_SERVER['REQUEST_METHOD'] ?? 'GET';
 $caminho = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';
@@ -35,6 +36,14 @@ $rotas = [
     'DELETE atividades/#'       => 'rota_atividades_excluir',
     'GET funcionarios'          => 'rota_funcionarios_listar',
     'POST funcionarios'         => 'rota_funcionarios_criar',
+    'PATCH funcionarios/#'      => 'rota_funcionarios_alterar',
+    'DELETE funcionarios/#'     => 'rota_funcionarios_excluir',
+    'GET recursos'              => 'rota_recursos_listar',
+    'POST recursos'             => 'rota_recursos_criar',
+    'DELETE recursos/#'         => 'rota_recursos_excluir',
+    'GET ausencias'             => 'rota_ausencias_listar',
+    'PUT ausencias/funcionario/#' => 'rota_ausencias_substituir',
+    'POST importar'             => 'rota_importar',
 ];
 
 try {

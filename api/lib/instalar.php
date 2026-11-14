@@ -28,6 +28,7 @@ function rota_instalar(): array {
     if (preg_match('/DELIMITER \/\/\s*(CREATE TRIGGER.*?END)\/\//s', $txt, $m)) {
         try { db()->exec($m[1]); $trava = true; } catch (Throwable $e) { $trava = false; }
     }
+    @file_put_contents(dirname(config()['_arquivo']) . '/tf-banco-versao-gestao.txt', (string)max(array_keys(TF_MIGRACOES)));
     $tabelas = (int)um("SELECT COUNT(*) AS n FROM information_schema.tables WHERE table_schema = DATABASE() AND table_type = 'BASE TABLE'")['n'];
     $catalogo = (int)um('SELECT COUNT(*) AS n FROM tipos_documento WHERE empresa_id IS NULL')['n'];
     return ['ok' => true, 'comandos' => $feitos, 'tabelas' => $tabelas, 'documentos_nr' => $catalogo, 'trava_no_banco' => $trava,

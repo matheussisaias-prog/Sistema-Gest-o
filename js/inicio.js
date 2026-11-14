@@ -9,6 +9,11 @@
 window.addEventListener('DOMContentLoaded', async () => {
   backupAndResetStaleBrowserData();
 
+  // Fase 1: com o servidor, os dados vêm de lá (e o login é obrigatório)
+  if (window.tfServidor) {
+    const ok = await tfServidor.iniciar();   // sem login, vai para entrar.html
+    if (!ok) return;
+  } else {
   // Tenta carregar do Gist primeiro, somente se estiver configurado manualmente
   const gistData = await gistLoad();
   if (gistData && (gistData.activities || gistData.projects)) {
@@ -26,6 +31,7 @@ window.addEventListener('DOMContentLoaded', async () => {
     }
   } else {
     load();
+  }
   }
 
   // Loader

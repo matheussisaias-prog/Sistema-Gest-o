@@ -134,7 +134,7 @@ CREATE TABLE projetos (
   local_obra     VARCHAR(200) NULL,
   gestor_id      INT UNSIGNED NULL,
   gestor_nome    VARCHAR(160) NULL,               -- texto antigo, quando não achar a pessoa
-  situacao       ENUM('Em andamento','Pausado','Concluído','Arquivado') NOT NULL DEFAULT 'Em andamento',
+  situacao       ENUM('Planejamento','Em andamento','Pausado','Concluído','Arquivado') NOT NULL DEFAULT 'Em andamento',
   inicio         DATE NULL,
   fim            DATE NULL,
   cor            CHAR(7) NULL,

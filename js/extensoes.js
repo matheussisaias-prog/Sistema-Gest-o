@@ -92,6 +92,7 @@
     });
   }
   window.vincularAtividadesProjetos = vincularAtividadesProjetos;
+  window.buildEmployeeDatabase = function(){ buildEmployeeDatabase(); };
   window.load = function(){ originalLoad(); loadExtraStores(); vincularAtividadesProjetos(); };
   window.save = function(){ vincularAtividadesProjetos(); buildEmployeeDatabase(); originalSave(); saveExtraStores(); scheduleGistSave(); };
 

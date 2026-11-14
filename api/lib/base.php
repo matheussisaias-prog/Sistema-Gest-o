@@ -26,7 +26,7 @@ function config(): array {
     // api/lib -> api -> public_html -> <domínio> -> domains -> raiz da hospedagem
     $caminhos = array_filter([getenv('TF_CONFIG') ?: null, dirname(__DIR__, 5) . '/tf-config-gestao.php', dirname(__DIR__, 3) . '/tf-config.php']);
     foreach ($caminhos as $c) {
-        if (is_file($c)) { $cfg = require $c; return $cfg; }
+        if (is_file($c)) { $cfg = require $c; $cfg['_arquivo'] = $c; return $cfg; }
     }
     throw new ErroApi('Servidor sem configuração (tf-config.php não encontrado)', 503);
 }
@@ -43,7 +43,26 @@ function db(): PDO {
         PDO::ATTR_EMULATE_PREPARES => false,
     ]);
     $pdo->exec("SET time_zone = '+00:00', NAMES utf8mb4");
+    migrar($pdo);
     return $pdo;
+}
+
+/* ── Atualizações do banco (rodam sozinhas, uma vez, na primeira chamada depois de publicar) ── */
+const TF_MIGRACOES = [
+    1 => ["ALTER TABLE projetos MODIFY situacao ENUM('Planejamento','Em andamento','Pausado','Concluído','Arquivado') NOT NULL DEFAULT 'Em andamento'"],
+];
+function migrar(PDO $pdo): void {
+    $alvo = max(array_keys(TF_MIGRACOES));
+    $marca = dirname(config()['_arquivo'] ?? (sys_get_temp_dir() . '/x')) . '/tf-banco-versao-gestao.txt';
+    $atual = is_file($marca) ? (int)trim((string)file_get_contents($marca)) : 0;
+    if ($atual >= $alvo) return;
+    $tem = $pdo->query("SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = 'projetos'")->fetchColumn();
+    if (!$tem) return;                       // banco ainda não instalado: o instalador cria tudo já atualizado
+    foreach (TF_MIGRACOES as $v => $cmds) {
+        if ($v <= $atual) continue;
+        foreach ($cmds as $c) $pdo->exec($c);
+    }
+    @file_put_contents($marca, (string)$alvo);
 }
 
 function q(string $sql, array $p = []): PDOStatement { $st = db()->prepare($sql); $st->execute($p); return $st; }
@@ -56,7 +75,7 @@ function corpo(): array {
     static $b = null;
     if ($b !== null) return $b;
     $m = $_SERVER['REQUEST_METHOD'] ?? 'GET';
-    if (in_array($m, ['POST', 'PATCH', 'PUT', 'DELETE'], true)) {
+    if (in_array($m, ['POST', 'PATCH', 'PUT'], true) || ($m === 'DELETE' && (int)($_SERVER['CONTENT_LENGTH'] ?? 0) > 0)) {
         // Só JSON: um formulário de outro site não consegue enviar JSON sem permissão (proteção contra CSRF)
         $ct = $_SERVER['CONTENT_TYPE'] ?? '';
         if (stripos($ct, 'application/json') !== 0) throw new ErroApi('Envie os dados em JSON', 415);

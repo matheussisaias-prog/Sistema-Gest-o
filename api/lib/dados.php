@@ -50,7 +50,7 @@ function atualizar(string $tabela, int $id, array $campos): void {
 const REGRAS_PROJETO = [
     'codigo' => ['texto', 30], 'nome' => ['texto', 160], 'descricao' => ['texto', 5000], 'cliente' => ['texto', 160],
     'local_obra' => ['texto', 200], 'gestor_id' => ['id'], 'gestor_nome' => ['texto', 160],
-    'situacao' => ['lista', ['Em andamento', 'Pausado', 'Concluído', 'Arquivado']],
+    'situacao' => ['lista', ['Planejamento', 'Em andamento', 'Pausado', 'Concluído', 'Arquivado']],
     'inicio' => ['data'], 'fim' => ['data'], 'cor' => ['texto', 7], 'valor_contrato' => ['num', 0, 1e12],
 ];
 /** Obras que o usuário pode ver (ids), ou null = todas da empresa. */
