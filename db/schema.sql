@@ -423,12 +423,31 @@ CREATE TABLE rdos (
   CONSTRAINT fk_rdo_copia FOREIGN KEY (copia_enviada_por) REFERENCES usuarios(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+CREATE TABLE avancos (
+  id            INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  empresa_id    INT UNSIGNED NOT NULL,
+  atividade_id  INT UNSIGNED NOT NULL,
+  usuario_id    INT UNSIGNED NOT NULL,
+  de_avanco     TINYINT UNSIGNED NOT NULL,
+  para_avanco   TINYINT UNSIGNED NOT NULL,
+  comentario    TEXT NULL,
+  id_local      VARCHAR(40) NULL,
+  criado_em     DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE KEY uq_avanco_local (empresa_id, id_local),
+  KEY ix_avanco_ativ (atividade_id, criado_em),
+  CONSTRAINT fk_avanco_empresa FOREIGN KEY (empresa_id) REFERENCES empresas(id),
+  CONSTRAINT fk_avanco_ativ FOREIGN KEY (atividade_id) REFERENCES atividades(id),
+  CONSTRAINT fk_avanco_usuario FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 CREATE TABLE fotos (
   id             INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   empresa_id     INT UNSIGNED NOT NULL,
   projeto_id     INT UNSIGNED NOT NULL,
   atividade_id   INT UNSIGNED NULL,
   rdo_id         INT UNSIGNED NULL,
+  avanco_id      INT UNSIGNED NULL,               -- foto de uma atualização de avanço (Minhas atividades)
+  ocorrencia_id  INT UNSIGNED NULL,               -- foto de um impedimento ("Travou")
   no_rdo         TINYINT(1) NOT NULL DEFAULT 1,   -- o gestor escolhe quais saem
   enviada_por    INT UNSIGNED NOT NULL,           -- usuário que enviou
   funcionario_id INT UNSIGNED NULL,               -- quando o encarregado lança por alguém
@@ -483,6 +502,8 @@ CREATE TABLE ocorrencias (
   descricao      TEXT NOT NULL,
   registrada_por INT UNSIGNED NOT NULL,
   resolvida_em   DATETIME NULL,
+  resolvida_por  INT UNSIGNED NULL,
+  id_local       VARCHAR(40) NULL,                -- enviado do celular (evita duplicar quando reenvia sem internet)
   criado_em      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   excluido_em    DATETIME NULL,
   KEY ix_ocor_dia (projeto_id, data),

@@ -111,3 +111,16 @@ function email_aviso_contato(string $nome, string $assunto, string $link): array
         'motivo' => 'Aviso automático do Fale conosco.',
     ]);
 }
+
+function email_aviso_impedimento(string $nome, string $quem, string $obra, string $atividade, string $motivo, string $texto, string $link): array {
+    return ['assunto' => "Travou: $atividade ($obra)"] + email_modelo([
+        'previa' => "$quem informou um impedimento: $motivo.",
+        'titulo' => 'Uma atividade travou',
+        'saudacao' => 'Olá, ' . h(primeiro_nome($nome)) . '.',
+        'paragrafos' => [h($quem) . ' informou que a atividade <strong>' . h($atividade) . '</strong>, da obra <strong>' . h($obra) . '</strong>, está travada.'],
+        'lista' => array_values(array_filter(['Motivo: ' . h($motivo), $texto !== '' ? 'O que falta: ' . h($texto) : null])),
+        'botao' => 'Abrir a obra', 'link' => $link,
+        'nota' => 'A atividade fica marcada como travada no cronograma até alguém liberar.',
+        'motivo' => 'Você recebe este aviso porque é gestor desta obra no Task Flow.',
+    ]);
+}

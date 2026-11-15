@@ -15,6 +15,7 @@ require __DIR__ . '/lib/obras.php';
 require __DIR__ . '/lib/cronograma.php';
 require __DIR__ . '/lib/montar.php';
 require __DIR__ . '/lib/assistente.php';
+require __DIR__ . '/lib/minhas.php';
 
 $metodo = $_SERVER['REQUEST_METHOD'] ?? 'GET';
 $caminho = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';
@@ -49,6 +50,12 @@ $rotas = [
     'GET assistente/tipos'      => 'rota_assistente_tipos',
     'POST assistente/previa'    => 'rota_assistente_previa',
     'POST obras/#/assistente-montar' => 'rota_assistente_montar',
+    'GET minhas-atividades'     => 'rota_minhas_atividades',
+    'POST atividades/#/avanco'  => 'rota_atividade_avanco',
+    'POST atividades/#/impedimento' => 'rota_atividade_impedimento',
+    'GET atividades/#/fotos'    => 'rota_atividade_fotos',
+    'GET fotos/#'               => 'rota_foto_arquivo',
+    'PATCH ocorrencias/#/liberar' => 'rota_ocorrencia_liberar',
     'DELETE membros/#'          => 'rota_membros_excluir',
     'GET linhas-base/#'         => 'rota_linha_base_itens',
     'GET atividades/#/historico' => 'rota_atividade_historico',

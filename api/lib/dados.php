@@ -155,7 +155,7 @@ const REGRAS_ATIVIDADE = [
 /** O que cada perfil pode mudar numa atividade. */
 const CAMPOS_POR_PERFIL = [
     'encarregado' => ['avanco', 'situacao', 'observacoes'],
-    'funcionario' => ['avanco', 'situacao'],
+    'funcionario' => [],          // funcionário atualiza só em Minhas atividades, com foto (POST atividades/{id}/avanco)
 ];
 function atividade_visivel(array $u, int $id): array {
     $a = um('SELECT * FROM atividades WHERE id = ? AND empresa_id = ? AND excluido_em IS NULL', [$id, $u['empresa_id']]);
@@ -208,7 +208,7 @@ function rota_atividades_alterar(int $id): array {
     if (!in_array($u['perfil'], PODE_TUDO, true)) {
         $permitidos = CAMPOS_POR_PERFIL[$u['perfil']] ?? [];
         $extra = array_diff(array_keys($d), $permitidos);
-        if ($extra) throw new ErroApi('Seu perfil só pode alterar: ' . implode(', ', $permitidos), 403);
+        if ($extra) throw new ErroApi($permitidos ? 'Seu perfil só pode alterar: ' . implode(', ', $permitidos) : 'Atualize o avanço em Minhas atividades, com foto do serviço', 403);
     }
     $c = limpar($d, REGRAS_ATIVIDADE);
     unset($c['projeto_id']);   // atividade não muda de obra

@@ -24,7 +24,7 @@ INSERT INTO ausencias(empresa_id,funcionario_id,inicio,fim,tipo) VALUES (1,2,'20
 INSERT INTO mensagens(empresa_id,de_usuario_id,para_funcionario_id,texto) VALUES (1,1,2,'Amanhã começa a pintura');
 INSERT INTO historico(empresa_id,usuario_id,tabela,registro_id,acao,antes,depois) VALUES (1,2,'atividades',2,'alterou','{\"avanco\":0}','{\"avanco\":30}');
 "
-check "28 tabelas" "$($M -e "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema='tf' AND table_type='BASE TABLE'")" 28
+check "29 tabelas" "$($M -e "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema='tf' AND table_type='BASE TABLE'")" 29
 check "Rawtech só vê as suas atividades" "$($M -e "SELECT COUNT(*) FROM atividades WHERE empresa_id=1")" 2
 check "Outra empresa só vê a sua" "$($M -e "SELECT GROUP_CONCAT(descricao) FROM atividades WHERE empresa_id=2")" "Atividade da outra"
 check "Efetivo do RDO pelas horas" "$($M -e "SELECT COUNT(DISTINCT funcionario_id) FROM apontamentos WHERE projeto_id=1 AND data='2026-11-14'")" 2
