@@ -151,6 +151,21 @@ CREATE TABLE calendario_dias (
   CONSTRAINT fk_caldias_cal FOREIGN KEY (calendario_id) REFERENCES calendarios(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- Modelos de cronograma da empresa (os do Task Flow ficam no código)
+CREATE TABLE modelos_cronograma (
+  id            INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  empresa_id    INT UNSIGNED NOT NULL,
+  nome          VARCHAR(120) NOT NULL,
+  tipo_servico  VARCHAR(40)  NULL,
+  linhas        MEDIUMTEXT   NOT NULL,
+  projeto_origem INT UNSIGNED NULL,
+  criado_por    INT UNSIGNED NULL,
+  criado_em     DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  excluido_em   DATETIME NULL,
+  KEY ix_modelos_empresa (empresa_id),
+  CONSTRAINT fk_modelos_empresa FOREIGN KEY (empresa_id) REFERENCES empresas(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 CREATE TABLE projetos (
   id             INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   empresa_id     INT UNSIGNED NOT NULL,

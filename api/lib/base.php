@@ -89,6 +89,19 @@ const TF_MIGRACOES = [
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci",
           ['coluna', 'projetos', 'calendario_id', "ALTER TABLE projetos ADD COLUMN calendario_id INT UNSIGNED NULL AFTER art_numero"],
           ['coluna', 'atividades', 'duracao_dias', "ALTER TABLE atividades ADD COLUMN duracao_dias DECIMAL(6,1) NULL AFTER duracao_horas"]],
+    6 => ["CREATE TABLE IF NOT EXISTS modelos_cronograma (
+  id            INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  empresa_id    INT UNSIGNED NOT NULL,
+  nome          VARCHAR(120) NOT NULL,
+  tipo_servico  VARCHAR(40)  NULL,
+  linhas        MEDIUMTEXT   NOT NULL,
+  projeto_origem INT UNSIGNED NULL,
+  criado_por    INT UNSIGNED NULL,
+  criado_em     DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  excluido_em   DATETIME NULL,
+  KEY ix_modelos_empresa (empresa_id),
+  CONSTRAINT fk_modelos_empresa FOREIGN KEY (empresa_id) REFERENCES empresas(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"],
 ];
 function migrar(PDO $pdo): void {
     $alvo = max(array_keys(TF_MIGRACOES));

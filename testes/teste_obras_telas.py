@@ -57,8 +57,8 @@ with sync_playwright() as p:
     pg.wait_for_function("[...document.querySelectorAll('.ob-card')].some(c => c.innerText.includes('NR12-007') && c.innerText.includes('Pausada'))"); check("Pausar pelo menu", True)
     c = pg.locator(".ob-card", has_text="NR12-007"); c.locator(".ob-menu-bt").click(); pg.click(".ob-menu >> text=Retomar")
     pg.wait_for_function("[...document.querySelectorAll('.ob-card')].some(c => c.innerText.includes('NR12-007') && c.innerText.includes('Atenção'))"); check("Retomar pelo menu", True)
-    pg.locator(".ob-card", has_text="ELE-014").locator(".ob-abrir").click(); pg.wait_for_selector("#view-gantt.active")
-    check("Abrir obra leva ao cronograma filtrado", pg.input_value("#gantt-f-project") == "Subestação 13,8 kV · Galpão 3")
+    pg.locator(".ob-card", has_text="ELE-014").locator(".ob-abrir").click(); pg.wait_for_selector("#view-obra.active .og-cab")
+    check("Abrir obra leva à Obra aberta", "Subestação 13,8 kV · Galpão 3" in pg.inner_text(".og-cab"))
     # encarregado e funcionário
     e = nova(nav, {"width": 1366, "height": 900}); entrar(e, "jp@rawtech.com.br", "Joao-Paulo-2026"); e.click("#nav-obras"); e.wait_for_selector(".ob-card")
     check("Encarregado vê só a obra dele, sem botão Nova e sem valor", e.locator(".ob-card").count() == 1 and e.locator(".ob-cab .ob-bt-pri").count() == 0 and e.locator(".ob-kpi").count() == 3 and "Contrato" not in e.inner_text(".ob-card"))

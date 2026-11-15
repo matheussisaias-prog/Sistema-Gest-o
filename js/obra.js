@@ -110,7 +110,7 @@
     else if (window.tfObraAbas && tfObraAbas[O.aba]) w.append(tfObraAbas[O.aba](O, { api, h, ic, carregar, avisar, modal, podeTudo, equipe, aposMudar, painel, desenhar, eu }));
     else w.append(h('div', { class: 'ob-vazio' }, ic('fa-person-digging'), h('p', null, 'Esta aba entra na próxima parte.')));
     R.append(w);
-    if (celular() && podeTudo() && O.aba === 'crono') R.append(h('button', { class: 'og-fab', onclick: () => painel(null) }, ic('fa-plus'), 'Atividade'));
+    if (celular() && podeTudo() && O.aba === 'crono' && O.d.atividades.length) R.append(h('button', { class: 'og-fab', onclick: () => painel(null) }, ic('fa-plus'), 'Atividade'));
   }
   function voltar() { const nav = document.getElementById('nav-obras'); window.switchView('obras', nav); }
 
@@ -159,6 +159,8 @@
       item('fa-pen', 'Editar obra', () => tfObras.editar(o)),
       item('fa-floppy-disk', O.d.linha_base ? 'Reprogramar linha de base' : 'Salvar linha de base', salvarLinhaBase),
       window.tfObraExportar ? item('fa-download', 'Exportar', () => tfObraExportar(bt, O)) : null,
+      window.tfObraMontar ? item('fa-wand-magic-sparkles', 'Montar / importar cronograma', () => tfObraMontar(O, { carregar, api, avisar })) : null,
+      window.tfObraSalvarModelo && O.d.atividades.length ? item('fa-clone', 'Salvar como modelo', () => tfObraSalvarModelo(O, { modal })) : null,
       o.situacao === 'Pausado' ? item('fa-play', 'Retomar', () => mudar('Em andamento', 'retomada')) : ['Em andamento', 'Planejamento'].includes(o.situacao) ? item('fa-pause', 'Pausar', () => mudar('Pausado', 'pausada')) : null,
       !['Concluído', 'Arquivado'].includes(o.situacao) ? item('fa-flag-checkered', 'Concluir', () => mudar('Concluído', 'concluída')) : null,
       o.situacao !== 'Arquivado' ? item('fa-box-archive', 'Arquivar', () => mudar('Arquivado', 'arquivada'), true) : null);
@@ -561,7 +563,8 @@
     const podeAv = podeTudo() || eu().perfil === 'encarregado';
     const grupos = []; let atual = null;
     L.forEach(a => { if (a.etapa && a.nivel === 0) { atual = { etapa: a, itens: [] }; grupos.push(atual); } else if (!a.etapa) { if (!atual) { atual = { etapa: null, itens: [] }; grupos.push(atual); } atual.itens.push(a); } });
-    if (!grupos.length) box.append(h('div', { class: 'ob-vazio' }, ic('fa-list-check'), h('p', null, O.d.atividades.length ? 'Nenhuma atividade com esse filtro.' : 'O cronograma está vazio.')));
+    if (!grupos.length) box.append(h('div', { class: 'ob-vazio' + (O.d.atividades.length ? '' : ' og-vazio-crono') }, ic('fa-list-check'), h('p', null, O.d.atividades.length ? 'Nenhuma atividade com esse filtro.' : 'O cronograma está vazio.'),
+      !O.d.atividades.length && podeTudo() && window.tfObraMontar ? h('button', { class: 'ob-bt ob-bt-pri', onclick: () => tfObraMontar(O, { carregar, api, avisar }) }, ic('fa-wand-magic-sparkles'), 'Montar com modelo, cópia ou arquivo') : null));
     grupos.forEach(g => {
       const sec = h('section', { class: 'og-cel-grupo' });
       if (g.etapa) sec.append(h('div', { class: 'og-cel-etapa' }, h('b', null, `${g.etapa.eap} · ${g.etapa.descricao}`), h('span', null, g.etapa.avanco + '%')));

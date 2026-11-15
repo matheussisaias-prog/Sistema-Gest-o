@@ -13,6 +13,7 @@ require __DIR__ . '/lib/contato.php';
 require __DIR__ . '/lib/painel.php';
 require __DIR__ . '/lib/obras.php';
 require __DIR__ . '/lib/cronograma.php';
+require __DIR__ . '/lib/montar.php';
 
 $metodo = $_SERVER['REQUEST_METHOD'] ?? 'GET';
 $caminho = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';
@@ -36,6 +37,13 @@ $rotas = [
     'GET obras/#/cronograma'    => 'rota_obra_cronograma',
     'GET obras/#/historico'     => 'rota_obra_historico',
     'GET obras/#/equipe'        => 'rota_obra_equipe',
+    'GET modelos'               => 'rota_modelos_listar',
+    'DELETE modelos/#'          => 'rota_modelos_excluir',
+    'POST obras/#/aplicar-modelo' => 'rota_aplicar_modelo',
+    'POST obras/#/salvar-modelo' => 'rota_salvar_modelo',
+    'POST obras/#/copiar'       => 'rota_copiar_obra',
+    'POST obras/#/importar'     => 'rota_importar_cronograma',
+    'GET obras/#/exportar'      => 'rota_exportar_cronograma',
     'DELETE membros/#'          => 'rota_membros_excluir',
     'GET linhas-base/#'         => 'rota_linha_base_itens',
     'GET atividades/#/historico' => 'rota_atividade_historico',
