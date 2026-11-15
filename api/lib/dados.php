@@ -52,7 +52,7 @@ const REGRAS_PROJETO = [
     'local_obra' => ['texto', 200], 'gestor_id' => ['id'], 'gestor_nome' => ['texto', 160],
     'situacao' => ['lista', ['Planejamento', 'Em andamento', 'Pausado', 'Concluído', 'Arquivado']],
     'inicio' => ['data'], 'fim' => ['data'], 'cor' => ['texto', 7], 'valor_contrato' => ['num', 0, 1e12],
-    'tipo_servico' => ['texto', 40], 'numero_contrato' => ['texto', 60], 'rt_funcionario_id' => ['id'], 'art_numero' => ['texto', 40],
+    'tipo_servico' => ['texto', 40], 'numero_contrato' => ['texto', 60], 'rt_funcionario_id' => ['id'], 'art_numero' => ['texto', 40], 'calendario_id' => ['id'],
 ];
 /** Confere gestor e responsável técnico (mesma empresa) e guarda o nome do gestor para as telas antigas. */
 function conferir_pessoas_obra(array $u, array &$c): void {
@@ -105,6 +105,7 @@ function rota_projetos_alterar(int $id): array {
     $c = limpar(corpo(), REGRAS_PROJETO);
     if (array_key_exists('nome', $c) && empty($c['nome'])) throw new ErroApi('O nome não pode ficar vazio');
     conferir_pessoas_obra($u, $c);
+    if (!empty($c['calendario_id']) && !um('SELECT id FROM calendarios WHERE id = ? AND empresa_id = ? AND excluido_em IS NULL', [$c['calendario_id'], $u['empresa_id']])) throw new ErroApi('Calendário não encontrado', 404);
     if (!empty($c['codigo']) && um('SELECT id FROM projetos WHERE empresa_id = ? AND codigo = ? AND id <> ? AND excluido_em IS NULL', [$u['empresa_id'], $c['codigo'], $id])) throw new ErroApi('Já existe uma obra com este código', 409);
     if (!empty($c['inicio']) xor !empty($c['fim'])) {   // só uma das datas veio: confere com a outra que já existe
         $ini = $c['inicio'] ?? $antes['inicio']; $fim = $c['fim'] ?? $antes['fim'];
@@ -112,6 +113,13 @@ function rota_projetos_alterar(int $id): array {
     }
     atualizar('projetos', $id, $c);
     registrar($u, (int)$u['empresa_id'], 'projetos', $id, 'alterou', array_intersect_key($antes, $c), $c);
+    if (array_key_exists('calendario_id', $c) && (int)$c['calendario_id'] !== (int)$antes['calendario_id']) {
+        $cal = calendario_da_obra($id, (int)$u['empresa_id']);   // novo calendário: mesmo início e duração, fim refeito
+        foreach (todos('SELECT id, inicio, duracao_dias FROM atividades WHERE projeto_id = ? AND excluido_em IS NULL AND inicio IS NOT NULL AND duracao_dias IS NOT NULL
+                        AND NOT EXISTS (SELECT 1 FROM atividades f WHERE f.pai_id = atividades.id AND f.excluido_em IS NULL)', [$id]) as $a)
+            q('UPDATE atividades SET fim = ? WHERE id = ?', [$cal->fim($a['inicio'], (float)$a['duracao_dias']), $a['id']]);
+        return ['ok' => true, 'movidas' => recalcular_obra($id, (int)$u['empresa_id'])];
+    }
     return ['ok' => true];
 }
 function rota_projetos_excluir(int $id): array {
@@ -140,7 +148,7 @@ function rota_membros_adicionar(int $id): array {
 const REGRAS_ATIVIDADE = [
     'projeto_id' => ['id'], 'pai_id' => ['id'], 'codigo_eap' => ['texto', 20], 'descricao' => ['texto', 255],
     'observacoes' => ['texto', 5000], 'responsavel_id' => ['id'], 'inicio' => ['data'], 'fim' => ['data'],
-    'duracao_horas' => ['num', 0, 99999], 'avanco' => ['num', 0, 100],
+    'duracao_horas' => ['num', 0, 99999], 'duracao_dias' => ['num', 0, 9999], 'avanco' => ['num', 0, 100],
     'situacao' => ['lista', ['Pendente', 'Em andamento', 'Concluído', 'Reprogramado']],
     'critica' => ['bool'], 'peso' => ['num', 0, 99999], 'ordem' => ['num', -1e9, 1e9],
 ];
@@ -185,9 +193,13 @@ function rota_atividades_criar(): array {
     if (empty($c['projeto_id'])) throw new ErroApi('Campo obrigatório: projeto_id');
     if (empty($c['descricao'])) throw new ErroApi('Campo obrigatório: descricao');
     validar_ligacoes_atividade($u, $c);
+    if (!empty($c['pai_id']) && !um('SELECT id FROM atividades WHERE id = ? AND projeto_id = ?', [$c['pai_id'], $c['projeto_id']])) throw new ErroApi('A etapa-mãe é de outra obra');
+    completar_datas($c, [], calendario_da_obra((int)$c['projeto_id'], (int)$u['empresa_id']));
     $id = inserir('atividades', ['empresa_id' => $u['empresa_id']] + $c);
     registrar($u, (int)$u['empresa_id'], 'atividades', $id, 'criou', null, $c);
-    return ['ok' => true, 'id' => $id];
+    $mov = recalcular_obra((int)$c['projeto_id'], (int)$u['empresa_id']);
+    $a = um('SELECT inicio, fim, duracao_dias FROM atividades WHERE id = ?', [$id]);
+    return ['ok' => true, 'id' => $id, 'inicio' => $a['inicio'], 'fim' => $a['fim'], 'duracao_dias' => $a['duracao_dias'], 'movidas' => $mov];
 }
 function rota_atividades_alterar(int $id): array {
     $u = exigir_login();
@@ -199,17 +211,33 @@ function rota_atividades_alterar(int $id): array {
         if ($extra) throw new ErroApi('Seu perfil só pode alterar: ' . implode(', ', $permitidos), 403);
     }
     $c = limpar($d, REGRAS_ATIVIDADE);
+    unset($c['projeto_id']);   // atividade não muda de obra
+    if (!empty($c['pai_id'])) {
+        if ((int)$c['pai_id'] === $id) throw new ErroApi('A atividade não pode ser etapa dela mesma');
+        if (!um('SELECT id FROM atividades WHERE id = ? AND projeto_id = ?', [$c['pai_id'], $antes['projeto_id']])) throw new ErroApi('A etapa-mãe é de outra obra');
+    }
+    $datas = array_intersect_key($c, ['inicio' => 1, 'fim' => 1, 'duracao_dias' => 1]);
+    if ($datas) completar_datas($c, $antes, calendario_da_obra((int)$antes['projeto_id'], (int)$u['empresa_id']));
     validar_ligacoes_atividade($u, $c + ['inicio' => $antes['inicio'], 'fim' => $antes['fim']]);
+    if (!$c) throw new ErroApi('Nada para alterar');
     atualizar('atividades', $id, $c);
     registrar($u, (int)$u['empresa_id'], 'atividades', $id, 'alterou', array_intersect_key($antes, $c), $c);
-    return ['ok' => true];
+    $mov = ($datas || array_key_exists('pai_id', $c)) ? recalcular_obra((int)$antes['projeto_id'], (int)$u['empresa_id']) : [];
+    $a = um('SELECT inicio, fim, duracao_dias FROM atividades WHERE id = ?', [$id]);
+    return ['ok' => true, 'inicio' => $a['inicio'], 'fim' => $a['fim'], 'duracao_dias' => $a['duracao_dias'], 'movidas' => $mov];
 }
 function rota_atividades_excluir(int $id): array {
     $u = exigir_login(); exigir_perfil($u, PODE_TUDO);
-    atividade_visivel($u, $id);
-    q('UPDATE atividades SET excluido_em = UTC_TIMESTAMP() WHERE id = ?', [$id]);
+    $a = atividade_visivel($u, $id);
+    // some junto com as subatividades e as ligações
+    $ids = [$id]; $ver = [$id];
+    while ($ver) { $x = array_pop($ver); foreach (todos('SELECT id FROM atividades WHERE pai_id = ? AND excluido_em IS NULL', [$x]) as $f) { $ids[] = (int)$f['id']; $ver[] = (int)$f['id']; } }
+    $in = implode(',', $ids);
+    q("UPDATE atividades SET excluido_em = UTC_TIMESTAMP() WHERE id IN ($in)");
+    q("DELETE FROM dependencias WHERE antes_id IN ($in) OR depois_id IN ($in)");
     registrar($u, (int)$u['empresa_id'], 'atividades', $id, 'excluiu');
-    return ['ok' => true];
+    recalcular_obra((int)$a['projeto_id'], (int)$u['empresa_id']);
+    return ['ok' => true, 'excluidas' => count($ids)];
 }
 
 /* ── Equipe ──────────────────────────────────────────────────── */

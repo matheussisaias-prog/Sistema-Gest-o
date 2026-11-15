@@ -63,6 +63,32 @@ const TF_MIGRACOES = [
           ['coluna', 'projetos', 'numero_contrato', "ALTER TABLE projetos ADD COLUMN numero_contrato VARCHAR(60) NULL AFTER cliente"],
           ['coluna', 'projetos', 'rt_funcionario_id', "ALTER TABLE projetos ADD COLUMN rt_funcionario_id INT UNSIGNED NULL AFTER gestor_nome"],
           ['coluna', 'projetos', 'art_numero', "ALTER TABLE projetos ADD COLUMN art_numero VARCHAR(40) NULL AFTER rt_funcionario_id"]],
+    5 => ["CREATE TABLE IF NOT EXISTS calendarios (
+  id            INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  empresa_id    INT UNSIGNED NOT NULL,
+  dono_id       INT UNSIGNED NULL,
+  nome          VARCHAR(120) NOT NULL,
+  horas_semana  VARCHAR(80)  NOT NULL DEFAULT '[8,8,8,8,8,0,0]',
+  feriados_nacionais TINYINT(1) NOT NULL DEFAULT 1,
+  criado_em     DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  atualizado_em DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  excluido_em   DATETIME NULL,
+  KEY ix_cal_empresa (empresa_id),
+  CONSTRAINT fk_cal_empresa FOREIGN KEY (empresa_id) REFERENCES empresas(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci",
+          "CREATE TABLE IF NOT EXISTS calendario_dias (
+  id            INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  calendario_id INT UNSIGNED NOT NULL,
+  inicio        DATE NOT NULL,
+  fim           DATE NOT NULL,
+  tipo          ENUM('feriado','parado') NOT NULL DEFAULT 'feriado',
+  nome          VARCHAR(120) NOT NULL,
+  todo_ano      TINYINT(1) NOT NULL DEFAULT 0,
+  KEY ix_caldias (calendario_id),
+  CONSTRAINT fk_caldias_cal FOREIGN KEY (calendario_id) REFERENCES calendarios(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci",
+          ['coluna', 'projetos', 'calendario_id', "ALTER TABLE projetos ADD COLUMN calendario_id INT UNSIGNED NULL AFTER art_numero"],
+          ['coluna', 'atividades', 'duracao_dias', "ALTER TABLE atividades ADD COLUMN duracao_dias DECIMAL(6,1) NULL AFTER duracao_horas"]],
 ];
 function migrar(PDO $pdo): void {
     $alvo = max(array_keys(TF_MIGRACOES));
