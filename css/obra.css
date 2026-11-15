@@ -303,3 +303,12 @@
   .om-pe .ob-bt { flex: 1; }
 }
 .ob-vazio.og-vazio-crono { align-items: center; padding: 28px 16px; }
+
+/* travadas e fotos de campo (Minhas atividades) */
+.og-trav { color: #ea580c; font-size: .8rem; flex-shrink: 0; } .og-nfotos { color: #2563eb; font-size: .72rem; flex-shrink: 0; opacity: .8; }
+.og-cel-trav { color: #c2410c !important; font-weight: 600; }
+.og-p-trav { display: flex; gap: 10px; align-items: flex-start; padding: 10px 12px; border-radius: 10px; background: #fff7ed; border: 1px solid #fed7aa; color: #9a3412; font-size: .85rem; }
+.og-p-trav > div { flex: 1; } .og-p-trav small { display: block; color: #c2410c; font-size: .75rem; margin-top: 2px; } .og-p-trav .ob-bt { flex-shrink: 0; }
+.og-fotos { display: grid; grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); gap: 8px; }
+.og-fotos a { display: flex; flex-direction: column; gap: 3px; text-decoration: none; color: var(--text-3); font-size: .7rem; }
+.og-fotos img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 8px; background: #e2e8f0; }

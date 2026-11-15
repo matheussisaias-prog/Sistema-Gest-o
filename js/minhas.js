@@ -91,11 +91,13 @@
     window.switchView('minhas', nav);
   }
   async function carregar(silencioso) {
-    if (!M.d) { try { const c = localStorage.getItem(chaveCache()); if (c) { M.d = JSON.parse(c); M.d._cache = true; } } catch (_) {} }
+    const chave = chaveCache();
+    if (!M.d) { try { const c = localStorage.getItem(chave); if (c) { M.d = JSON.parse(c); M.d._cache = true; } } catch (_) {} }
     M.carregando = true; if (!silencioso) desenhar();
     try {
       const q = new URLSearchParams(); if (M.ver) q.set('ver', M.ver); if (M.obra) q.set('obra', M.obra);
       M.d = await api('minhas-atividades' + (q.toString() ? '?' + q : ''));
+      try { localStorage.setItem(chave, JSON.stringify(M.d)); } catch (_) {}            // guardada com o mesmo nome com que será procurada
       M.ver = M.d.ver; M.erro = null;
       try { localStorage.setItem(chaveCache(), JSON.stringify(M.d)); } catch (_) {}
     } catch (e) { M.erro = e.rede ? null : e.message; if (M.d) M.d._cache = true; }

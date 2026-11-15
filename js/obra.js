@@ -303,6 +303,8 @@
         onclick: ev => { ev.stopPropagation(); recolhida ? O.recolhidas.delete(a.id) : O.recolhidas.add(a.id); desenhar(); } }, ic(recolhida ? 'fa-caret-right' : 'fa-caret-down')) : null,
       a.marco ? h('i', { class: 'og-losango', 'aria-hidden': 'true' }) : null,
       h('span', { class: 'og-nome-txt' }, a.descricao),
+      a.travada ? h('span', { class: 'og-trav', title: 'Travou: ' + a.travada.descricao, 'aria-label': 'Travada: ' + a.travada.descricao }, ic('fa-triangle-exclamation')) : null,
+      a.fotos ? h('span', { class: 'og-nfotos', title: `${a.fotos} foto${a.fotos > 1 ? 's' : ''} de campo` }, ic('fa-camera')) : null,
       h('button', { class: 'og-abre', 'aria-label': 'Abrir detalhes', title: 'Abrir detalhes', onclick: ev => { ev.stopPropagation(); painel(a); } }, ic('fa-up-right-from-square')));
     if (edita) nome.onclick = ev => { if (ev.target.closest('button')) return; editarCelula(nome, a, 'descricao', 'texto'); };
     const sel = h('input', { type: 'checkbox', 'aria-label': 'Selecionar ' + a.descricao, checked: O.sel.has(a.id), onclick: ev => { ev.stopPropagation(); ev.target.checked ? O.sel.add(a.id) : O.sel.delete(a.id); desenhar(); } });
@@ -481,11 +483,18 @@
     const hist = h('ul', { class: 'og-hist' });
     if (!nova) api(`atividades/${a.id}/historico`).then(r => {
       const nomes = { descricao: 'nome', inicio: 'início', fim: 'fim', duracao_dias: 'duração', avanco: 'avanço', situacao: 'situação', responsavel_id: 'responsável', pai_id: 'etapa', observacoes: 'observações', peso: 'peso' };
-      (r.historico || []).slice(0, 8).forEach(x => hist.append(h('li', null, h('b', null, x.usuario || 'Sistema'), ' ',
-        x.acao === 'criou' ? 'criou a atividade' : x.acao === 'excluiu' ? 'excluiu' : 'mudou ' + Object.keys(x.depois || {}).map(k => nomes[k] || k).join(', ') +
-          (x.depois && 'avanco' in x.depois ? ` para ${x.depois.avanco}%` : ''), ' · ', new Date(x.quando.replace(' ', 'T') + 'Z').toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' }))));
+      const oque = x => { const d = x.depois || {};
+        if (x.acao === 'criou') return 'criou a atividade'; if (x.acao === 'excluiu') return 'excluiu';
+        if ('travou' in d) return 'informou que travou: ' + d.travou + (d.descricao ? ' (' + d.descricao + ')' : '');
+        if ('liberou' in d) return 'liberou a atividade';
+        return 'mudou ' + Object.keys(d).filter(k => k !== 'fotos').map(k => nomes[k] || k).join(', ') + ('avanco' in d ? ` para ${d.avanco}%` : '') + (d.fotos ? ` (com ${d.fotos} foto${d.fotos > 1 ? 's' : ''})` : ''); };
+      (r.historico || []).slice(0, 8).forEach(x => hist.append(h('li', null, h('b', null, x.usuario || 'Sistema'), ' ', oque(x), ' · ', new Date(x.quando.replace(' ', 'T') + 'Z').toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' }))));
       if (!hist.children.length) hist.append(h('li', null, 'Sem alterações registradas.'));
     }).catch(() => {});
+    const fotosBox = h('div', { class: 'og-fotos' });
+    if (a && a.fotos) api(`atividades/${a.id}/fotos`).then(r => (r.fotos || []).forEach(f => fotosBox.append(h('a', { href: `api/fotos/${f.id}`, target: '_blank', rel: 'noopener', title: `${f.por} · ${f.tirada_em}` },
+      h('img', { src: `api/fotos/${f.id}?mini=1`, alt: `Foto de ${f.por}`, loading: 'lazy' }),
+      h('small', null, `${(f.por || '').split(' ')[0]} · ${f.tirada_em.slice(8, 10)}/${f.tirada_em.slice(5, 7)}${f.tipo === 'travou' ? ' · travou' : f.para != null ? ` · ${f.para}%` : ''}`))))).catch(() => {});
     const fechar = () => { fundo.remove(); document.removeEventListener('keydown', esc); };
     const esc = ev => { if (ev.key === 'Escape') fechar(); };
     btSalvar.onclick = async () => {
@@ -535,6 +544,10 @@
             a.critica ? h('span', { class: 'ob-chip-farol verm' }, 'Caminho crítico') : null, a.atrasada ? h('span', { class: 'ob-chip-farol verm' }, 'Atrasada') : null, a.etapa ? h('span', { class: 'ob-tipo' }, 'Etapa: datas e avanço vêm das subatividades') : null) : null),
         h('button', { class: 'ob-x', 'aria-label': 'Fechar', onclick: fechar }, ic('fa-xmark'))),
       h('div', { class: 'og-p-corpo' },
+        a && a.travada ? h('div', { class: 'og-p-trav', role: 'status' }, ic('fa-triangle-exclamation'),
+          h('div', null, h('b', null, 'Travou: '), a.travada.descricao, h('small', null, `${a.travada.por || ''} · ${new Date(a.travada.desde.replace(' ', 'T') + 'Z').toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' })}`)),
+          (edita || enc) ? h('button', { class: 'ob-bt', onclick: async () => { try { await api(`ocorrencias/${a.travada.id}/liberar`, 'PATCH', {}); fechar(); await aposMudar(null, 'Atividade liberada.'); } catch (e) { avisar(e.message, 'error'); } } }, 'Liberar') : null) : null,
+        a && a.fotos ? h('div', { class: 'og-sec' }, h('b', null, `Fotos de campo (${a.fotos})`), fotosBox) : null,
         campo('Nome da atividade', fDesc),
         campo('Responsável', fResp),
         h('div', { class: 'ob-g3' }, campo('Início', fIni), campo('Fim', fFim), campo('Duração', fDur)),
@@ -574,7 +587,8 @@
         const mudar = async (n, extra) => { try { const r = await api('atividades/' + a.id, 'PATCH', { avanco: n, situacao: n >= 100 ? 'Concluído' : n > 0 && a.situacao === 'Pendente' ? 'Em andamento' : (n < 100 && a.situacao === 'Concluído' ? 'Em andamento' : a.situacao), ...(extra || {}) }); await aposMudar(r, `Avanço: ${n}%`); } catch (e) { avisar(e.message, 'error'); } };
         sec.append(h('article', { class: 'og-cel-card' + (a.atrasada ? ' atras' : '') },
           h('div', { class: 'og-cel-topo', onclick: () => painel(a) }, h('small', null, a.eap),
-            h('div', { class: 'og-cel-nome' }, h('b', null, a.descricao), h('small', null, `${a.responsavel_nome || 'Sem responsável'} · ${dBR(a.inicio)} → ${dBR(a.fim)}`)),
+            h('div', { class: 'og-cel-nome' }, h('b', null, a.descricao), h('small', null, `${a.responsavel_nome || 'Sem responsável'} · ${dBR(a.inicio)} → ${dBR(a.fim)}`),
+              a.travada ? h('small', { class: 'og-cel-trav' }, ic('fa-triangle-exclamation'), ' Travou: ', a.travada.descricao) : null),
             h('span', { class: 'og-sit ' + sit[1] }, sit[0])),
           a.marco ? null : h('div', { class: 'og-cel-av' },
             h('button', { class: 'ob-bt', 'aria-label': 'Diminuir 10%', disabled: !podeAv || a.avanco <= 0, onclick: () => mudar(Math.max(0, a.avanco - 10)) }, '−'),

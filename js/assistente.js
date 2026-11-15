@@ -64,6 +64,10 @@
     ['O que o encarregado pode fazer?', 'O encarregado vê as obras em que está e atualiza avanço e situação das atividades. Criar obra, mexer em datas, ligações e linha de base fica com administrador e gestor.', 'encarregado perfil permissao pode acesso funcionario gestor administrador'],
     ['Como pauso, concluo ou arquivo uma obra?', 'Na tela Obras, use o menu ⋯ do cartão da obra: Pausar, Retomar, Concluir ou Arquivar.', 'pausar concluir arquivar retomar obra situacao encerrar'],
     ['Como uso a busca do assistente?', 'Escreva do seu jeito, por exemplo: "atividades atrasadas da ELE-014", "o que o João tem essa semana", "obras no vermelho", "quem está com NR-10 vencida". Atalho no computador: Ctrl+K.', 'buscar busca assistente pesquisar ctrl k atalho'],
+    ['Como atualizo o avanço com foto?', 'Em Minhas atividades, toque no + do cartão (ou no próprio cartão), escolha o novo avanço e tire a foto do serviço. Para funcionário, a foto é obrigatória; para encarregado e gestor, é opcional. A foto guarda a hora e, se o celular permitir, a localização.', 'foto avanco atualizar minhas atividades camera registrar celular', { tipo: 'view', view: 'minhas', rotulo: 'Abrir Minhas atividades' }],
+    ['O que faço quando o serviço travou?', 'No cartão da atividade, toque em "Travou", escolha o motivo (falta material, aguardando liberação, chuva, equipamento ou outro) e diga o que falta. O gestor da obra recebe o aviso no sistema e por e-mail, e a atividade fica marcada como travada até alguém liberar.', 'travou travada impedimento parado falta material liberacao chuva avisar gestor'],
+    ['Funciona sem internet?', 'Sim, em Minhas atividades. Sem conexão, o sistema mostra a última lista carregada e guarda as atualizações e fotos no celular; elas são enviadas sozinhas quando a internet volta. O aviso amarelo no topo mostra quantas estão guardadas.', 'sem internet offline conexao sinal guardar enviar depois'],
+    ['Como libero uma atividade travada?', 'Abra a atividade (na obra ou em Minhas atividades) e toque em "Liberar". Encarregado, gestor e administrador podem liberar.', 'liberar destravar travada impedimento resolver'],
     ['Como falo com o suporte?', 'Use o link "Fale conosco" no rodapé da tela. A resposta chega no seu e-mail.', 'suporte fale conosco contato ajuda problema erro mercurium', { tipo: 'contato', rotulo: 'Abrir Fale conosco' }],
   ].map(([p, r, chaves, link]) => ({ p, r, link, k: palavras(p + ' ' + chaves).filter(w => w.length > 2) }));
   const PARADAS = new Set(['como', 'que', 'para', 'pra', 'uma', 'por', 'com', 'dos', 'das', 'nos', 'nas', 'meu', 'minha', 'esta', 'isso', 'onde', 'qual', 'quais', 'tem', 'ser']);
@@ -134,8 +138,8 @@
   /* ══ Buscar ═══════════════════════════════════════════════════ */
   function sugestoes() {
     const p = eu().perfil;
-    if (p === 'funcionario') return ['o que eu tenho hoje', 'minhas atividades atrasadas', 'como atualizo o avanço pelo celular'];
-    if (p === 'encarregado') return ['atividades atrasadas', 'o que a equipe tem essa semana', 'como uso o Quadro'];
+    if (p === 'funcionario') return ['o que eu tenho hoje', 'minhas atividades atrasadas', 'como atualizo o avanço com foto'];
+    if (p === 'encarregado') return ['atividades travadas', 'atividades atrasadas', 'funciona sem internet?'];
     return ['o que o João tem essa semana', 'obras no vermelho', 'como importar do MS Project', 'quem está com NR-10 vencida'];
   }
   async function buscar() {

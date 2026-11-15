@@ -101,9 +101,9 @@ r = J(jp, "patch", f"/atividades/{a3}", json={"avanco": 10}); check("Encarregado
 
 # Funcionário só vê as próprias atividades
 r = J(david, "get", "/atividades"); check("Funcionário vê só a dele", [a["id"] for a in r.json()["atividades"]] == [a2])
-r = J(david, "patch", f"/atividades/{a2}", json={"avanco": 45}); check("Funcionário lança o próprio avanço", r.status_code == 200)
+r = J(david, "patch", f"/atividades/{a2}", json={"avanco": 45}); check("Funcionário não lança avanço sem foto (só em Minhas atividades)", r.status_code == 403 and "foto" in r.json()["erro"])
 r = J(david, "patch", f"/atividades/{a1}", json={"avanco": 45}); check("Funcionário não mexe na atividade de outro", r.status_code == 404)
-r = J(david, "patch", f"/atividades/{a2}", json={"avanco": 120}); check("Avanço acima de 100 recusado", r.status_code == 400)
+r = J(jp, "patch", f"/atividades/{a2}", json={"avanco": 120}); check("Avanço acima de 100 recusado", r.status_code == 400)
 r = J(david, "patch", f"/atividades/{a2}", json={"responsavel_id": f["Carlos"]}); check("Funcionário não troca responsável", r.status_code == 403)
 
 # ── Outra empresa: isolamento total ──
