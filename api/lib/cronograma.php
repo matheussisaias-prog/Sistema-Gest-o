@@ -225,6 +225,13 @@ function rota_obra_cronograma(int $pid): array {
     };
     foreach ($raizes as $r) $media($r);
     $predDe = []; foreach ($deps as $d) $predDe[(int)$d['depois_id']][] = $d;
+    // travadas (impedimentos abertos) e fotos de campo
+    $trav = []; $nfotos = [];
+    foreach (todos('SELECT o.id, o.atividade_id, o.tipo, o.descricao, o.criado_em, us.nome AS por FROM ocorrencias o LEFT JOIN usuarios us ON us.id = o.registrada_por
+                    WHERE o.projeto_id = ? AND o.empresa_id = ? AND o.atividade_id IS NOT NULL AND o.resolvida_em IS NULL AND o.excluido_em IS NULL', [$pid, $eid]) as $o)
+        $trav[(int)$o['atividade_id']] = ['id' => (int)$o['id'], 'tipo' => $o['tipo'], 'descricao' => $o['descricao'], 'desde' => $o['criado_em'], 'por' => $o['por']];
+    foreach (todos('SELECT atividade_id, COUNT(*) n FROM fotos WHERE projeto_id = ? AND empresa_id = ? AND atividade_id IS NOT NULL AND excluido_em IS NULL GROUP BY atividade_id', [$pid, $eid]) as $f)
+        $nfotos[(int)$f['atividade_id']] = (int)$f['n'];
     $saida = [];
     foreach ($lista as $id) {
         $a = $A[$id]; $etapa = (bool)$a['_filhos'];
@@ -244,6 +251,7 @@ function rota_obra_cronograma(int $pid): array {
             'critica' => isset($crit[$id]) || (!$etapa && (int)$a['critica'] === 1 && $a['situacao'] !== 'Concluído'),
             'atrasada' => !$etapa && $a['fim'] && $a['fim'] < $hoje && $a['situacao'] !== 'Concluído' && $a['avanco'] < 100,
             'predecessoras' => implode('; ', $txt),
+            'travada' => !$etapa && $a['situacao'] !== 'Concluído' ? ($trav[$id] ?? null) : null, 'fotos' => $nfotos[$id] ?? 0,
         ];
     }
     $lb = um('SELECT id, numero, nome, motivo, criado_em FROM linhas_base WHERE projeto_id = ? AND empresa_id = ? ORDER BY numero DESC LIMIT 1', [$pid, $eid]);

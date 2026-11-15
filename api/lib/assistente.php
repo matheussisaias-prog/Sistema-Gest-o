@@ -33,6 +33,7 @@ const ASS_INTENCOES = [
     'recursos'    => ['recurso','recursos','equipamento','equipamentos','veiculo','veiculos','ferramenta','ferramentas','carro','carros','caminhao'],
     'rdos'        => ['rdo','rdos','diario','diarios'],
     'atrasadas'   => ['atrasada','atrasadas','atrasado','atrasados','atraso','atrasos'],
+    'travadas'    => ['travada','travadas','travado','travados','travou','impedimento','impedimentos','impedida','impedidas'],
     'semana'      => ['semana'],
     'hoje'        => ['hoje'],
     'amanha'      => ['amanha'],
@@ -51,7 +52,7 @@ const ASS_INTENCOES = [
     'rascunho'    => ['rascunho','rascunhos'],
     'assinatura'  => ['assinar','assinatura','assinado','assinados','assinada','assinadas'],
 ];
-const ASS_ROTULOS = ['atividades' => 'atividades', 'obras' => 'obras', 'pessoas' => 'pessoas', 'recursos' => 'recursos', 'rdos' => 'RDOs', 'atrasadas' => 'atrasadas',
+const ASS_ROTULOS = ['atividades' => 'atividades', 'obras' => 'obras', 'pessoas' => 'pessoas', 'recursos' => 'recursos', 'rdos' => 'RDOs', 'atrasadas' => 'atrasadas', 'travadas' => 'travadas',
     'semana' => 'nesta semana', 'hoje' => 'hoje', 'amanha' => 'amanhã', 'ontem' => 'ontem', 'concluidas' => 'concluídas', 'andamento' => 'em andamento', 'pendentes' => 'pendentes',
     'vermelho' => 'farol vermelho', 'amarelo' => 'farol amarelo', 'verde' => 'farol verde', 'pausadas' => 'pausadas', 'planejamento' => 'em planejamento',
     'nr' => 'documentos de NR', 'vencidos' => 'vencidos', 'vencendo' => 'vencendo', 'rascunho' => 'em rascunho', 'assinatura' => 'assinatura', 'sem_resp' => 'sem responsável'];
@@ -88,11 +89,13 @@ function rota_assistente_buscar(): array {
     // intenções do dicionário
     foreach ($tok as $i => $t) {
         if ($usado[$i] || in_array($t, ASS_PARADAS, true)) continue;
-        foreach (ASS_INTENCOES as $k => $lista) foreach ($lista as $w) if (ass_parecido($t, $w)) {
-            $usado[$i] = true;
-            if (empty($int[$k])) { $int[$k] = true; $chip(ASS_ROTULOS[$k], [$i]); }
-            continue 3;
-        }
+        // primeiro a palavra exata; só depois a parecida (erro de digitação)
+        foreach ([fn($t, $w) => $t === $w, 'ass_parecido'] as $igual)
+            foreach (ASS_INTENCOES as $k => $lista) foreach ($lista as $w) if ($igual($t, $w)) {
+                $usado[$i] = true;
+                if (empty($int[$k])) { $int[$k] = true; $chip(ASS_ROTULOS[$k], [$i]); }
+                continue 4;
+            }
     }
     foreach ($tok as $i => $t) if (!$usado[$i] && (in_array($t, ASS_AJUDA, true) || $t === 'que' && ($tok[$i + 1] ?? '') === 'e')) $out['ajuda'] = true;
     if (preg_match('/\b(o que (e|significa)|por que|pra que|para que)\b/', ass_norm($texto))) $out['ajuda'] = true;
@@ -148,7 +151,7 @@ function rota_assistente_buscar(): array {
     if ($livre && !$out['ajuda']) $out['entendi'][] = ['rotulo' => '"' . implode(' ', $livre) . '"', 'termos' => $livre];
 
     $ctx = compact('u', 'eid', 'int', 'obraAchada', 'pessoaAchada', 'livre', 'nr', 'semNr', 'vis', 'obras');
-    $temFiltroAtiv = !empty($int['atrasadas']) || !empty($int['semana']) || !empty($int['hoje']) || !empty($int['amanha']) || !empty($int['concluidas'])
+    $temFiltroAtiv = !empty($int['atrasadas']) || !empty($int['travadas']) || !empty($int['semana']) || !empty($int['hoje']) || !empty($int['amanha']) || !empty($int['concluidas'])
         || !empty($int['andamento']) || !empty($int['pendentes']) || !empty($int['sem_resp']);
     $temFarol = !empty($int['vermelho']) || !empty($int['amarelo']) || !empty($int['verde']) || !empty($int['pausadas']) || !empty($int['planejamento']);
 
@@ -195,6 +198,9 @@ function ass_resp_atividades(array $c): array {
     if ($u['perfil'] === 'funcionario') { $sql .= ' AND a.responsavel_id = ?'; $p[] = (int)$u['funcionario_id']; }
     if ($c['pessoaAchada']) $sql .= ' AND a.responsavel_id IN (' . implode(',', array_map('intval', array_keys($c['pessoaAchada']))) . ')';
     $L = todos($sql, $p);
+    $trav = [];
+    if (!empty($int['travadas']) && $L) foreach (todos('SELECT atividade_id, descricao FROM ocorrencias WHERE empresa_id = ? AND resolvida_em IS NULL AND excluido_em IS NULL AND atividade_id IN (' . implode(',', array_map(fn($a) => (int)$a['id'], $L)) . ')', [$c['eid']]) as $o) $trav[(int)$o['atividade_id']] = $o['descricao'];
+    if (!empty($int['travadas'])) $L = array_values(array_filter($L, fn($a) => isset($trav[(int)$a['id']])));
     $aberta = fn($a) => $a['situacao'] !== 'Concluído' && (int)$a['avanco'] < 100;
     $atras = fn($a) => $a['fim'] && $a['fim'] < $hoje && $aberta($a);
     $fimSem = Calendario::mais($hoje, 7); $amanha = Calendario::mais($hoje, 1);
@@ -218,7 +224,7 @@ function ass_resp_atividades(array $c): array {
     usort($L, fn($x, $y) => ($atras($y) <=> $atras($x)) ?: (($x['fim'] ?? '9') <=> ($y['fim'] ?? '9')));
     $n = count($L);
     $quais = [];
-    foreach (['atrasadas', 'concluidas', 'andamento', 'pendentes'] as $k) if (!empty($int[$k])) $quais[] = ASS_ROTULOS[$k];
+    foreach (['atrasadas', 'travadas', 'concluidas', 'andamento', 'pendentes'] as $k) if (!empty($int[$k])) $quais[] = ASS_ROTULOS[$k];
     if (!empty($int['sem_resp'])) $quais[] = 'sem responsável';
     $tit = ass_plural($n, 'atividade', 'atividades') . ($quais ? ' ' . implode(' e ', $n === 1 ? array_map(fn($q) => preg_replace('/s$/', '', $q), $quais) : $quais) : ($c['pessoaAchada'] || !empty($int['semana']) || !empty($int['hoje']) ? '' : ' em aberto'));
     if ($c['pessoaAchada']) $tit .= ' de ' . implode(', ', array_map(fn($p) => explode(' ', $p['nome'])[0], $c['pessoaAchada']));
@@ -226,9 +232,9 @@ function ass_resp_atividades(array $c): array {
     if (!empty($int['semana'])) $tit .= ' nos próximos 7 dias'; if (!empty($int['hoje'])) $tit .= ' para hoje'; if (!empty($int['amanha'])) $tit .= ' para amanhã';
     if ($c['livre']) $tit .= ' com "' . implode(' ', $c['livre']) . '"';
     $sub = count($c['obraAchada']) === 1 ? array_values($c['obraAchada'])[0]['nome'] : ($n ? 'Em ' . ass_plural(count(array_unique(array_column($L, 'projeto_id'))), 'obra', 'obras') : '');
-    $itens = array_map(function ($a) use ($atras, $hoje) {
+    $itens = array_map(function ($a) use ($atras, $hoje, $trav) {
         $at = $atras($a) ? (int)round((strtotime($hoje . ' UTC') - strtotime($a['fim'] . ' UTC')) / 86400) : 0;
-        return ['titulo' => $a['descricao'], 'info' => ($a['codigo'] ?: $a['obra']) . ' · ' . ($a['responsavel'] ?: 'sem responsável') . ' · ' . (int)$a['avanco'] . '% feito · ' . ass_data_br($a['inicio']) . ' → ' . ass_data_br($a['fim']),
+        return ['titulo' => $a['descricao'], 'info' => (isset($trav[(int)$a['id']]) ? 'Travou: ' . $trav[(int)$a['id']] . ' · ' : '') . ($a['codigo'] ?: $a['obra']) . ' · ' . ($a['responsavel'] ?: 'sem responsável') . ' · ' . (int)$a['avanco'] . '% feito · ' . ass_data_br($a['inicio']) . ' → ' . ass_data_br($a['fim']),
                 'selo' => $at ? ass_plural($at, 'dia', 'dias') : ($a['situacao'] === 'Concluído' ? 'Concluída' : null), 'selo_cor' => $at ? 'verm' : 'verd',
                 'link' => ['tipo' => 'atividade', 'obra_id' => (int)$a['projeto_id'], 'id' => (int)$a['id']]];
     }, array_slice($L, 0, 8));
@@ -275,7 +281,7 @@ function ass_resp_obras(array $c): array {
     $L = array_values($L);
     usort($L, fn($x, $y) => (['vermelho' => 0, 'amarelo' => 1, 'verde' => 2][$x['farol']] ?? 3) <=> (['vermelho' => 0, 'amarelo' => 1, 'verde' => 2][$y['farol']] ?? 3));
     $n = count($L);
-    $tit = ass_plural($n, 'obra', 'obras') . ($filtros ? ' no ' . implode(' ou ', array_map(fn($f) => $f, $filtros)) : '') . (!empty($int['pausadas']) ? ' pausadas' : '') . (!empty($int['planejamento']) ? ' em planejamento' : '') . (!empty($int['atrasadas']) ? ' com atividades atrasadas' : '') . (!empty($int['concluidas']) ? ' concluídas' : '') . (!$filtros && empty($int['pausadas']) && empty($int['planejamento']) && empty($int['atrasadas']) && empty($int['concluidas']) && !$c['obraAchada'] ? ' ativas' : '');
+    $tit = ass_plural($n, 'obra', 'obras') . ($filtros ? ' no ' . implode(' ou ', array_map(fn($f) => $f, $filtros)) : '') . (!empty($int['pausadas']) ? ' pausadas' : '') . (!empty($int['planejamento']) ? ' em planejamento' : '') . (!empty($int['atrasadas']) ? ' com atividades atrasadas' : '') . (!empty($int['concluidas']) ? ' concluídas' : '') . (!empty($int['andamento']) ? ' em andamento' : '') . (!$filtros && empty($int['pausadas']) && empty($int['planejamento']) && empty($int['atrasadas']) && empty($int['concluidas']) && empty($int['andamento']) && !$c['obraAchada'] ? ' ativas' : '');
     $itens = array_map(function ($o) use ($c) {
         $i = ass_item_obra($o, $c);
         return ['titulo' => $i['titulo'], 'info' => ($o['cliente'] ? $o['cliente'] . ' · ' : '') . $i['info'], 'selo' => $o['farol'] ? ['verde' => 'Verde', 'amarelo' => 'Amarelo', 'vermelho' => 'Vermelho'][$o['farol']] : null,

@@ -312,6 +312,7 @@
     box.querySelector('#tf-sair').onclick = async () => {
       if (E.salvando || E.timer && !E.erro) { await new Promise(r => setTimeout(r, 600)); }
       try { await api('sair', 'POST', {}); } catch (_) {}
+      try { Object.keys(localStorage).filter(k => k === 'tf-usuario' || k.startsWith('tf-minhas-')).forEach(k => localStorage.removeItem(k)); } catch (_) {}
       window.location.href = 'entrar.html';
     };
     box.querySelector('#tf-sync').onclick = () => { if (E.erro) gravar(); };
@@ -369,13 +370,27 @@
 
   /* ── Início (chamado pelo inicio.js) ─────────── */
   async function iniciar() {
-    try { E.usuario = (await api('eu')).usuario; }
-    catch (e) { if (e.rede) { document.body.innerHTML = '<p style="padding:40px;font-family:sans-serif">Sem conexão com o servidor. Verifique a internet e recarregue a página.</p>'; } return false; }
+    try { E.usuario = (await api('eu')).usuario; try { localStorage.setItem('tf-usuario', JSON.stringify(E.usuario)); } catch (_) {} }
+    catch (e) {
+      if (!e.rede) return false;
+      // sem internet: quem já entrou neste aparelho abre Minhas atividades com a última lista guardada
+      let u = null; try { u = JSON.parse(localStorage.getItem('tf-usuario') || 'null'); } catch (_) {}
+      if (u && window.tfMinhas) {
+        E.usuario = u; E.semRede = true; window.save = function () {}; montarCabecalho();
+        const ld = document.getElementById('loader'); if (ld) { ld.classList.add('hidden'); ld.style.display = 'none'; }
+        tfMinhas.abrir();
+        window.addEventListener('online', () => setTimeout(() => { if (!(tfMinhas.fila.itens || []).length) location.reload(); }, 1500));
+        return false;
+      }
+      document.body.innerHTML = '<p style="padding:40px;font-family:sans-serif">Sem conexão com o servidor. Verifique a internet e recarregue a página.</p>';
+      return false;
+    }
     await carregar();
     window.load = function () {};                                   // os dados já vêm do servidor
     window.save = function () { try { vincularAtividadesProjetos(); } catch (_) {} agendar(); };
     window.scheduleGistSave = function () {};                       // a cópia no Gist deixa de ser usada
     montarCabecalho();
+    if (['encarregado', 'funcionario'].includes(E.usuario.perfil) && window.tfMinhas) setTimeout(() => tfMinhas.abrir(), 0);   // quem é do campo começa pelas suas atividades
     setTimeout(oferecerImportacao, 900);
     return true;
   }

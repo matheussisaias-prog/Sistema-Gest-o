@@ -102,6 +102,26 @@ const TF_MIGRACOES = [
   KEY ix_modelos_empresa (empresa_id),
   CONSTRAINT fk_modelos_empresa FOREIGN KEY (empresa_id) REFERENCES empresas(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"],
+    7 => ["CREATE TABLE IF NOT EXISTS avancos (
+  id            INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  empresa_id    INT UNSIGNED NOT NULL,
+  atividade_id  INT UNSIGNED NOT NULL,
+  usuario_id    INT UNSIGNED NOT NULL,
+  de_avanco     TINYINT UNSIGNED NOT NULL,
+  para_avanco   TINYINT UNSIGNED NOT NULL,
+  comentario    TEXT NULL,
+  id_local      VARCHAR(40) NULL,
+  criado_em     DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE KEY uq_avanco_local (empresa_id, id_local),
+  KEY ix_avanco_ativ (atividade_id, criado_em),
+  CONSTRAINT fk_avanco_empresa FOREIGN KEY (empresa_id) REFERENCES empresas(id),
+  CONSTRAINT fk_avanco_ativ FOREIGN KEY (atividade_id) REFERENCES atividades(id),
+  CONSTRAINT fk_avanco_usuario FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci",
+          ['coluna', 'fotos', 'avanco_id', "ALTER TABLE fotos ADD COLUMN avanco_id INT UNSIGNED NULL AFTER rdo_id"],
+          ['coluna', 'fotos', 'ocorrencia_id', "ALTER TABLE fotos ADD COLUMN ocorrencia_id INT UNSIGNED NULL AFTER avanco_id"],
+          ['coluna', 'ocorrencias', 'resolvida_por', "ALTER TABLE ocorrencias ADD COLUMN resolvida_por INT UNSIGNED NULL AFTER resolvida_em"],
+          ['coluna', 'ocorrencias', 'id_local', "ALTER TABLE ocorrencias ADD COLUMN id_local VARCHAR(40) NULL AFTER resolvida_por"]],
 ];
 function migrar(PDO $pdo): void {
     $alvo = max(array_keys(TF_MIGRACOES));

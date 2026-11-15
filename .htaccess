@@ -14,6 +14,10 @@ RedirectMatch 404 /\.git
   <FilesMatch "\.(js|css)$">
     Header set Cache-Control "public, max-age=86400"
   </FilesMatch>
+  # o guardião das telas sem internet precisa sempre ser conferido
+  <FilesMatch "^sw\.js$">
+    Header set Cache-Control "no-cache, must-revalidate"
+  </FilesMatch>
 </IfModule>
 
 DirectoryIndex index.html
