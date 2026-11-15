@@ -48,7 +48,6 @@ CREATE TABLE usuarios (
   bloqueado_ate  DATETIME NULL,
   ultimo_acesso  DATETIME NULL,
   avisos_email   TINYINT(1) NOT NULL DEFAULT 1,
-  dono_plataforma TINYINT(1) NOT NULL DEFAULT 0,   -- quem administra o Task Flow (lê o Fale conosco)
   criado_em      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   atualizado_em  DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   excluido_em    DATETIME NULL,

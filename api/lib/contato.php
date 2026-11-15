@@ -20,8 +20,10 @@ function rota_fale_conosco(): array {
     inserir('fale_conosco', ['empresa_id' => $u['empresa_id'] ?? null, 'usuario_id' => $u['id'] ?? null, 'nome' => $nome,
         'email' => $email, 'assunto' => $assunto, 'mensagem' => $msg, 'origem' => $u ? 'sistema' : 'login', 'ip' => $ip]);
     // aviso aos donos da plataforma: só avisa e leva ao login; a mensagem é lida dentro do sistema
-    foreach (todos('SELECT nome, email FROM usuarios WHERE dono_plataforma = 1 AND excluido_em IS NULL AND email_confirmado_em IS NOT NULL') as $dono)
-        enviar_email($dono['email'], email_aviso_contato($dono['nome'], $assunto, link_app('/entrar.html')));
+    foreach (donos_plataforma() as $para) {
+        $dono = um('SELECT nome FROM usuarios WHERE email = ? AND excluido_em IS NULL LIMIT 1', [$para]);
+        enviar_email($para, email_aviso_contato($dono['nome'] ?? 'equipe Task Flow', $assunto, link_app('/entrar.html')));
+    }
     return ['ok' => true, 'mensagem' => 'Mensagem enviada. Vamos responder no seu e-mail.'];
 }
 

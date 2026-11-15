@@ -117,6 +117,26 @@ r = J(out, "patch", f"/projetos/{p1}", json={"nome": "invadido"}); check("Outra 
 r = J(out, "delete", f"/atividades/{a1}"); check("Outra empresa não exclui atividade da Rawtech", r.status_code == 404)
 r = J(out, "post", "/atividades", json={"projeto_id": p1, "descricao": "x"}); check("Outra empresa não cria atividade em obra da Rawtech", r.status_code == 404)
 r = J(out, "post", "/projetos", json={"codigo": "MAN-001", "nome": "Mesmo código, outra empresa"}); check("Mesmo código permitido em outra empresa", r.status_code == 200)
+p_out = r.json().get("id")
+# equipe, recursos, ausências e membros também separados por empresa
+rec = J(adm, "post", "/recursos", json={"nome": "Betoneira 400L", "tipo": "equipamento"}).json().get("id")
+J(adm, "put", f"/ausencias/funcionario/{f['David']}", json={"periodos": [{"inicio": "2026-12-01", "fim": "2026-12-10", "tipo": "Férias"}]})
+id_adm = J(adm, "get", "/eu").json()["usuario"]["id"]
+ids_raw = set(f.values())
+r = J(out, "get", "/funcionarios"); check("Outra empresa não vê a equipe da Rawtech", not ids_raw & {x["id"] for x in r.json()["funcionarios"]})
+r = J(out, "patch", f"/funcionarios/{f['David']}", json={"nome": "invadido"}); check("Outra empresa não altera funcionário da Rawtech", r.status_code == 404)
+r = J(out, "delete", f"/funcionarios/{f['David']}"); check("Outra empresa não desliga funcionário da Rawtech", r.status_code == 404)
+r = J(out, "post", "/funcionarios", json={"nome": "Zé", "encarregado_id": f["João Paulo"]}); check("Outra empresa não usa encarregado da Rawtech (criar)", r.status_code == 404)
+ze = J(out, "post", "/funcionarios", json={"nome": "Zé da Outra"}).json().get("id")
+r = J(out, "patch", f"/funcionarios/{ze}", json={"encarregado_id": f["João Paulo"]}); check("Outra empresa não usa encarregado da Rawtech (alterar)", r.status_code == 404)
+r = J(out, "post", "/atividades", json={"projeto_id": p_out, "descricao": "x", "responsavel_id": f["David"]}); check("Outra empresa não põe funcionário da Rawtech como responsável", r.status_code == 404)
+r = J(out, "get", "/recursos"); check("Outra empresa não vê recursos da Rawtech", rec and rec not in {x["id"] for x in r.json()["recursos"]})
+r = J(out, "delete", f"/recursos/{rec}"); check("Outra empresa não exclui recurso da Rawtech", r.status_code == 404)
+r = J(out, "get", "/ausencias"); check("Outra empresa não vê ausências da Rawtech", not ids_raw & {x["funcionario_id"] for x in r.json()["ausencias"]})
+r = J(out, "put", f"/ausencias/funcionario/{f['David']}", json={"periodos": []}); check("Outra empresa não apaga ausências da Rawtech", r.status_code == 404)
+r = J(adm, "get", "/ausencias"); check("Ausências da Rawtech continuam lá", any(x["funcionario_id"] == f["David"] for x in r.json()["ausencias"]))
+r = J(out, "post", f"/projetos/{p1}/membros", json={"usuario_id": id_adm, "papel": "gestor"}); check("Outra empresa não mexe na equipe da obra da Rawtech", r.status_code == 404)
+r = J(out, "post", f"/projetos/{p_out}/membros", json={"usuario_id": id_adm, "papel": "gestor"}); check("Outra empresa não puxa usuário da Rawtech para a obra dela", r.status_code == 404)
 
 # ── Login: bloqueio e senha ──
 for i in range(5): J(an, "post", "/entrar", json={"email": "jp@rawtech.test", "senha": "errada"})
@@ -156,10 +176,10 @@ def c3(n, c, x=""):
     global ok3, falhas3
     if c: ok3 += 1; print("OK   ", n)
     else: falhas3 += 1; print("FALHA", n, x)
-c3("Primeira conta do sistema é dona da plataforma", li.get(B+"/eu").json()["usuario"]["dono_plataforma"] == 1)
+c3("Dono da plataforma vem da configuração do servidor", li.get(B+"/eu").json()["usuario"]["dono_plataforma"] == 1)
 r = li.get(B+"/fale-conosco"); c3("Dono lista a caixa", r.status_code == 200 and r.json()["pendentes"] >= 1, r.text[:200])
-c3("Outra empresa não é dona", out.get(B+"/eu").status_code == 401 or True)
 o2 = requests.Session(); o2.post(B+"/entrar", json={"email":"beto@outra.test","senha":"senha-do-beto"})
+c3("Admin de outra empresa não é dono", o2.get(B+"/eu").json()["usuario"]["dono_plataforma"] == 0)
 c3("Admin de outra empresa não vê a caixa", o2.get(B+"/fale-conosco").status_code == 403)
 avisos = [e for e in emails() if e["para"] == "admin@rawtech.test" and "Fale conosco" in e["assunto"]]
 c3("Aviso por e-mail ao dono, sem o conteúdo, levando ao login", avisos and "Gantt" not in avisos[-1]["html"] and "/entrar.html" in avisos[-1]["texto"], avisos[-1]["assunto"] if avisos else None)

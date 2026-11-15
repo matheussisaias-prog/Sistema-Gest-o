@@ -10,6 +10,9 @@ return [
     'db_pass'  => 'SENHA-DO-BANCO',        // senha que você definiu no painel
     'app_url'  => 'https://gestao.mercurium.com.br',
     'email_remetente' => 'nao-responda@mercurium.com.br',
+    // Quem administra o Task Flow e lê a caixa do Fale conosco (e recebe o aviso por e-mail).
+    // Use o e-mail de login de uma conta já cadastrada. Vazio = ninguém vê a caixa; as mensagens ficam guardadas.
+    'donos_plataforma' => [],
     // Só para a primeira instalação; apague esta linha depois de instalar:
     'instalar_token' => 'TROQUE-POR-UMA-SEQUENCIA-LONGA-E-ALEATORIA',
 ];

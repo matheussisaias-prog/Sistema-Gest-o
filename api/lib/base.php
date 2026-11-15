@@ -58,7 +58,6 @@ const TF_MIGRACOES = [
             CONSTRAINT fk_fale_empresa FOREIGN KEY (empresa_id) REFERENCES empresas(id),
             CONSTRAINT fk_fale_usuario FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
           ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"],
-    3 => [['coluna', 'usuarios', 'dono_plataforma', "ALTER TABLE usuarios ADD COLUMN dono_plataforma TINYINT(1) NOT NULL DEFAULT 0 AFTER avisos_email"]],
 ];
 function migrar(PDO $pdo): void {
     $alvo = max(array_keys(TF_MIGRACOES));
@@ -147,11 +146,11 @@ function usuario_atual(): ?array {
     $t = $_COOKIE[TF_SESSAO_COOKIE] ?? '';
     $u = null;
     if ($t === '') return null;
-    $r = um('SELECT u.id, u.empresa_id, u.nome, u.email, u.perfil, u.funcionario_id, u.dono_plataforma, e.nome AS empresa_nome
+    $r = um('SELECT u.id, u.empresa_id, u.nome, u.email, u.perfil, u.funcionario_id, e.nome AS empresa_nome
              FROM sessoes s JOIN usuarios u ON u.id = s.usuario_id JOIN empresas e ON e.id = u.empresa_id
              WHERE s.id = ? AND s.expira_em > UTC_TIMESTAMP() AND u.excluido_em IS NULL AND e.excluido_em IS NULL AND e.situacao <> "suspenso"',
             [hash_token($t)]);
-    if ($r) { q('UPDATE sessoes SET usado_em = UTC_TIMESTAMP() WHERE id = ?', [hash_token($t)]); $u = $r; }
+    if ($r) { q('UPDATE sessoes SET usado_em = UTC_TIMESTAMP() WHERE id = ?', [hash_token($t)]); $r['dono_plataforma'] = eh_dono_plataforma($r['email']) ? 1 : 0; $u = $r; }
     return $u;
 }
 function exigir_login(): array {
@@ -191,4 +190,11 @@ function enviar_email(string $para, array $m): bool {
            . "--$sep--\r\n";
     return @mail($para, '=?UTF-8?B?' . base64_encode($m['assunto']) . '?=', $corpo, $cab, '-f' . $de);
 }
+/** Dono da plataforma: só os e-mails listados em 'donos_plataforma' no arquivo de configuração do servidor.
+    Lista vazia = ninguém vê a caixa do Fale conosco (as mensagens ficam guardadas). */
+function donos_plataforma(): array {
+    $l = config()['donos_plataforma'] ?? [];
+    return array_values(array_filter(array_map(fn($e) => mb_strtolower(trim((string)$e)), is_array($l) ? $l : [$l])));
+}
+function eh_dono_plataforma(?string $email): bool { return $email !== null && in_array(mb_strtolower(trim($email)), donos_plataforma(), true); }
 function link_app(string $caminho): string { return rtrim(config()['app_url'] ?? '', '/') . $caminho; }
