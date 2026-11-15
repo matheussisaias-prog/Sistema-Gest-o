@@ -105,4 +105,15 @@ r = adm.delete(B+f"/atividades/{et}").json()
 check("Excluir etapa leva as filhas", r["excluidas"] == 3, r)
 ids = {x["id"] for x in adm.get(B+f"/obras/{pid}/cronograma").json()["atividades"]}
 check("…e as ligações delas (C ficou sem predecessora)", a not in ids and A(c)["predecessoras"] == "", A(c))
+# ── equipe da obra, membros e itens da linha de base ──
+id_jp = next(x["id"] for x in adm.get(B+"/usuarios").json()["usuarios"] if x["nome"] == "João Paulo")
+adm.post(B+f"/projetos/{pid}/membros", json={"usuario_id": id_jp, "papel": "encarregado"})
+eq = adm.get(B+f"/obras/{pid}/equipe").json()
+check("Equipe da obra traz membros e capacidade", any(m["nome"] == "João Paulo" for m in eq["membros"]) and eq["capacidade_14"] > 0)
+mid = next(m["id"] for m in eq["membros"] if m["nome"] == "João Paulo")
+check("Encarregado (agora membro) vê a equipe, mas não tira acesso", ses["jp"].get(B+f"/obras/{pid}/equipe").status_code == 200 and ses["jp"].delete(B+f"/membros/{mid}").status_code == 403)
+check("Gestor tira o acesso", adm.delete(B+f"/membros/{mid}").status_code == 200 and ses["jp"].get(B+f"/obras/{pid}/equipe").status_code == 404)
+lb0 = adm.get(B+f"/obras/{pid}/linhas-base").json()["linhas_base"][0]
+check("Itens de uma linha de base para comparar", len(adm.get(B+f"/linhas-base/{lb0['id']}").json()["itens"]) > 0 and lb0["nome"] == "Original")
+check("Histórico da obra", len(adm.get(B+f"/obras/{pid}/historico").json()["historico"]) > 10)
 print(f"RESULTADO: {ok} ok, {falhas} falhas")

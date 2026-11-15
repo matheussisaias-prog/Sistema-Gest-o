@@ -107,7 +107,7 @@
     const w = h('div', { class: 'og' });
     w.append(cabecalho(), abas());
     if (O.aba === 'crono') w.append(celular() ? cronoCelular() : cronograma());
-    else if (window.tfObraAbas && tfObraAbas[O.aba]) w.append(tfObraAbas[O.aba](O, { api, h, ic, carregar, avisar, modal, podeTudo, equipe }));
+    else if (window.tfObraAbas && tfObraAbas[O.aba]) w.append(tfObraAbas[O.aba](O, { api, h, ic, carregar, avisar, modal, podeTudo, equipe, aposMudar, painel, desenhar, eu }));
     else w.append(h('div', { class: 'ob-vazio' }, ic('fa-person-digging'), h('p', null, 'Esta aba entra na próxima parte.')));
     R.append(w);
     if (celular() && podeTudo() && O.aba === 'crono') R.append(h('button', { class: 'og-fab', onclick: () => painel(null) }, ic('fa-plus'), 'Atividade'));
@@ -591,5 +591,5 @@
     if (nome === 'obra') { const t = document.getElementById('page-title'); if (t) t.textContent = 'Obra'; }
   };
   window.addEventListener('resize', (() => { let w = celular(); return () => { if (w !== celular()) { w = celular(); if (raiz() && raiz().classList.contains('active')) desenhar(); } }; })());
-  window.tfObra = { abrir, recarregar: carregar, estado: O, painel: a => painel(a) };
+  window.tfObra = { abrir, recarregar: carregar, estado: O, painel: a => painel(a), salvarLinhaBase, desenhar };
 })();

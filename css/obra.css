@@ -168,3 +168,91 @@
   .og-pred-nome, .og-pred.nova select:first-child { grid-column: 1 / -1; }
   .og-p-corpo .ob-g3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
+
+/* ── aba Quadro ─────────────────────────────────── */
+.oq { display: flex; flex-direction: column; gap: 12px; }
+.oq-barra { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.oq-barra .ob-sel { height: 38px; font-size: .8125rem; }
+.oq-grade { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; align-items: start; }
+.oq-col { background: #e9eef5; border-radius: 12px; padding: 12px; display: flex; flex-direction: column; gap: 10px; min-height: 220px; transition: background .15s; }
+.oq-col.sobre { background: #dbeafe; box-shadow: inset 0 0 0 2px #93c5fd; }
+.oq-col-cab { display: flex; align-items: center; gap: 8px; padding: 2px 4px; font-size: .875rem; }
+.oq-ponto { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+.oq-qtd { font-size: .75rem; font-weight: 700; color: #475569; background: #fff; padding: 1px 8px; border-radius: 10px; }
+.oq-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 12px; display: flex; flex-direction: column; gap: 8px; box-shadow: 0 1px 2px rgba(15,23,42,.06); cursor: pointer; }
+.oq-card[draggable=true] { cursor: grab; } .oq-card.arrastando { opacity: .45; }
+.oq-card.atras { border-color: #fca5a5; } .oq-card:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+.oq-c-topo { display: flex; justify-content: space-between; gap: 8px; font-size: .6875rem; color: var(--text-3); font-weight: 700; }
+.oq-c-topo span:first-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } .oq-c-topo .verm { color: #b91c1c; white-space: nowrap; }
+.oq-c-nome { font-size: .875rem; line-height: 1.3; }
+.oq-card .ob-bar-trilho { height: 6px; }
+.oq-c-pe { display: flex; align-items: center; justify-content: space-between; gap: 6px; font-size: .75rem; }
+.oq-resp { display: inline-flex; align-items: center; gap: 6px; min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.oq-av { width: 26px; height: 26px; border-radius: 50%; background: #e0e7ff; color: #3730a3; font-size: .625rem; font-weight: 700; font-style: normal; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.oq-av.g { background: #2563eb; color: #fff; }
+.oq-mover { height: 30px; border: 1.5px solid #e2e8f0; border-radius: 7px; font: .75rem 'DM Sans', sans-serif; max-width: 110px; background: #fff; }
+.oq-vazia { font-size: .75rem; color: var(--text-4); text-align: center; padding: 18px 0; }
+
+/* ── aba Equipe da obra ─────────────────────────── */
+.oe, .ol { display: flex; flex-direction: column; gap: 16px; }
+.oe-sec { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px 18px; display: flex; flex-direction: column; gap: 10px; }
+.oe-sec-cab { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
+.oe-sec h3, .oe-sec h4 { margin: 0; font-family: Outfit, sans-serif; font-size: 1.05rem; }
+.oe-sec h4 { font-size: .95rem; }
+.oe-lista { display: flex; flex-direction: column; gap: 6px; }
+.oe-pessoa { display: grid; grid-template-columns: 32px 1fr auto 32px; gap: 10px; align-items: center; padding: 8px 6px; border-radius: 8px; font-size: .8125rem; }
+.oe-pessoa:hover { background: #f8fafc; } .oe-pessoa small { display: block; color: var(--text-3); font-size: .75rem; }
+.oe-tab, .ol-tab { border: 1px solid #eef2f7; border-radius: 10px; overflow: hidden; }
+.oe-lin { display: grid; grid-template-columns: minmax(180px, 1.6fr) 1fr .6fr 1.4fr .9fr; gap: 10px; align-items: center; padding: 10px 12px; border-bottom: 1px solid #f1f5f9; font-size: .8125rem; }
+.oe-th, .ol-th { background: #f8fafc; font-size: .6875rem !important; font-weight: 700; color: var(--text-3); text-transform: uppercase; letter-spacing: .03em; }
+.oe-nome { display: flex; gap: 8px; align-items: center; } .oe-nome small { display: block; color: var(--text-3); font-size: .75rem; }
+.oe-carga { display: flex; flex-direction: column; gap: 3px; } .oe-carga .ob-bar-trilho { height: 7px; }
+.ob-bar-ench.amar { background: #d97706; }
+.oe-lin b.amar, .ol-tab b.amar { color: #92400e; }
+
+/* ── aba Linha de base e histórico ──────────────── */
+.ol-lin { display: grid; grid-template-columns: 40px 1.2fr .8fr .9fr 2fr 1fr 80px; gap: 10px; align-items: center; padding: 10px 12px; border-bottom: 1px solid #f1f5f9; font-size: .8125rem; }
+.ol-lin.atual { background: #eff6ff; } .ol-lin .ob-tipo { margin-left: 6px; }
+.ol-mot { color: #334155; }
+.ol-cmp:empty { display: none; } .ol-cmp { display: flex; flex-direction: column; gap: 8px; margin-top: 6px; }
+.ol-cmp-lin { grid-template-columns: 50px 2fr 1fr 1fr .8fr; }
+.ol-hist { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; max-height: 520px; overflow-y: auto; }
+.ol-hist li { display: grid; grid-template-columns: 130px 1fr; gap: 10px; padding: 8px 4px; border-bottom: 1px solid #f1f5f9; font-size: .8125rem; color: #334155; }
+.ol-q { color: var(--text-3); font-size: .75rem; }
+
+/* ── calendário de trabalho ─────────────────────── */
+.oc-jan { max-width: 560px !important; display: flex; flex-direction: column; gap: 12px; max-height: calc(100vh - 40px); overflow-y: auto; }
+.oc-jan.larga { max-width: 960px !important; }
+.oc-jan h3 { margin: 0 !important; }
+.oc-lista { display: flex; flex-direction: column; gap: 8px; }
+.oc-op { display: flex; justify-content: space-between; align-items: center; gap: 10px; text-align: left; padding: 12px 14px; border: 1.5px solid #e2e8f0; border-radius: 10px; background: #fff; cursor: pointer; font: .8125rem 'DM Sans', sans-serif; }
+.oc-op.on { border-color: var(--blue); background: #eff6ff; } .oc-op:focus-visible { outline: 2px solid var(--blue); }
+.oc-op small { display: block; color: var(--text-3); font-size: .75rem; margin-top: 2px; }
+.oc-cols { display: grid; grid-template-columns: 300px 1fr; gap: 20px; }
+.oc-fs { border: 0; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.oc-fs legend, .oc-tit { font-size: .8125rem; font-weight: 700; color: #334155; margin-bottom: 4px; }
+.oc-dia { display: grid; grid-template-columns: 44px 1fr 90px; gap: 10px; align-items: center; font-size: .875rem; }
+.oc-dia input { width: 60px; height: 34px; border: 1.5px solid #cbd5e1; border-radius: 8px; padding: 0 6px; font: .8125rem 'DM Sans', sans-serif; }
+.oc-dia input:disabled { background: #f1f5f9; color: var(--text-4); }
+.oc-sw { width: 40px; height: 24px; border-radius: 12px; border: 0; background: #cbd5e1; position: relative; cursor: pointer; padding: 0; }
+.oc-sw::after { content: ''; position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; border-radius: 50%; background: #fff; transition: left .15s; }
+.oc-sw.on { background: var(--blue); } .oc-sw.on::after { left: 19px; }
+.oc-nac { display: flex; gap: 8px; align-items: center; font-size: .8125rem; font-weight: 600; color: #334155; } .oc-nac input { width: 17px; height: 17px; accent-color: var(--blue); }
+.oc-dias { display: flex; flex-direction: column; gap: 6px; }
+.oc-linha { display: grid; grid-template-columns: 110px 132px 132px minmax(0, 1fr) 82px 32px; gap: 6px; align-items: center; }
+.oc-linha select, .oc-linha input:not([type=checkbox]) { height: 34px; border: 1.5px solid #cbd5e1; border-radius: 8px; padding: 0 6px; font: .8125rem 'DM Sans', sans-serif; min-width: 0; background: #fff; }
+.oc-ano { display: flex; gap: 4px; align-items: center; font-size: .75rem; color: var(--text-3); }
+
+@media (max-width: 900px) {
+  .oq-grade { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .oc-cols { grid-template-columns: 1fr; }
+  .oc-linha { grid-template-columns: 1fr 1fr; } .oc-linha input:nth-of-type(3) { grid-column: 1 / -1; }
+}
+@media (max-width: 760px) {
+  .oq-grade { grid-template-columns: 1fr; }
+  .oq-col { min-height: 0; }
+  .oe-lin { grid-template-columns: 1fr 1fr; } .oe-lin > span:first-child { grid-column: 1 / -1; } .oe-th { display: none; }
+  .ol-lin { grid-template-columns: 30px 1fr 1fr; } .ol-lin > :nth-child(n+5) { grid-column: 2 / -1; } .ol-th { display: none; }
+  .ol-cmp-lin { grid-template-columns: 40px 1fr auto; } .ol-cmp-lin > :nth-child(3), .ol-cmp-lin > :nth-child(4) { display: none; }
+  .ol-hist li { grid-template-columns: 1fr; gap: 2px; }
+}

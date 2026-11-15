@@ -346,7 +346,7 @@ function rota_linhas_base_listar(int $pid): array {
 function rota_linhas_base_salvar(int $pid): array {
     $u = exigir_login(); exigir_perfil($u, PODE_TUDO); obra_da_empresa($u, $pid);
     $d = limpar(corpo(), ['nome' => ['texto', 120], 'motivo' => ['texto', 2000]]);
-    $n = um('SELECT COALESCE(MAX(numero) + 1, 0) n FROM linhas_base WHERE projeto_id = ?', [$pid])['n'];
+    $n = (int)um('SELECT COALESCE(MAX(numero) + 1, 0) n FROM linhas_base WHERE projeto_id = ?', [$pid])['n'];
     if ($n > 0 && empty($d['motivo'])) throw new ErroApi('Informe o motivo da reprogramação');
     $itens = todos('SELECT a.id, a.inicio, a.fim, a.peso FROM atividades a WHERE a.projeto_id = ? AND a.excluido_em IS NULL
                     AND NOT EXISTS (SELECT 1 FROM atividades f WHERE f.pai_id = a.id AND f.excluido_em IS NULL)', [$pid]);
@@ -461,4 +461,64 @@ function rota_obra_historico(int $pid): array {
         WHERE h.empresa_id = ? AND ((h.tabela = "projetos" AND h.registro_id = ?) OR (h.tabela = "atividades" AND a.projeto_id = ?)
               OR (h.tabela = "linhas_base" AND h.registro_id IN (SELECT id FROM linhas_base WHERE projeto_id = ?)))
         ORDER BY h.id DESC LIMIT 200', [$eid, $pid, $pid, $pid]))];
+}
+
+/* ── Equipe da obra ──────────────────────────────────────────── */
+/** GET /api/obras/{id}/equipe — quem tem acesso e quem trabalha nas atividades (carga, atrasos, NR). */
+function rota_obra_equipe(int $pid): array {
+    $u = exigir_login(); obra_para_cronograma($u, $pid); $eid = (int)$u['empresa_id'];
+    $hoje = gmdate('Y-m-d', time() - 3 * 3600); $em14 = Calendario::mais($hoje, 14); $em30 = Calendario::mais($hoje, 30);
+    $membros = todos('SELECT m.id, m.papel, us.id AS usuario_id, us.nome, us.email, us.perfil FROM projeto_membros m JOIN usuarios us ON us.id = m.usuario_id
+                      WHERE m.projeto_id = ? AND m.empresa_id = ? AND us.excluido_em IS NULL ORDER BY us.nome', [$pid, $eid]);
+    $gestor = um('SELECT us.id, us.nome FROM projetos p LEFT JOIN usuarios us ON us.id = p.gestor_id WHERE p.id = ?', [$pid]);
+    $cal = calendario_da_obra($pid, $eid);
+    $pessoas = [];
+    foreach (todos('SELECT a.responsavel_id AS id, f.nome, f.cargo, a.inicio, a.fim, a.avanco, a.situacao, a.duracao_dias
+                    FROM atividades a JOIN funcionarios f ON f.id = a.responsavel_id
+                    WHERE a.projeto_id = ? AND a.empresa_id = ? AND a.excluido_em IS NULL
+                      AND NOT EXISTS (SELECT 1 FROM atividades x WHERE x.pai_id = a.id AND x.excluido_em IS NULL)', [$pid, $eid]) as $a) {
+        $id = (int)$a['id'];
+        $p = &$pessoas[$id];
+        $p ??= ['funcionario_id' => $id, 'nome' => $a['nome'], 'cargo' => $a['cargo'], 'atividades' => 0, 'abertas' => 0, 'atrasadas' => 0, 'dias_proximas' => 0.0];
+        $p['atividades']++;
+        $aberta = $a['situacao'] !== 'Concluído' && (int)$a['avanco'] < 100;
+        if ($aberta) { $p['abertas']++; if ($a['fim'] && $a['fim'] < $hoje) $p['atrasadas']++; }
+        if ($aberta && $a['inicio'] && $a['fim'] && $a['inicio'] <= $em14 && $a['fim'] >= $hoje) {   // dias úteis de trabalho nas próximas 2 semanas
+            $ini = max($a['inicio'], $hoje); $fim = min($a['fim'], $em14);
+            $p['dias_proximas'] += $cal->diasUteis($ini, $fim) * (1 - (int)$a['avanco'] / 100);
+        }
+        unset($p);
+    }
+    $docs = [];
+    if ($pessoas) foreach (todos('SELECT funcionario_id, documento, nr, vence_em, invalidado_por_afastamento FROM v_documentos_situacao WHERE empresa_id = ? AND funcionario_id IN (' . implode(',', array_keys($pessoas)) . ')', [$eid]) as $d) {
+        $s = $d['invalidado_por_afastamento'] || ($d['vence_em'] && $d['vence_em'] < $hoje) ? 'vencido' : ($d['vence_em'] && $d['vence_em'] <= $em30 ? 'vencendo' : 'ok');
+        $docs[(int)$d['funcionario_id']][] = ['documento' => $d['documento'], 'nr' => $d['nr'], 'vence_em' => $d['vence_em'], 'situacao' => $s];
+    }
+    foreach ($pessoas as $id => &$p) {
+        $l = $docs[$id] ?? [];
+        $p['dias_proximas'] = round($p['dias_proximas'], 1);
+        $p['nr'] = ['total' => count($l), 'vencidos' => count(array_filter($l, fn($x) => $x['situacao'] === 'vencido')), 'vencendo' => count(array_filter($l, fn($x) => $x['situacao'] === 'vencendo')),
+                    'pendentes' => array_values(array_filter($l, fn($x) => $x['situacao'] !== 'ok'))];
+    }
+    unset($p);
+    usort($pessoas, fn($a, $b) => strcmp($a['nome'], $b['nome']));
+    return ['gestor' => $gestor && $gestor['id'] ? $gestor : null, 'membros' => $membros, 'pessoas' => array_values($pessoas), 'capacidade_14' => $cal->diasUteis($hoje, $em14)];
+}
+/** DELETE /api/membros/{id} — tira o acesso de alguém à obra. */
+function rota_membros_excluir(int $id): array {
+    $u = exigir_login(); exigir_perfil($u, PODE_TUDO);
+    $m = um('SELECT id, projeto_id, usuario_id FROM projeto_membros WHERE id = ? AND empresa_id = ?', [$id, $u['empresa_id']]);
+    if (!$m) throw new ErroApi('Membro não encontrado', 404);
+    obra_da_empresa($u, (int)$m['projeto_id']);
+    q('DELETE FROM projeto_membros WHERE id = ?', [$id]);
+    registrar($u, (int)$u['empresa_id'], 'projeto_membros', (int)$m['projeto_id'], 'excluiu', ['usuario_id' => (int)$m['usuario_id']]);
+    return ['ok' => true];
+}
+/** GET /api/linhas-base/{id} — itens de uma linha de base (para comparar). */
+function rota_linha_base_itens(int $id): array {
+    $u = exigir_login();
+    $lb = um('SELECT id, projeto_id, numero, nome FROM linhas_base WHERE id = ? AND empresa_id = ?', [$id, $u['empresa_id']]);
+    if (!$lb) throw new ErroApi('Linha de base não encontrada', 404);
+    obra_para_cronograma($u, (int)$lb['projeto_id']);
+    return ['linha_base' => $lb, 'itens' => todos('SELECT atividade_id, inicio, fim FROM linha_base_itens WHERE linha_base_id = ?', [$id])];
 }
