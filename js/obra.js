@@ -58,7 +58,7 @@
 
   /* ── carregar ───────────────────────────────── */
   async function abrir(id) {
-    O.id = +id; O.d = null; O.sel.clear(); O.aba = 'crono'; O.f = { busca: '', resp: '', mostrar: 'todas', chip: 'todas' }; O.equipe = null;
+    O.id = +id; O.d = null; O.gx = null; O.sel.clear(); O.aba = 'crono'; O.f = { busca: '', resp: '', mostrar: 'todas', chip: 'todas' }; O.equipe = null;
     const nav = document.getElementById('nav-obras');
     window.switchView('obra', nav);
     await carregar();
@@ -97,7 +97,11 @@
   /* ── desenho geral ──────────────────────────── */
   function desenhar() {
     const R = raiz(); if (!R) return;
+    const y = window.scrollY, gx = R.querySelector('.og-dir');
+    if (gx) O.gx = gx.scrollLeft;
+    R.style.minHeight = R.offsetHeight + 'px';           // segura a altura para a página não pular para o topo
     R.innerHTML = '';
+    requestAnimationFrame(() => { R.style.minHeight = ''; window.scrollTo(0, y); });
     if (O.erro) { R.append(h('div', { class: 'ob-vazio' }, ic('fa-triangle-exclamation'), h('p', null, O.erro), h('button', { class: 'ob-bt', onclick: () => voltar() }, 'Voltar para Obras'))); return; }
     if (!O.d) { R.append(h('div', { class: 'ob-vazio' }, ic('fa-spinner fa-spin'), h('p', null, 'Carregando a obra…'))); return; }
     const w = h('div', { class: 'og' });
@@ -250,7 +254,8 @@
     box.append(h('div', { class: 'og-tabela' }, grade), legenda());
     // rola o Gantt para perto de hoje
     const primeiro = L.find(a => a.inicio);
-    requestAnimationFrame(() => { dir.scrollLeft = Math.max(0, Math.min(E.x(O.d.hoje) - 200, primeiro ? E.x(primeiro.inicio) - 3 * E.px : 0)); });
+    const escalaAntes = O.gxEscala; O.gxEscala = O.escala;
+    requestAnimationFrame(() => { dir.scrollLeft = O.gx != null && escalaAntes === O.escala ? O.gx : Math.max(0, Math.min(E.x(O.d.hoje) - 200, primeiro ? E.x(primeiro.inicio) - 3 * E.px : 0)); });
     return box;
   }
   function legenda() {
