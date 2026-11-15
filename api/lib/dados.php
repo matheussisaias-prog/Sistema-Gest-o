@@ -52,7 +52,19 @@ const REGRAS_PROJETO = [
     'local_obra' => ['texto', 200], 'gestor_id' => ['id'], 'gestor_nome' => ['texto', 160],
     'situacao' => ['lista', ['Planejamento', 'Em andamento', 'Pausado', 'Concluído', 'Arquivado']],
     'inicio' => ['data'], 'fim' => ['data'], 'cor' => ['texto', 7], 'valor_contrato' => ['num', 0, 1e12],
+    'tipo_servico' => ['texto', 40], 'numero_contrato' => ['texto', 60], 'rt_funcionario_id' => ['id'], 'art_numero' => ['texto', 40],
 ];
+/** Confere gestor e responsável técnico (mesma empresa) e guarda o nome do gestor para as telas antigas. */
+function conferir_pessoas_obra(array $u, array &$c): void {
+    if (!empty($c['gestor_id'])) {
+        $g = um('SELECT nome FROM usuarios WHERE id = ? AND empresa_id = ? AND excluido_em IS NULL', [$c['gestor_id'], $u['empresa_id']]);
+        if (!$g) throw new ErroApi('Gestor não encontrado', 404);
+        if (!array_key_exists('gestor_nome', $c)) $c['gestor_nome'] = $g['nome'];
+    }
+    if (!empty($c['rt_funcionario_id']) && !um('SELECT id FROM funcionarios WHERE id = ? AND empresa_id = ? AND excluido_em IS NULL', [$c['rt_funcionario_id'], $u['empresa_id']]))
+        throw new ErroApi('Responsável técnico não encontrado', 404);
+    if (!empty($c['inicio']) && !empty($c['fim']) && $c['fim'] < $c['inicio']) throw new ErroApi('O fim previsto não pode ser antes do início');
+}
 /** Obras que o usuário pode ver (ids), ou null = todas da empresa. */
 function obras_visiveis(array $u): ?array {
     if (in_array($u['perfil'], PODE_TUDO, true)) return null;
@@ -81,7 +93,7 @@ function rota_projetos_criar(): array {
     $u = exigir_login(); exigir_perfil($u, PODE_TUDO);
     $c = limpar(corpo(), REGRAS_PROJETO);
     if (empty($c['nome'])) throw new ErroApi('Campo obrigatório: nome');
-    if (!empty($c['gestor_id']) && !um('SELECT id FROM usuarios WHERE id = ? AND empresa_id = ?', [$c['gestor_id'], $u['empresa_id']])) throw new ErroApi('Gestor não encontrado', 404);
+    conferir_pessoas_obra($u, $c);
     if (!empty($c['codigo']) && um('SELECT id FROM projetos WHERE empresa_id = ? AND codigo = ?', [$u['empresa_id'], $c['codigo']])) throw new ErroApi('Já existe uma obra com este código', 409);
     $id = inserir('projetos', ['empresa_id' => $u['empresa_id']] + $c);
     registrar($u, (int)$u['empresa_id'], 'projetos', $id, 'criou', null, $c);
@@ -92,7 +104,12 @@ function rota_projetos_alterar(int $id): array {
     $antes = obra_da_empresa($u, $id);
     $c = limpar(corpo(), REGRAS_PROJETO);
     if (array_key_exists('nome', $c) && empty($c['nome'])) throw new ErroApi('O nome não pode ficar vazio');
-    if (!empty($c['gestor_id']) && !um('SELECT id FROM usuarios WHERE id = ? AND empresa_id = ?', [$c['gestor_id'], $u['empresa_id']])) throw new ErroApi('Gestor não encontrado', 404);
+    conferir_pessoas_obra($u, $c);
+    if (!empty($c['codigo']) && um('SELECT id FROM projetos WHERE empresa_id = ? AND codigo = ? AND id <> ? AND excluido_em IS NULL', [$u['empresa_id'], $c['codigo'], $id])) throw new ErroApi('Já existe uma obra com este código', 409);
+    if (!empty($c['inicio']) xor !empty($c['fim'])) {   // só uma das datas veio: confere com a outra que já existe
+        $ini = $c['inicio'] ?? $antes['inicio']; $fim = $c['fim'] ?? $antes['fim'];
+        if ($ini && $fim && $fim < $ini) throw new ErroApi('O fim previsto não pode ser antes do início');
+    }
     atualizar('projetos', $id, $c);
     registrar($u, (int)$u['empresa_id'], 'projetos', $id, 'alterou', array_intersect_key($antes, $c), $c);
     return ['ok' => true];

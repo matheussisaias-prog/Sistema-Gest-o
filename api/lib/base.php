@@ -59,6 +59,10 @@ const TF_MIGRACOES = [
             CONSTRAINT fk_fale_usuario FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
           ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"],
     3 => [['coluna', 'fale_conosco', 'anotacao', "ALTER TABLE fale_conosco ADD COLUMN anotacao TEXT NULL AFTER respondido_em"]],
+    4 => [['coluna', 'projetos', 'tipo_servico', "ALTER TABLE projetos ADD COLUMN tipo_servico VARCHAR(40) NULL AFTER descricao"],
+          ['coluna', 'projetos', 'numero_contrato', "ALTER TABLE projetos ADD COLUMN numero_contrato VARCHAR(60) NULL AFTER cliente"],
+          ['coluna', 'projetos', 'rt_funcionario_id', "ALTER TABLE projetos ADD COLUMN rt_funcionario_id INT UNSIGNED NULL AFTER gestor_nome"],
+          ['coluna', 'projetos', 'art_numero', "ALTER TABLE projetos ADD COLUMN art_numero VARCHAR(40) NULL AFTER rt_funcionario_id"]],
 ];
 function migrar(PDO $pdo): void {
     $alvo = max(array_keys(TF_MIGRACOES));
