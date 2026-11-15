@@ -155,7 +155,7 @@
         cmp.append(h('div', { class: 'oe-sec-cab' }, h('h4', null, `Plano atual × linha de base nº ${x.numero} (${x.nome})`), h('button', { class: 'og-x', 'aria-label': 'Fechar comparação', onclick: () => { cmp.innerHTML = ''; fb.comparar = ''; } }, ic('fa-xmark'))));
         const t = h('div', { class: 'ol-tab' }, h('div', { class: 'ol-lin ol-cmp-lin ol-th' }, h('span', null, 'EAP'), h('span', null, 'Atividade'), h('span', null, 'Fim na linha de base'), h('span', null, 'Fim atual'), h('span', null, 'Diferença')));
         linhas.sort((p, q) => q.dif - p.dif).forEach(({ a, b, dif }) => t.append(h('div', { class: 'ol-lin ol-cmp-lin' }, h('span', null, a.eap), h('span', null, a.descricao), h('span', null, dBRano(b.fim)), h('span', null, dBRano(a.fim)),
-          h('b', { class: dif > 0 ? 'verm' : dif < 0 ? 'verd' : '' }, dif > 0 ? `+${dif} dias` : dif < 0 ? `${dif} dias` : 'igual'))));
+          h('b', { class: dif > 0 ? 'verm' : dif < 0 ? 'verd' : '' }, dif > 0 ? `+${dif} dia${dif > 1 ? 's' : ''}` : dif < 0 ? `${dif} dia${dif < -1 ? 's' : ''}` : 'igual'))));
         novas.forEach(a => t.append(h('div', { class: 'ol-lin ol-cmp-lin' }, h('span', null, a.eap), h('span', null, a.descricao), h('span', null, '—'), h('span', null, dBRano(a.fim)), h('span', { class: 'og-sub' }, 'nova'))));
         cmp.append(t);
       }
