@@ -124,6 +124,48 @@ CREATE TABLE dispositivos_obra (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ── Bloco 2 · Planejamento ──────────────────────────────────────
+-- Calendários de trabalho (cada gestor cria os seus; a obra escolhe um)
+CREATE TABLE calendarios (
+  id            INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  empresa_id    INT UNSIGNED NOT NULL,
+  dono_id       INT UNSIGNED NULL,
+  nome          VARCHAR(120) NOT NULL,
+  horas_semana  VARCHAR(80)  NOT NULL DEFAULT '[8,8,8,8,8,0,0]',
+  feriados_nacionais TINYINT(1) NOT NULL DEFAULT 1,
+  criado_em     DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  atualizado_em DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  excluido_em   DATETIME NULL,
+  KEY ix_cal_empresa (empresa_id),
+  CONSTRAINT fk_cal_empresa FOREIGN KEY (empresa_id) REFERENCES empresas(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE calendario_dias (
+  id            INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  calendario_id INT UNSIGNED NOT NULL,
+  inicio        DATE NOT NULL,
+  fim           DATE NOT NULL,
+  tipo          ENUM('feriado','parado') NOT NULL DEFAULT 'feriado',
+  nome          VARCHAR(120) NOT NULL,
+  todo_ano      TINYINT(1) NOT NULL DEFAULT 0,
+  KEY ix_caldias (calendario_id),
+  CONSTRAINT fk_caldias_cal FOREIGN KEY (calendario_id) REFERENCES calendarios(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Modelos de cronograma da empresa (os do Task Flow ficam no código)
+CREATE TABLE modelos_cronograma (
+  id            INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  empresa_id    INT UNSIGNED NOT NULL,
+  nome          VARCHAR(120) NOT NULL,
+  tipo_servico  VARCHAR(40)  NULL,
+  linhas        MEDIUMTEXT   NOT NULL,
+  projeto_origem INT UNSIGNED NULL,
+  criado_por    INT UNSIGNED NULL,
+  criado_em     DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  excluido_em   DATETIME NULL,
+  KEY ix_modelos_empresa (empresa_id),
+  CONSTRAINT fk_modelos_empresa FOREIGN KEY (empresa_id) REFERENCES empresas(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 CREATE TABLE projetos (
   id             INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   empresa_id     INT UNSIGNED NOT NULL,
@@ -138,6 +180,7 @@ CREATE TABLE projetos (
   gestor_nome    VARCHAR(160) NULL,               -- texto antigo, quando não achar a pessoa
   rt_funcionario_id INT UNSIGNED NULL,            -- responsável técnico (da equipe)
   art_numero     VARCHAR(40)  NULL,
+  calendario_id  INT UNSIGNED NULL,               -- calendário de trabalho (dias úteis)
   situacao       ENUM('Planejamento','Em andamento','Pausado','Concluído','Arquivado') NOT NULL DEFAULT 'Em andamento',
   inicio         DATE NULL,
   fim            DATE NULL,
@@ -165,6 +208,7 @@ CREATE TABLE atividades (
   inicio         DATE NULL,
   fim            DATE NULL,
   duracao_horas  DECIMAL(8,1) NULL,
+  duracao_dias   DECIMAL(6,1) NULL,               -- em dias úteis do calendário da obra
   avanco         TINYINT UNSIGNED NOT NULL DEFAULT 0,
   situacao       ENUM('Pendente','Em andamento','Concluído','Reprogramado') NOT NULL DEFAULT 'Pendente',
   critica        TINYINT(1) NOT NULL DEFAULT 0,
