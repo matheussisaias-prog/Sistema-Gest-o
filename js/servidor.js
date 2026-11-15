@@ -288,13 +288,7 @@
       .tf-imp-bt{display:flex;gap:10px;justify-content:flex-end;margin-top:14px}
       .tf-k-campo{display:block;font-size:.8rem;font-weight:600;color:var(--text-2);margin-bottom:12px}.tf-k-campo select,.tf-k-campo textarea{display:block;width:100%;margin-top:6px;border:1.5px solid var(--border);border-radius:8px;padding:9px 11px;font:inherit;font-size:.9rem;font-weight:400;background:var(--surface);color:var(--text-1)}
       .tf-k-campo textarea{resize:vertical;min-height:110px}
-      .tf-badge{background:var(--red);color:#fff;border-radius:9px;font-size:.66rem;font-weight:700;min-width:18px;height:18px;padding:0 5px;display:inline-flex;align-items:center;justify-content:center}
-      .tf-caixa{max-width:640px;max-height:84vh;display:flex;flex-direction:column}.tf-cx-cab{display:flex;justify-content:space-between;align-items:center}.tf-cx-cab h3{margin:0}
-      .tf-cx-sub{font-size:.82rem!important;color:var(--text-3)!important;margin:6px 0 12px!important}#tf-cx-lista{overflow-y:auto;display:flex;flex-direction:column;gap:10px;padding-right:4px}
-      .tf-cx-item{border:1px solid var(--border);border-left:3px solid var(--blue);border-radius:10px;padding:12px 14px;background:var(--surface2)}.tf-cx-item.ok{border-left-color:var(--green);opacity:.75}
-      .tf-cx-topo{display:flex;justify-content:space-between;gap:10px;font-size:.75rem;color:var(--text-3)}.tf-cx-ass{font-weight:700;color:var(--blue)}.tf-cx-item.ok .tf-cx-ass{color:var(--green)}
-      .tf-cx-de{font-size:.82rem;margin:4px 0 6px;color:var(--text-2)}.tf-cx-de span{color:var(--text-3)}.tf-cx-msg{white-space:pre-wrap;font-size:.86rem!important;color:var(--text-1)!important;margin:0 0 10px!important}
-      .tf-cx-acoes{display:flex;gap:8px;flex-wrap:wrap}.tf-cx-acoes a{text-decoration:none}.tf-cx-vazio{color:var(--text-3)!important;font-size:.88rem!important}`;
+      .tf-badge{background:var(--red);color:#fff;border-radius:9px;font-size:.66rem;font-weight:700;min-width:18px;height:18px;padding:0 5px;display:inline-flex;align-items:center;justify-content:center}`;
     document.head.appendChild(st);
     const cab = document.querySelector('.header'); if (!cab) return;
     const box = document.createElement('div'); box.className = 'tf-user';
@@ -319,9 +313,9 @@
     };
     box.querySelector('#tf-sync').onclick = () => { if (E.erro) gravar(); };
     if (+E.usuario.dono_plataforma) {
-      const bt = box.querySelector('#tf-contato'); bt.title = 'Caixa do Fale conosco';
-      bt.innerHTML = '<i class="fa-regular fa-envelope"></i><span>Fale conosco</span><b class="tf-badge" id="tf-badge" hidden></b>';
-      bt.onclick = abrirCaixa; contarCaixa();
+      const bt = box.querySelector('#tf-contato'); bt.title = 'Painel Mercurium: Fale conosco e empresas';
+      bt.innerHTML = '<i class="fa-solid fa-gauge-high"></i><span>Painel Mercurium</span><b class="tf-badge" id="tf-badge" hidden></b>';
+      bt.onclick = () => { window.location.href = 'painel.html'; }; contarCaixa();
     } else box.querySelector('#tf-contato').onclick = abrirContato;
   }
   function abrirContato() {
@@ -350,41 +344,6 @@
   }
   async function contarCaixa() {
     try { const r = await api('fale-conosco'); const b = document.getElementById('tf-badge'); if (b) { b.textContent = r.pendentes; b.hidden = !r.pendentes; } return r; } catch (_) { return null; }
-  }
-  async function abrirCaixa() {
-    const fundo = document.createElement('div'); fundo.className = 'tf-imp-fundo';
-    fundo.innerHTML = `<div class="tf-imp tf-caixa" role="dialog" aria-modal="true" aria-labelledby="tf-cx-t">
-      <div class="tf-cx-cab"><h3 id="tf-cx-t">Caixa do Fale conosco</h3><button class="tf-sair" id="tf-cx-fechar" aria-label="Fechar"><i class="fa-solid fa-xmark"></i></button></div>
-      <p class="tf-cx-sub">Mensagens enviadas pela tela de entrada e de dentro do sistema. Responda pelo seu e-mail e marque como respondida.</p>
-      <div id="tf-cx-lista"><p class="tf-cx-vazio"><i class="fa-solid fa-spinner fa-spin"></i> Carregando…</p></div></div>`;
-    document.body.appendChild(fundo);
-    const fechar = () => fundo.remove();
-    fundo.querySelector('#tf-cx-fechar').onclick = fechar;
-    fundo.addEventListener('click', ev => { if (ev.target === fundo) fechar(); });
-    const lista = fundo.querySelector('#tf-cx-lista');
-    const desenhar = (r) => {
-      lista.innerHTML = '';
-      if (!r || !r.mensagens.length) { lista.innerHTML = '<p class="tf-cx-vazio">Nenhuma mensagem por enquanto.</p>'; return; }
-      r.mensagens.forEach(m => {
-        const el = document.createElement('div'); el.className = 'tf-cx-item' + (m.respondido_em ? ' ok' : '');
-        const quando = new Date(m.criado_em.replace(' ', 'T') + 'Z').toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' });
-        el.innerHTML = `<div class="tf-cx-topo"><span class="tf-cx-ass"></span><span class="tf-cx-data"></span></div>
-          <div class="tf-cx-de"><b></b> <span></span></div><p class="tf-cx-msg"></p>
-          <div class="tf-cx-acoes"><a class="tf-sair" target="_blank" rel="noopener"><i class="fa-regular fa-envelope"></i><span>Responder por e-mail</span></a>
-          <button class="tf-sair tf-cx-marca"></button></div>`;
-        el.querySelector('.tf-cx-ass').textContent = m.assunto + (m.respondido_em ? ' · respondida' : '');
-        el.querySelector('.tf-cx-data').textContent = quando;
-        el.querySelector('.tf-cx-de b').textContent = m.nome;
-        el.querySelector('.tf-cx-de span').textContent = `<${m.email}>` + (m.empresa ? ` · ${m.empresa}` : (m.origem === 'login' ? ' · pela tela de entrada' : ''));
-        el.querySelector('.tf-cx-msg').textContent = m.mensagem;
-        el.querySelector('a').href = 'mailto:' + encodeURIComponent(m.email) + '?subject=' + encodeURIComponent('Re: ' + m.assunto + ' (Task Flow)');
-        const bt = el.querySelector('.tf-cx-marca');
-        bt.innerHTML = m.respondido_em ? '<i class="fa-solid fa-rotate-left"></i><span>Reabrir</span>' : '<i class="fa-solid fa-check"></i><span>Marcar como respondida</span>';
-        bt.onclick = async () => { bt.disabled = true; try { await api('fale-conosco/' + m.id, 'PATCH', { respondida: !m.respondido_em }); desenhar(await contarCaixa()); } catch (e) { bt.disabled = false; aviso(e.message, 'error'); } };
-        lista.appendChild(el);
-      });
-    };
-    desenhar(await contarCaixa());
   }
   function indicador(estado, msg) {
     const el = document.getElementById('tf-sync'); if (!el) return;

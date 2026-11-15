@@ -10,6 +10,7 @@ require __DIR__ . '/lib/dados.php';
 require __DIR__ . '/lib/instalar.php';
 require __DIR__ . '/lib/sincronia.php';
 require __DIR__ . '/lib/contato.php';
+require __DIR__ . '/lib/painel.php';
 
 $metodo = $_SERVER['REQUEST_METHOD'] ?? 'GET';
 $caminho = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';
@@ -49,6 +50,8 @@ $rotas = [
     'POST fale-conosco'         => 'rota_fale_conosco',
     'GET fale-conosco'          => 'rota_fale_conosco_listar',
     'PATCH fale-conosco/#'      => 'rota_fale_conosco_marcar',
+    'GET painel/empresas'       => 'rota_painel_empresas',
+    'PATCH painel/empresas/#'   => 'rota_painel_empresa_situacao',
 ];
 
 try {

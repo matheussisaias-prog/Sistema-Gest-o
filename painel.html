@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Painel Mercurium · Task Flow</title>
+<meta name="robots" content="noindex"/>
+<link rel="icon" type="image/svg+xml" href="img/icone.svg"/>
+<link rel="icon" type="image/png" sizes="32x32" href="img/favicon-32.png"/>
+<link rel="apple-touch-icon" href="img/apple-touch-icon.png"/>
+<meta name="theme-color" content="#0b1220"/>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=DM+Sans:wght@400;500;600&family=Space+Grotesk:wght@700&family=Manrope:wght@500&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+<link rel="stylesheet" href="css/painel-mercurium.css?v=2026.11.15.1"/>
+</head>
+<body>
+
+<header class="topo">
+  <div class="topo-marca">
+    <img src="img/marca.svg" width="34" height="34" alt=""/>
+    <span class="logo-nome">TASK FLOW<small>by mercurium</small></span>
+    <span class="selo">Painel</span>
+  </div>
+  <div class="topo-dir" id="topo-dir" hidden>
+    <span class="quem"><b id="quem-nome"></b><small id="quem-email"></small></span>
+    <a class="bt-topo" href="index.html" title="Abrir o sistema"><i class="fa-solid fa-table-columns"></i><span>Abrir o sistema</span></a>
+    <button class="bt-topo" id="bt-sair" title="Sair"><i class="fa-solid fa-right-from-bracket"></i><span>Sair</span></button>
+  </div>
+</header>
+
+<div class="carregando" id="carregando"><i class="fa-solid fa-spinner fa-spin"></i> Carregando o painel…</div>
+
+<div class="negado" id="negado" hidden>
+  <i class="fa-solid fa-lock"></i>
+  <h1>Área da equipe Task Flow</h1>
+  <p>Este painel é só para a administração da plataforma. A sua conta não tem acesso a ele.</p>
+  <a class="bt bt-pri" href="index.html"><i class="fa-solid fa-arrow-left"></i> Voltar ao sistema</a>
+</div>
+
+<main class="conteudo" id="conteudo" hidden>
+  <nav class="abas" role="tablist">
+    <button class="aba ativa" role="tab" data-aba="contato" aria-selected="true"><i class="fa-regular fa-comment-dots"></i> Fale conosco <b class="cont alerta" id="cont-pend" hidden></b></button>
+    <button class="aba" role="tab" data-aba="empresas" aria-selected="false"><i class="fa-regular fa-building"></i> Empresas <b class="cont" id="cont-emp"></b></button>
+    <span class="atualizado" id="atualizado"></span>
+  </nav>
+
+  <!-- ── FALE CONOSCO ───────────────────────────── -->
+  <section class="aba-corpo" id="aba-contato">
+    <div class="kpis">
+      <div class="kpi k-alerta"><span>Pendentes</span><b id="k-pend">0</b></div>
+      <div class="kpi k-ok"><span>Respondidas</span><b id="k-resp">0</b></div>
+      <div class="kpi"><span>Últimos 7 dias</span><b id="k-sem">0</b></div>
+      <div class="kpi"><span>Total</span><b id="k-tot">0</b></div>
+    </div>
+    <div class="filtros">
+      <label class="busca"><i class="fa-solid fa-magnifying-glass"></i><input id="c-busca" type="search" placeholder="Buscar por nome, e-mail, empresa ou texto"/></label>
+      <select id="c-situacao" aria-label="Situação"><option value="">Todas</option><option value="pend">Pendentes</option><option value="resp">Respondidas</option></select>
+      <select id="c-assunto" aria-label="Assunto"><option value="">Todos os assuntos</option><option>Dúvida</option><option>Problema no sistema</option><option>Sugestão</option><option>Comercial</option><option>Outro</option></select>
+      <select id="c-origem" aria-label="Origem"><option value="">Todas as origens</option><option value="login">Tela de entrada</option><option value="sistema">Dentro do sistema</option></select>
+    </div>
+    <div class="duas" id="duas">
+      <div class="lista" id="c-lista"></div>
+      <div class="detalhe" id="c-detalhe"><div class="vazio"><i class="fa-regular fa-envelope-open"></i><p>Escolha uma mensagem para ler.</p></div></div>
+    </div>
+  </section>
+
+  <!-- ── EMPRESAS ───────────────────────────────── -->
+  <section class="aba-corpo" id="aba-empresas" hidden>
+    <div class="kpis">
+      <div class="kpi"><span>Empresas</span><b id="k-emp">0</b></div>
+      <div class="kpi k-ok"><span>Ativas</span><b id="k-ativ">0</b></div>
+      <div class="kpi k-teste"><span>Em teste</span><b id="k-teste">0</b></div>
+      <div class="kpi k-alerta"><span>Suspensas</span><b id="k-susp">0</b></div>
+      <div class="kpi"><span>Usuários</span><b id="k-usu">0</b></div>
+    </div>
+    <div class="filtros">
+      <label class="busca"><i class="fa-solid fa-magnifying-glass"></i><input id="e-busca" type="search" placeholder="Buscar por empresa, CNPJ, cidade ou administrador"/></label>
+      <select id="e-situacao" aria-label="Situação"><option value="">Todas as situações</option><option value="ativo">Ativas</option><option value="teste">Em teste</option><option value="suspenso">Suspensas</option></select>
+    </div>
+    <div class="tabela-caixa">
+      <table class="tabela" id="e-tabela">
+        <thead><tr><th>Empresa</th><th>Administrador</th><th class="num">Usuários</th><th class="num">Obras</th><th class="num">Equipe</th><th>Último acesso</th><th>Cadastro</th><th>Situação</th><th></th></tr></thead>
+        <tbody id="e-corpo"></tbody>
+      </table>
+    </div>
+  </section>
+</main>
+
+<div class="toast" id="toast" role="status" hidden></div>
+
+<script src="js/painel-mercurium.js?v=2026.11.15.1"></script>
+</body>
+</html>

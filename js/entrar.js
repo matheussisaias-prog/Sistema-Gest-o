@@ -83,7 +83,7 @@
     const b = f.querySelector('button[type=submit]'); ocupado(b, true);
     try {
       await api('entrar', { email: email.value.trim(), senha: senha.value });
-      window.location.href = 'index.html';
+      window.location.href = destino();
     } catch (err) { avisar(err.message); senha.select(); }
     finally { ocupado(b, false); }
   });
@@ -194,6 +194,9 @@
     finally { ocupado(b, false); }
   });
 
+  // para onde ir depois de entrar: só destinos conhecidos (nada de endereço vindo de fora)
+  function destino() { return new URLSearchParams(location.search).get('voltar') === 'painel' ? 'painel.html' : 'index.html'; }
+
   /* ── Início: links que chegam por e-mail ─────── */
   async function iniciar() {
     const q = new URLSearchParams(location.search);
@@ -213,7 +216,7 @@
     if (location.hash === '#cadastro') { ir('cadastro-1'); return; }
     if (location.hash === '#contato') { ir('contato'); return; }
     ir('entrar');
-    try { await api('eu'); window.location.href = 'index.html'; } catch (_) { /* não está logado: fica no login */ }
+    try { await api('eu'); window.location.href = destino(); } catch (_) { /* não está logado: fica no login */ }
   }
   window.addEventListener('hashchange', () => {
     if (location.hash === '#contato') ir('contato');
