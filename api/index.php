@@ -11,6 +11,7 @@ require __DIR__ . '/lib/instalar.php';
 require __DIR__ . '/lib/sincronia.php';
 require __DIR__ . '/lib/contato.php';
 require __DIR__ . '/lib/painel.php';
+require __DIR__ . '/lib/obras.php';
 
 $metodo = $_SERVER['REQUEST_METHOD'] ?? 'GET';
 $caminho = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';
@@ -29,6 +30,8 @@ $rotas = [
     'POST esqueci-senha'        => 'rota_esqueci_senha',
     'POST redefinir-senha'      => 'rota_redefinir_senha',
     'GET projetos'              => 'rota_projetos_listar',
+    'GET obras/resumo'          => 'rota_obras_resumo',
+    'GET usuarios'              => 'rota_usuarios_listar',
     'POST projetos'             => 'rota_projetos_criar',
     'PATCH projetos/#'          => 'rota_projetos_alterar',
     'DELETE projetos/#'         => 'rota_projetos_excluir',

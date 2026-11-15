@@ -130,10 +130,14 @@ CREATE TABLE projetos (
   codigo         VARCHAR(30)  NULL,
   nome           VARCHAR(160) NOT NULL,
   descricao      TEXT NULL,
+  tipo_servico   VARCHAR(40)  NULL,               -- Elétrica, NR-12, Montagem…
   cliente        VARCHAR(160) NULL,
+  numero_contrato VARCHAR(60) NULL,               -- contrato ou pedido do cliente
   local_obra     VARCHAR(200) NULL,
   gestor_id      INT UNSIGNED NULL,
   gestor_nome    VARCHAR(160) NULL,               -- texto antigo, quando não achar a pessoa
+  rt_funcionario_id INT UNSIGNED NULL,            -- responsável técnico (da equipe)
+  art_numero     VARCHAR(40)  NULL,
   situacao       ENUM('Planejamento','Em andamento','Pausado','Concluído','Arquivado') NOT NULL DEFAULT 'Em andamento',
   inicio         DATE NULL,
   fim            DATE NULL,
