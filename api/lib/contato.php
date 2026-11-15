@@ -22,7 +22,7 @@ function rota_fale_conosco(): array {
     // aviso aos donos da plataforma: só avisa e leva ao login; a mensagem é lida dentro do sistema
     foreach (donos_plataforma() as $para) {
         $dono = um('SELECT nome FROM usuarios WHERE email = ? AND excluido_em IS NULL LIMIT 1', [$para]);
-        enviar_email($para, email_aviso_contato($dono['nome'] ?? 'equipe Task Flow', $assunto, link_app('/entrar.html')));
+        enviar_email($para, email_aviso_contato($dono['nome'] ?? 'equipe Task Flow', $assunto, link_app('/painel.html')));
     }
     return ['ok' => true, 'mensagem' => 'Mensagem enviada. Vamos responder no seu e-mail.'];
 }
@@ -35,16 +35,24 @@ function exigir_dono(): array {
 /** GET /api/fale-conosco — caixa de mensagens (dono da plataforma) */
 function rota_fale_conosco_listar(): array {
     exigir_dono();
-    return ['mensagens' => todos('SELECT f.id, f.nome, f.email, f.assunto, f.mensagem, f.origem, f.criado_em, f.respondido_em, e.nome AS empresa
+    return ['mensagens' => todos('SELECT f.id, f.nome, f.email, f.assunto, f.mensagem, f.origem, f.criado_em, f.respondido_em, f.anotacao, f.empresa_id, e.nome AS empresa
         FROM fale_conosco f LEFT JOIN empresas e ON e.id = f.empresa_id ORDER BY f.respondido_em IS NOT NULL, f.id DESC LIMIT 300'),
         'pendentes' => (int)um('SELECT COUNT(*) AS n FROM fale_conosco WHERE respondido_em IS NULL')['n']];
 }
-/** PATCH /api/fale-conosco/{id} {respondida: true|false} */
+/** PATCH /api/fale-conosco/{id} {respondida?: true|false, anotacao?: texto} */
 function rota_fale_conosco_marcar(int $id): array {
     $u = exigir_dono();
     if (!um('SELECT id FROM fale_conosco WHERE id = ?', [$id])) throw new ErroApi('Mensagem não encontrada', 404);
-    $sim = !empty(corpo()['respondida']);
-    q('UPDATE fale_conosco SET respondido_em = ' . ($sim ? 'UTC_TIMESTAMP()' : 'NULL') . ' WHERE id = ?', [$id]);
-    registrar($u, (int)$u['empresa_id'], 'fale_conosco', $id, 'alterou', null, ['respondida' => $sim]);
+    $d = corpo(); $mud = [];
+    if (array_key_exists('respondida', $d)) {
+        $sim = !empty($d['respondida']); $mud['respondida'] = $sim;
+        q('UPDATE fale_conosco SET respondido_em = ' . ($sim ? 'UTC_TIMESTAMP()' : 'NULL') . ' WHERE id = ?', [$id]);
+    }
+    if (array_key_exists('anotacao', $d)) {
+        $t = mb_substr(trim((string)$d['anotacao']), 0, 5000); $mud['anotacao'] = $t;
+        q('UPDATE fale_conosco SET anotacao = ? WHERE id = ?', [$t === '' ? null : $t, $id]);
+    }
+    if (!$mud) throw new ErroApi('Nada para alterar');
+    registrar($u, (int)$u['empresa_id'], 'fale_conosco', $id, 'alterou', null, $mud);
     return ['ok' => true];
 }

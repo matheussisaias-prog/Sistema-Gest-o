@@ -58,6 +58,7 @@ const TF_MIGRACOES = [
             CONSTRAINT fk_fale_empresa FOREIGN KEY (empresa_id) REFERENCES empresas(id),
             CONSTRAINT fk_fale_usuario FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
           ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"],
+    3 => [['coluna', 'fale_conosco', 'anotacao', "ALTER TABLE fale_conosco ADD COLUMN anotacao TEXT NULL AFTER respondido_em"]],
 ];
 function migrar(PDO $pdo): void {
     $alvo = max(array_keys(TF_MIGRACOES));

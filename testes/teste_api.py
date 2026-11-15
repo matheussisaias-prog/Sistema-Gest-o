@@ -182,8 +182,33 @@ o2 = requests.Session(); o2.post(B+"/entrar", json={"email":"beto@outra.test","s
 c3("Admin de outra empresa não é dono", o2.get(B+"/eu").json()["usuario"]["dono_plataforma"] == 0)
 c3("Admin de outra empresa não vê a caixa", o2.get(B+"/fale-conosco").status_code == 403)
 avisos = [e for e in emails() if e["para"] == "admin@rawtech.test" and "Fale conosco" in e["assunto"]]
-c3("Aviso por e-mail ao dono, sem o conteúdo, levando ao login", avisos and "Gantt" not in avisos[-1]["html"] and "/entrar.html" in avisos[-1]["texto"], avisos[-1]["assunto"] if avisos else None)
+c3("Aviso por e-mail ao dono, sem o conteúdo, levando ao painel", avisos and "Gantt" not in avisos[-1]["html"] and "/painel.html" in avisos[-1]["texto"], avisos[-1]["assunto"] if avisos else None)
 mid = r.json()["mensagens"][0]["id"]
 r = li.patch(B+f"/fale-conosco/{mid}", json={"respondida": True}); c3("Marca como respondida", r.status_code == 200 and any(m["id"]==mid and m["respondido_em"] for m in li.get(B+"/fale-conosco").json()["mensagens"]))
 print(f"CAIXA: {ok3} ok, {falhas3} falhas")
+
+# ── Painel da Mercurium ──
+ok4 = falhas4 = 0
+def c4(n, c, x=""):
+    global ok4, falhas4
+    if c: ok4 += 1; print("OK   ", n)
+    else: falhas4 += 1; print("FALHA", n, x)
+c4("Admin de cliente não vê o painel de empresas", o2.get(B+"/painel/empresas").status_code == 403)
+r = li.get(B+"/painel/empresas"); emp = {e["nome"]: e for e in r.json().get("empresas", [])}
+c4("Dono lista todas as empresas", r.status_code == 200 and {"Rawtech", "Outra Engenharia"} <= set(emp), list(emp))
+c4("Números da empresa (obras, usuários, funcionários, último acesso)", emp["Rawtech"]["obras"] >= 2 and emp["Rawtech"]["usuarios"] >= 3 and emp["Rawtech"]["funcionarios"] >= 3 and emp["Rawtech"]["ultimo_acesso"], emp.get("Rawtech"))
+c4("Marca a própria empresa", emp["Rawtech"]["sua"] is True and emp["Outra Engenharia"]["sua"] is False)
+r = li.patch(B+f"/fale-conosco/{mid}", json={"anotacao": "Liguei, quer demonstração na terça."})
+c4("Anotação interna gravada", r.status_code == 200 and any(m["id"] == mid and m["anotacao"] == "Liguei, quer demonstração na terça." for m in li.get(B+"/fale-conosco").json()["mensagens"]))
+c4("Alteração vazia recusada", li.patch(B+f"/fale-conosco/{mid}", json={}).status_code == 400)
+c4("Não suspende a própria empresa", li.patch(B+f"/painel/empresas/{emp['Rawtech']['id']}", json={"situacao": "suspenso"}).status_code == 400)
+c4("Cliente não suspende ninguém", o2.patch(B+f"/painel/empresas/{emp['Rawtech']['id']}", json={"situacao": "suspenso"}).status_code == 403)
+c4("Situação inválida recusada", li.patch(B+f"/painel/empresas/{emp['Outra Engenharia']['id']}", json={"situacao": "apagada"}).status_code == 400)
+r = li.patch(B+f"/painel/empresas/{emp['Outra Engenharia']['id']}", json={"situacao": "suspenso"}); c4("Suspende outra empresa", r.status_code == 200)
+c4("Suspensão encerra quem estava logado", o2.get(B+"/eu").status_code == 401)
+r = requests.post(B+"/entrar", json={"email": "beto@outra.test", "senha": "senha-do-beto"}); c4("Login de empresa suspensa: mensagem clara", r.status_code == 403 and "suspenso" in r.json()["erro"], r.text)
+c4("Painel mostra a suspensão", next(e for e in li.get(B+"/painel/empresas").json()["empresas"] if e["nome"] == "Outra Engenharia")["situacao"] == "suspenso")
+li.patch(B+f"/painel/empresas/{emp['Outra Engenharia']['id']}", json={"situacao": "ativo"})
+r = requests.post(B+"/entrar", json={"email": "beto@outra.test", "senha": "senha-do-beto"}); c4("Reativada: volta a entrar", r.status_code == 200, r.text)
+print(f"PAINEL: {ok4} ok, {falhas4} falhas")
 print(f"RESULTADO: {ok} ok, {falhas} falhas")

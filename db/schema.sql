@@ -495,6 +495,7 @@ CREATE TABLE fale_conosco (
   origem        ENUM('login','sistema') NOT NULL,
   ip            VARCHAR(45)  NULL,
   respondido_em DATETIME NULL,
+  anotacao      TEXT NULL,                        -- anotação interna da Mercurium (não vai para o cliente)
   criado_em     DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   KEY ix_fale_ip (ip, criado_em),
   CONSTRAINT fk_fale_empresa FOREIGN KEY (empresa_id) REFERENCES empresas(id),

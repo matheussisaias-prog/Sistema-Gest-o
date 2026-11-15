@@ -15,10 +15,6 @@ with sync_playwright() as p:
     pg.fill("#k-nome","Maria Cliente"); pg.fill("#k-email","maria@cliente.test"); pg.select_option("#k-assunto","Comercial"); pg.fill("#k-msg","Gostaria de uma demonstração do sistema.")
     pg.click("#f-contato button[type=submit]"); pg.wait_for_selector("#aviso.ok"); check("Envia pela tela de entrada", "Mensagem enviada" in pg.inner_text("#aviso"))
     pg.goto(B+"/entrar.html#contato"); pg.wait_for_selector("#v-contato:not([hidden])"); check("Link #contato abre direto", True)
-    pg.goto(B+"/entrar.html"); pg.fill("#e-email","admin@rawtech.test"); pg.fill("#e-senha","nova-senha-adm"); pg.click("#f-entrar button[type=submit]")
-    pg.wait_for_url("**/index.html"); pg.wait_for_selector("#tf-contato"); pg.click("#tf-contato"); pg.wait_for_selector("#tf-k-msg")
-    check("Modal mostra o e-mail da conta", "admin@rawtech.test" in pg.inner_text(".tf-imp"))
-    pg.fill("#tf-k-msg","O relatório semanal não está saindo."); pg.click(".tf-imp [type=submit]"); pg.wait_for_selector(".tf-imp", state="detached")
-    check("Envia de dentro do sistema", True)
+    # o Fale conosco de dentro do sistema (conta de cliente) é testado em teste_painel.py
     nav.close()
 print(f"RESULTADO: {ok} ok, {f} falhas")
