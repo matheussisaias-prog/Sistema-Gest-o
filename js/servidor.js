@@ -289,6 +289,8 @@
       .tf-imp-bt{display:flex;gap:10px;justify-content:flex-end;margin-top:14px}
       .tf-k-campo{display:block;font-size:.8rem;font-weight:600;color:var(--text-2);margin-bottom:12px}.tf-k-campo select,.tf-k-campo textarea{display:block;width:100%;margin-top:6px;border:1.5px solid var(--border);border-radius:8px;padding:9px 11px;font:inherit;font-size:.9rem;font-weight:400;background:var(--surface);color:var(--text-1)}
       .tf-k-campo textarea{resize:vertical;min-height:110px}
+      .tf-rodape{display:flex;align-items:center;gap:6px;padding:14px 24px 18px;font-size:.75rem;color:var(--text-3)}.tf-rodape a{color:var(--text-3);text-decoration:underline;text-underline-offset:2px}.tf-rodape a:hover{color:var(--blue)}
+      @media (max-width:760px){.tf-rodape{padding:12px 16px 84px}}
       .tf-badge{background:var(--red);color:#fff;border-radius:9px;font-size:.66rem;font-weight:700;min-width:18px;height:18px;padding:0 5px;display:inline-flex;align-items:center;justify-content:center}`;
     document.head.appendChild(st);
     const cab = document.querySelector('.header'); if (!cab) return;
@@ -317,7 +319,19 @@
       const bt = box.querySelector('#tf-contato'); bt.title = 'Painel Mercurium: Fale conosco e empresas';
       bt.innerHTML = '<i class="fa-solid fa-gauge-high"></i><span>Painel Mercurium</span><b class="tf-badge" id="tf-badge" hidden></b>';
       bt.onclick = () => { window.location.href = 'painel.html'; }; contarCaixa();
-    } else box.querySelector('#tf-contato').onclick = abrirContato;
+    } else box.querySelector('#tf-contato').remove();
+    // rodapé discreto: o Fale conosco fica só aqui (o balão do canto é o Assistente Task Flow)
+    const mw = document.querySelector('.main-wrap');
+    if (mw && !document.getElementById('tf-rodape')) {
+      const pe = document.createElement('footer'); pe.id = 'tf-rodape'; pe.className = 'tf-rodape';
+      pe.innerHTML = '<span>Task Flow · Mercurium</span>';
+      if (!+E.usuario.dono_plataforma) {
+        const a = document.createElement('a'); a.href = '#'; a.id = 'tf-rodape-contato'; a.textContent = 'Fale conosco';
+        a.onclick = ev => { ev.preventDefault(); abrirContato(); };
+        pe.append(' · ', a);
+      }
+      mw.appendChild(pe);
+    }
   }
   function abrirContato() {
     const fundo = document.createElement('div'); fundo.className = 'tf-imp-fundo';
@@ -365,5 +379,6 @@
     setTimeout(oferecerImportacao, 900);
     return true;
   }
+  window.tfContato = () => abrirContato();
   window.tfServidor = { iniciar, recarregar: async () => { await carregar(); renderAll(); }, estado: E };
 })();

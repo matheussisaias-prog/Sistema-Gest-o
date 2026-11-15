@@ -59,7 +59,8 @@ with sync_playwright() as p:
     c = nav.new_page(viewport={"width": 390, "height": 844}); rotas(c)
     c.route("**/chart.umd.min.js", lambda r: r.fulfill(body=STUB, content_type="application/javascript")); c.on("pageerror", lambda e: erros.append(str(e)))
     c.goto(B+"/entrar.html"); c.fill("#e-email", "ana@alfa.test"); c.fill("#e-senha", "senha-da-ana-1"); c.click("#f-entrar button[type=submit]"); c.wait_for_url("**/index.html")
-    c.wait_for_selector("#tf-contato"); c.click("#tf-contato"); c.wait_for_selector("#tf-k-msg"); check("Cliente: Fale conosco do sistema continua igual", "ana@alfa.test" in c.inner_text(".tf-imp"))
+    c.wait_for_selector("#tf-rodape-contato", state="attached"); check("Cliente: Fale conosco saiu do topo e ficou no rodapé", c.locator("#tf-contato").count() == 0)
+    c.locator("#tf-rodape-contato").scroll_into_view_if_needed(); c.click("#tf-rodape-contato"); c.wait_for_selector("#tf-k-msg"); check("Cliente: o link do rodapé abre o mesmo Fale conosco", "ana@alfa.test" in c.inner_text(".tf-imp"))
     c.fill("#tf-k-msg", "Obrigada pelo retorno, resolvido."); c.click(".tf-imp [type=submit]"); c.wait_for_selector(".tf-imp", state="detached")
     c.goto(B+"/painel.html"); c.wait_for_selector("#negado:not([hidden])"); check("Cliente não entra no painel", c.locator("#conteudo").is_hidden())
     # celular, como dono

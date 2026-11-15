@@ -22,7 +22,7 @@
   const avisar = (m, t) => (typeof toast === 'function' ? toast(m, t) : alert(m));
   const OPCOES = [
     ['modelo', 'A', 'Usar um modelo', 'Etapas, durações e ligações prontas por tipo de serviço.'],
-    ['ia', 'IA', 'Assistente de IA', 'Descreva a obra; ele propõe a EAP. Chega na próxima etapa.'],
+    ['perguntas', 'B', 'Montar por perguntas', 'O assistente pergunta o essencial e monta o Gantt com você.'],
     ['copiar', 'F', 'Copiar de outra obra', 'A obra inteira ou só algumas etapas, com as datas ajustadas.'],
     ['arquivo', 'G', 'Importar arquivo', 'MS Project (.xml), Excel (.xlsx) ou CSV.'],
     ['colar', 'C', 'Colar do Excel', 'Copie as linhas na planilha e cole aqui.'],
@@ -46,9 +46,11 @@
     function desenharOps() {
       lista.innerHTML = '';
       OPCOES.forEach(([k, l, t, d]) => {
-        const on = st.modo === k, off = k === 'ia';
+        const on = st.modo === k, off = k === 'perguntas' && !window.tfAssistente;
         lista.append(h('button', { class: 'om-op' + (on ? ' on' : '') + (off ? ' off' : ''), role: 'radio', 'aria-checked': on ? 'true' : 'false', 'aria-disabled': off ? 'true' : null,
-          onclick: () => { if (off) return; st.modo = k; st.previa = null; st.envio = null; desenharOps(); desenharCorpo(); } },
+          onclick: () => { if (off) return;
+            if (k === 'perguntas') { const o = O.d.obra; fechar(); tfAssistente.montar({ id: o.id, codigo: o.codigo, nome: o.nome, inicio: o.inicio, fim: o.fim, calendario_id: O.d.calendario && O.d.calendario.id, temAtividades: O.d.atividades.filter(a => !a.etapa).length }); return; }
+            st.modo = k; st.previa = null; st.envio = null; desenharOps(); desenharCorpo(); } },
           h('span', { class: 'om-letra' }, l), h('span', null, h('b', null, t), h('small', null, d))));
       });
     }
