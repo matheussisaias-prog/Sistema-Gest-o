@@ -248,9 +248,10 @@
   async function atualizarTudo() {
     try { if (window.tfServidor && tfServidor.recarregar) await tfServidor.recarregar(); } catch (_) {}
     await carregar();
+    if (document.getElementById('view-obra')?.classList.contains('active') && window.tfObra) tfObra.recarregar();
   }
   function abrirObra(o) {
-    // a tela "Obra aberta" vem na próxima etapa; por enquanto abre o cronograma filtrado nesta obra
+    if (window.tfObra) return tfObra.abrir(o.id);
     const nav = document.querySelector('.nav-item[onclick*="\'gantt\'"]');
     window.switchView('gantt', nav);
     const sel = document.getElementById('gantt-f-project');
@@ -336,6 +337,6 @@
     if (nome === 'obras') { const t = document.getElementById('page-title'); if (t) t.textContent = 'Obras'; S.f.busca = ''; desenhar(); carregar(); }
   };
   window.addEventListener('resize', (() => { let w = window.innerWidth; return () => { if ((w > 760) !== (window.innerWidth > 760)) { w = window.innerWidth; if (raiz()?.classList.contains('active')) desenhar(); } }; })());
-  window.tfObras = { recarregar: carregar,
+  window.tfObras = { recarregar: carregar, editar: o => abrirFormulario(o), mudar: (o, sit, palavra) => mudar(o, sit, palavra), avisar,
     novaObra: () => { if (!podeTudo()) { avisar('Só administrador e gestor cadastram obras.', 'error'); return; } abrirFormulario(null); } };
 })();

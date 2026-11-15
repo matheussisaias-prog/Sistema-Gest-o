@@ -253,7 +253,7 @@ function rota_obra_cronograma(int $pid): array {
     return ['obra' => $resumo, 'hoje' => $hoje, 'atividades' => $saida,
         'dependencias' => array_map(fn($d) => ['id' => (int)$d['id'], 'antes_id' => (int)$d['antes_id'], 'depois_id' => (int)$d['depois_id'], 'tipo' => $d['tipo'], 'folga_dias' => (int)$d['folga_dias']], $deps),
         'linha_base' => $lb ? $lb + ['itens' => $base] : null,
-        'calendario' => ['id' => $p['calendario_id'] ? (int)$p['calendario_id'] : null, 'nome' => $p['calendario_nome'] ?: 'Padrão (seg a sex, 8 h, feriados nacionais)',
+        'calendario' => ['id' => $p['calendario_id'] ? (int)$p['calendario_id'] : null, 'nome' => $p['calendario_nome'] ?: 'Padrão',
                          'horas_semana' => $p['horas_semana'] ? json_decode($p['horas_semana'], true) : [8, 8, 8, 8, 8, 0, 0]]];
 }
 
@@ -439,4 +439,26 @@ function rota_calendarios_excluir(int $id): array {
     if (um('SELECT id FROM projetos WHERE calendario_id = ? AND excluido_em IS NULL LIMIT 1', [$id])) throw new ErroApi('Este calendário está em uso por alguma obra', 409);
     q('UPDATE calendarios SET excluido_em = UTC_TIMESTAMP() WHERE id = ?', [$id]);
     return ['ok' => true];
+}
+
+/* ── Histórico (atividade ou obra inteira) ────────────────────── */
+function historico_formatar(array $l): array {
+    foreach ($l as &$h) { $h['antes'] = $h['antes'] ? json_decode($h['antes'], true) : null; $h['depois'] = $h['depois'] ? json_decode($h['depois'], true) : null; }
+    return $l;
+}
+/** GET /api/atividades/{id}/historico */
+function rota_atividade_historico(int $id): array {
+    $u = exigir_login(); $a = atividade_visivel($u, $id);
+    if ($u['perfil'] === 'funcionario') throw new ErroApi('Sem acesso', 403);
+    return ['historico' => historico_formatar(todos('SELECT h.acao, h.antes, h.depois, h.quando, us.nome AS usuario FROM historico h LEFT JOIN usuarios us ON us.id = h.usuario_id
+        WHERE h.empresa_id = ? AND h.tabela = "atividades" AND h.registro_id = ? ORDER BY h.id DESC LIMIT 30', [$u['empresa_id'], $id]))];
+}
+/** GET /api/obras/{id}/historico — obra, atividades e linhas de base, mais recentes primeiro. */
+function rota_obra_historico(int $pid): array {
+    $u = exigir_login(); obra_para_cronograma($u, $pid); $eid = (int)$u['empresa_id'];
+    return ['historico' => historico_formatar(todos('SELECT h.tabela, h.registro_id, h.acao, h.antes, h.depois, h.quando, us.nome AS usuario, a.descricao AS atividade
+        FROM historico h LEFT JOIN usuarios us ON us.id = h.usuario_id LEFT JOIN atividades a ON h.tabela = "atividades" AND a.id = h.registro_id
+        WHERE h.empresa_id = ? AND ((h.tabela = "projetos" AND h.registro_id = ?) OR (h.tabela = "atividades" AND a.projeto_id = ?)
+              OR (h.tabela = "linhas_base" AND h.registro_id IN (SELECT id FROM linhas_base WHERE projeto_id = ?)))
+        ORDER BY h.id DESC LIMIT 200', [$eid, $pid, $pid, $pid]))];
 }
