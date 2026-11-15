@@ -163,7 +163,8 @@ body {
 }
 
 .logo-name {
-  font-family: var(--font-head);
+  font-family: 'Space Grotesk', var(--font-head);
+  letter-spacing: .3px;
   font-weight: 700;
   font-size: .95rem;
   color: #fff;
@@ -1120,15 +1121,18 @@ select.form-control { cursor: pointer; }
   transition: opacity .3s;
 }
 
-.page-loader.hidden { opacity: 0; pointer-events: none; }
+.page-loader.hidden { opacity: 0; pointer-events: none; visibility: hidden; transition: opacity .4s, visibility 0s .4s; }
+.page-loader { overflow: hidden; }
 
 .loader-logo {
-  font-family: var(--font-head);
-  font-weight: 800;
+  font-family: 'Space Grotesk', var(--font-head);
+  font-weight: 700;
   font-size: 1.5rem;
   color: #fff;
-  letter-spacing: -.5px;
+  letter-spacing: .5px;
+  display: flex; align-items: center; gap: 12px;
 }
+.logo-img { width: 30px; height: 30px; border-radius: 8px; flex-shrink: 0; display: block; }
 
 .loader-bar {
   width: 120px;
@@ -1712,8 +1716,26 @@ select.form-control { cursor: pointer; }
 
 @media (max-width: 768px) {
   :root { --sidebar-w: 48px; --sidebar-w-expanded: 220px; }
-  .header-search { width: 140px; }
+  .header-search { display: none; }
+  .header { gap: 6px; padding-left: 12px; padding-right: 10px; }
+  .header > div:first-child { min-width: 0; flex-shrink: 1; }
+  .header-title { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .header .btn-secondary, .header .btn-primary { padding-left: 10px; padding-right: 10px; }
+  .header .rot { display: none; }
   .kpi-grid { grid-template-columns: 1fr 1fr; }
+  /* no celular, nada alarga a página: grades encolhem e tabelas rolam dentro do cartão */
+  .main-wrap, .page-content, .view, .card, .card-body, .dash-grid > *, .kpi-grid > *, .dash-grid-left, .dash-grid-right { min-width: 0; }
+  .page-content { padding-left: 12px; padding-right: 12px; }
+  .table-wrap { overflow-x: auto; max-width: 100%; -webkit-overflow-scrolling: touch; }
+  .cal-grid { grid-template-columns: repeat(7, minmax(0, 1fr)); }
+  .cal-day, .cal-day-header { min-width: 0; overflow: hidden; }
+  canvas { max-width: 100%; }
+  #pf-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+}
+@media (max-width: 480px) {
+  .header .hdr-cal, .header .theme-toggle { display: none; }
+  .header .btn-secondary { display: none; }
+  .tf-user { gap: 6px; padding-left: 6px; margin-left: 0; }
 }
 
     /* ── Modal de anotações ─────────────────────── */

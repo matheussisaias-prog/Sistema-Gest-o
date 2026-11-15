@@ -13,6 +13,7 @@ function rota_funcionarios_alterar(int $id): array {
     $antes = funcionario_da_empresa($u, $id);
     $c = limpar(corpo(), REGRAS_FUNCIONARIO);
     if (array_key_exists('nome', $c) && empty($c['nome'])) throw new ErroApi('O nome não pode ficar vazio');
+    if (!empty($c['encarregado_id']) && !um('SELECT id FROM funcionarios WHERE id = ? AND empresa_id = ?', [$c['encarregado_id'], $u['empresa_id']])) throw new ErroApi('Encarregado não encontrado', 404);
     atualizar('funcionarios', $id, $c);
     registrar($u, (int)$u['empresa_id'], 'funcionarios', $id, 'alterou', array_intersect_key($antes, $c), $c);
     return ['ok' => true];

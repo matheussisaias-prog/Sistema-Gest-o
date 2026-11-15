@@ -1,6 +1,6 @@
 -- ═══════════════════════════════════════════════════════════════
 -- TaskFlow PRO · Fase 1 · Banco de dados (MySQL 8 / MariaDB 10.6+)
--- 24 tabelas em 5 blocos: Acesso, Planejamento, Equipe, Campo,
+-- 25 tabelas em 5 blocos: Acesso, Planejamento, Equipe, Campo,
 -- Comunicação e histórico.
 -- Regras:
 --   * toda tabela de dados tem empresa_id (isolamento por empresa)
@@ -482,6 +482,23 @@ CREATE TABLE avisos (
   KEY ix_aviso_usuario (usuario_id, lido_em),
   CONSTRAINT fk_aviso_empresa FOREIGN KEY (empresa_id) REFERENCES empresas(id),
   CONSTRAINT fk_aviso_usuario FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE fale_conosco (
+  id            INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  empresa_id    INT UNSIGNED NULL,                -- preenchido quando enviado de dentro do sistema
+  usuario_id    INT UNSIGNED NULL,
+  nome          VARCHAR(160) NOT NULL,
+  email         VARCHAR(190) NOT NULL,
+  assunto       VARCHAR(40)  NOT NULL,
+  mensagem      TEXT NOT NULL,
+  origem        ENUM('login','sistema') NOT NULL,
+  ip            VARCHAR(45)  NULL,
+  respondido_em DATETIME NULL,
+  criado_em     DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  KEY ix_fale_ip (ip, criado_em),
+  CONSTRAINT fk_fale_empresa FOREIGN KEY (empresa_id) REFERENCES empresas(id),
+  CONSTRAINT fk_fale_usuario FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE historico (

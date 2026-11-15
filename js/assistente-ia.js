@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════
-   TaskFlow PRO · assistente-ia.js
+   Task Flow · assistente-ia.js
    Assistente de IA: chat, anotações, duplicatas e prévia de atividades
    (separado do index.html na Fase 0 — a ordem de carregamento importa)
 ═══════════════════════════════════════════════════════════════ */
@@ -244,7 +244,7 @@ function iaRenderDuplicatasBanner(resultado) {
       <ul class="ia-dup-banner-list">`;
 
   resultado.exatas.forEach(d =>
-    html += `<li>🔴 <b>Duplicata exata:</b> "${d.nova}" já existe no TaskFlow</li>`
+    html += `<li>🔴 <b>Duplicata exata:</b> "${d.nova}" já existe no Task Flow</li>`
   );
   resultado.parciais.forEach(d =>
     html += `<li>🟡 <b>Muito similar (${d.similaridade}%):</b> "${d.nova}" ≈ "${d.existente}"</li>`
@@ -410,13 +410,13 @@ function iaGerarSystemPrompt() {
     ? Math.round(todasAtividades.reduce((s,a) => s + (a.progress||0), 0) / totalAtiv)
     : 0;
 
-  return `Você é o assistente oficial do TaskFlow PRO — um sistema de gerenciamento de projetos. Você ajuda o usuário de DUAS formas: (1) tirando dúvidas sobre o próprio sistema (como usar, onde fica cada coisa) e (2) analisando/criando dados de projetos dele.
+  return `Você é o assistente oficial do Task Flow — um sistema de gerenciamento de projetos. Você ajuda o usuário de DUAS formas: (1) tirando dúvidas sobre o próprio sistema (como usar, onde fica cada coisa) e (2) analisando/criando dados de projetos dele.
 
 ════════════════════════════════════════
 SOBRE O TASKFLOW PRO (conheça o sistema)
 ════════════════════════════════════════
 
-O TaskFlow PRO tem as seguintes seções (abas no menu lateral):
+O Task Flow tem as seguintes seções (abas no menu lateral):
 
 • **Dashboard** — visão geral: KPIs, gráficos resumidos, atividades recentes
 • **Atividades** — lista completa de tarefas com filtros, status, datas, responsáveis, % de conclusão
@@ -550,7 +550,7 @@ function iaInitChat() {
     const pendentes  = todasAtiv.filter(a => a.status === 'Pendente').length;
     const nProj      = projetos.length;
 
-    let boasVindas = 'Olá! Sou seu assistente de projetos e já li todo o seu TaskFlow. 👋\n\n';
+    let boasVindas = 'Olá! Sou seu assistente de projetos e já li todo o seu Task Flow. 👋\n\n';
 
     if (total > 0) {
       boasVindas += `**Contexto carregado:**\n`;
@@ -559,7 +559,7 @@ function iaInitChat() {
       if (pendentes)   boasVindas += `• ${pendentes} pendente(s)\n`;
       boasVindas += `\nPode me perguntar sobre qualquer atividade ou projeto — já sei tudo que está cadastrado.\n\n`;
     } else {
-      boasVindas += 'Seu TaskFlow ainda está vazio. Posso ajudar a criar o primeiro projeto!\n\n';
+      boasVindas += 'Seu Task Flow ainda está vazio. Posso ajudar a criar o primeiro projeto!\n\n';
     }
 
     boasVindas += 'O que deseja fazer?\n\n• Pergunte sobre uma atividade específica\n• Peça análise de riscos ou atrasos\n• Crie novas atividades ou projetos\n• Annexe um PDF para eu interpretar';

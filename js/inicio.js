@@ -36,7 +36,9 @@ window.addEventListener('DOMContentLoaded', async () => {
 
   // Loader
   setTimeout(() => {
-    document.getElementById('loader').classList.add('hidden');
+    const ld = document.getElementById('loader');
+    ld.classList.add('hidden');
+    setTimeout(() => { ld.style.display = 'none'; }, 500);   // sai de vez (no celular ainda ocupava largura)
   }, 1200);
 
   renderAll();

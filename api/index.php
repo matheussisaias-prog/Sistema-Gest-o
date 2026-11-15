@@ -4,10 +4,12 @@
 ═══════════════════════════════════════════════════════════════ */
 declare(strict_types=1);
 require __DIR__ . '/lib/base.php';
+require __DIR__ . '/lib/emails.php';
 require __DIR__ . '/lib/acesso.php';
 require __DIR__ . '/lib/dados.php';
 require __DIR__ . '/lib/instalar.php';
 require __DIR__ . '/lib/sincronia.php';
+require __DIR__ . '/lib/contato.php';
 
 $metodo = $_SERVER['REQUEST_METHOD'] ?? 'GET';
 $caminho = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';
@@ -44,6 +46,9 @@ $rotas = [
     'GET ausencias'             => 'rota_ausencias_listar',
     'PUT ausencias/funcionario/#' => 'rota_ausencias_substituir',
     'POST importar'             => 'rota_importar',
+    'POST fale-conosco'         => 'rota_fale_conosco',
+    'GET fale-conosco'          => 'rota_fale_conosco_listar',
+    'PATCH fale-conosco/#'      => 'rota_fale_conosco_marcar',
 ];
 
 try {
