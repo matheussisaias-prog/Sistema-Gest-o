@@ -16,6 +16,7 @@ require __DIR__ . '/lib/cronograma.php';
 require __DIR__ . '/lib/montar.php';
 require __DIR__ . '/lib/assistente.php';
 require __DIR__ . '/lib/minhas.php';
+require __DIR__ . '/lib/equipe.php';
 
 $metodo = $_SERVER['REQUEST_METHOD'] ?? 'GET';
 $caminho = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';
@@ -56,6 +57,17 @@ $rotas = [
     'GET atividades/#/fotos'    => 'rota_atividade_fotos',
     'GET fotos/#'               => 'rota_foto_arquivo',
     'PATCH ocorrencias/#/liberar' => 'rota_ocorrencia_liberar',
+    'GET equipe'                => 'rota_equipe',
+    'GET equipe/#'              => 'rota_equipe_ficha',
+    'GET tipos-documento'       => 'rota_tipos_documento',
+    'POST funcionarios/#/documentos' => 'rota_documento_lancar',
+    'GET documentos/#/arquivo'  => 'rota_documento_arquivo',
+    'DELETE documentos/#'       => 'rota_documento_excluir',
+    'GET cargos-documentos'     => 'rota_cargos_documentos',
+    'PUT cargos-documentos'     => 'rota_cargos_documentos_salvar',
+    'GET atividades/#/exigencias' => 'rota_atividade_exigencias',
+    'PUT atividades/#/exigencias' => 'rota_atividade_exigencias',
+    'GET atividades/#/checar-responsavel' => 'rota_checar_responsavel',
     'DELETE membros/#'          => 'rota_membros_excluir',
     'GET linhas-base/#'         => 'rota_linha_base_itens',
     'GET atividades/#/historico' => 'rota_atividade_historico',

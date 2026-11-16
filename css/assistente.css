@@ -136,3 +136,6 @@ body.tfa-aberto:has(.tfa-grande)::after { content: ''; position: fixed; inset: 0
   .tfa-etapa input, .tfa-outro input, .tfa-campos input, .tfa-campos select, .tfa-linha select { font-size: 16px; height: 40px; }
 }
 .tfa-folha .tfa-dir-cab h2 { display: none; }
+
+/* avisos acima do balão do assistente */
+.toast-wrap { bottom: 96px; }

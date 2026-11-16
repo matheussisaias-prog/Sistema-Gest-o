@@ -124,3 +124,19 @@ function email_aviso_impedimento(string $nome, string $quem, string $obra, strin
         'motivo' => 'Você recebe este aviso porque é gestor desta obra no Task Flow.',
     ]);
 }
+
+function email_vencimentos(string $nome, array $vencidos, array $vencendo, string $link): array {
+    $bloco = fn(string $t, array $L) => '<strong>' . h($t) . ' (' . count($L) . ')</strong><br>' . implode('<br>', array_map('h', array_slice($L, 0, 40))) . (count($L) > 40 ? '<br>… e mais ' . (count($L) - 40) : '');
+    $ps = [];
+    if ($vencidos) $ps[] = $bloco('Vencidos ou faltando', $vencidos);
+    if ($vencendo) $ps[] = $bloco('Vencem nos próximos 30 dias', $vencendo);
+    return ['assunto' => 'Documentos da equipe: ' . count($vencidos) . ' vencido' . (count($vencidos) === 1 ? '' : 's') . ', ' . count($vencendo) . ' vencendo'] + email_modelo([
+        'previa' => count($vencidos) . ' documentos vencidos ou faltando e ' . count($vencendo) . ' vencendo nos próximos 30 dias.',
+        'titulo' => 'Documentos de NR da equipe',
+        'saudacao' => 'Olá, ' . h(primeiro_nome($nome)) . '. Esta é a situação dos documentos de NR exigidos da sua equipe:',
+        'paragrafos' => $ps,
+        'botao' => 'Abrir a Equipe', 'link' => $link,
+        'nota' => 'Os documentos exigidos vêm dos cargos e das atividades em que cada pessoa está. Para lançar ou renovar, abra a ficha da pessoa na tela Equipe.',
+        'motivo' => 'Aviso automático semanal do Task Flow para administradores e gestores.',
+    ]);
+}
