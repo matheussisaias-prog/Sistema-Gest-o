@@ -36,7 +36,7 @@
     img.onerror = () => { URL.revokeObjectURL(url); rej(new Error('Envie uma imagem PNG ou JPG')); };
     img.src = url;
   });
-  const EST = { sem: ['Sem RDO', 'vc'], hoje: ['Hoje', 'az'], rasc: ['Rascunho', 'ven'], fech: ['Fechado', 'az'], entr: ['Entregue', 'rx'], ass: ['Assinado', 'ok'], nao: ['Sem expediente', 'cz'], futuro: ['', 'cz'] };
+  const EST = { sem: ['Sem RDO', 'vc'], prazo: ['No prazo', 'az'], hoje: ['Hoje', 'az'], rasc: ['Rascunho', 'ven'], fech: ['Fechado', 'az'], entr: ['Entregue', 'rx'], ass: ['Assinado', 'ok'], nao: ['Sem expediente', 'cz'], futuro: ['', 'cz'] };
   const SIT = { Rascunho: 'rasc', Fechado: 'fech', Entregue: 'entr', Assinado: 'ass' };
   const selo = (txt, cls) => h('span', { class: 'eq-selo ' + (cls || 'cz') }, txt);
 
@@ -82,7 +82,7 @@
     const kpi = (n, t, cor) => h('div', { class: 'eq-kpi ' + cor }, h('b', null, n), h('span', null, t));
     const kpis = mob ? h('div', { class: 'eq-kpis' }, kpi(k.sem || 0, 'sem RDO', 'verm'), kpi(k.rasc || 0, 'rascunho', 'amar'), kpi(k.entr || 0, 'falta assinar', 'roxo'))
       : h('div', { class: 'eq-kpis' }, kpi(k.sem || 0, 'dia útil sem RDO', 'verm'), kpi(k.rasc || 0, 'rascunho para revisar e fechar', 'amar'), kpi(k.fech || 0, 'fechado, falta entregar', 'azul'),
-          kpi(k.entr || 0, 'entregue, falta a folha assinada', 'roxo'), kpi(k.ass || 0, 'assinados no mês', 'verd'));
+          kpi(k.entr || 0, d.assinatura === false ? 'entregues ao cliente' : 'entregue, falta a folha assinada', 'roxo'), kpi(k.ass || 0, 'assinados no mês', 'verd'));
     return [cab, ctr, kpis, h('div', { class: 'rd-grade' }, mob ? listaDias() : calendario(ano, mes), pendencias())];
   }
   function cliqueDia(x) {
@@ -96,7 +96,7 @@
     const pri = new Date(Date.UTC(ano, mes - 1, 1)).getUTCDay(); for (let i = 0; i < (pri + 6) % 7; i++) g.append(h('div'));
     M.d.dias.forEach(x => {
       const [t, c] = EST[x.estado]; const fn = cliqueDia(x); const n = +x.data.slice(8);
-      const extra = x.rdo ? (x.rdo.situacao === 'Rascunho' ? (x.rdo.enviado ? 'enviado ao gestor' : 'em andamento') : x.rdo.situacao === 'Fechado' ? 'imprimir e entregar' : x.rdo.situacao === 'Entregue' ? 'falta a folha' : 'folha anexada') : x.estado === 'sem' ? 'faltou fazer' : x.estado === 'hoje' ? 'abrir' : '';
+      const extra = x.rdo ? (x.rdo.situacao === 'Rascunho' ? (x.rdo.enviado ? 'enviado ao gestor' : 'em andamento') : x.rdo.situacao === 'Fechado' ? 'imprimir e entregar' : x.rdo.situacao === 'Entregue' ? 'falta a folha' : 'folha anexada') : x.estado === 'sem' ? 'faltou fazer' : x.estado === 'prazo' ? 'ainda dá tempo' : x.estado === 'hoje' ? 'abrir' : '';
       g.append(h(fn ? 'button' : 'div', { class: `rd-dia ${x.estado}` + (x.data === M.d.hoje ? ' hj' : ''), onclick: fn, 'aria-label': `${dBRano(x.data)} ${t}` },
         h('b', null, n), t ? h('span', { class: 'rd-dia-t ' + c }, x.rdo && x.rdo.numero ? `${t} · nº ${x.rdo.numero}` : t) : null, extra ? h('small', null, extra) : null));
     });

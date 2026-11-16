@@ -20,6 +20,7 @@ require __DIR__ . '/lib/equipe.php';
 require __DIR__ . '/lib/recursos.php';
 require __DIR__ . '/lib/rdo.php';
 require __DIR__ . '/lib/relatorios.php';
+require __DIR__ . '/lib/empresa.php';
 
 $metodo = $_SERVER['REQUEST_METHOD'] ?? 'GET';
 $caminho = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';
@@ -112,6 +113,21 @@ $rotas = [
     'POST rdos/#/assinado'      => 'rota_rdo_assinado',
     'GET rdos/#/folha'          => 'rota_rdo_folha',
     'GET rdos/#/documento'      => 'rota_rdo_documento',
+    'GET empresa'               => 'rota_empresa',
+    'PATCH empresa'             => 'rota_empresa',
+    'PUT empresa/regras'        => 'rota_empresa_regras',
+    'GET empresa/calendario'    => 'rota_empresa_calendario',
+    'PUT empresa/calendario'    => 'rota_empresa_calendario',
+    'GET empresa/plano'         => 'rota_empresa_plano',
+    'GET empresa/usuarios'      => 'rota_empresa_usuarios',
+    'PATCH usuarios/#'          => 'rota_usuario_alterar',
+    'POST usuarios/#/desativar' => 'rota_usuario_desativar',
+    'POST usuarios/#/reativar'  => 'rota_usuario_reativar',
+    'POST usuarios/#/link-senha' => 'rota_usuario_link_senha',
+    'GET convites/info'         => 'rota_convite_info',
+    'POST convites/#/reenviar'  => 'rota_convite_reenviar',
+    'PATCH convites/#'          => 'rota_convite_alterar',
+    'DELETE convites/#'         => 'rota_convite_cancelar',
     'GET relatorios'            => 'rota_relatorios',
     'POST relatorios'           => 'rota_relatorios',
     'POST relatorios/previa'    => 'rota_relatorio_previa',

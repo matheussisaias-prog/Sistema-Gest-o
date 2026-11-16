@@ -74,6 +74,7 @@ final class Calendario {
 
 function calendario_padrao(): Calendario { return new Calendario(); }
 function calendario_carregar(?int $id, int $eid): Calendario {
+    if (!$id) $id = empresa_calendario_id($eid);      // obra sem calendário próprio segue o padrão da empresa
     if (!$id) return calendario_padrao();
     $c = um('SELECT * FROM calendarios WHERE id = ? AND empresa_id = ? AND excluido_em IS NULL', [$id, $eid]);
     if (!$c) return calendario_padrao();

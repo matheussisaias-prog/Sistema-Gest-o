@@ -103,15 +103,16 @@ function rdo_resumo(array $r): array {
 
 /** Pendências de RDO nas obras que a pessoa vê (últimos 30 dias). */
 function rdo_pendencias(array $u): array {
-    $eid = (int)$u['empresa_id']; $hoje = rdo_hoje(); $vis = obras_visiveis($u);
+    $eid = (int)$u['empresa_id']; $hoje = rdo_hoje(); $vis = obras_visiveis($u); $R = empresa_regras($eid);
     $obras = todos("SELECT id, codigo, nome, inicio, fim, situacao FROM projetos WHERE empresa_id = ? AND excluido_em IS NULL AND situacao = 'Em andamento'" . ($vis !== null ? ($vis ? ' AND id IN (' . implode(',', $vis) . ')' : ' AND 0') : '') . ' ORDER BY codigo', [$eid]);
     $out = [];
     foreach ($obras as $o) {
         $pid = (int)$o['id']; $cal = calendario_da_obra($pid, $eid); $cod = $o['codigo'] ?: $o['nome'];
         $tem = array_column(todos('SELECT data, situacao, enviado_em, id FROM rdos WHERE projeto_id = ? AND excluido_em IS NULL AND data >= ?', [$pid, Calendario::mais($hoje, -30)]), null, 'data');
         $ini = max(Calendario::mais($hoje, -30), $o['inicio'] ?: $hoje);
-        for ($d = $ini; $d < $hoje; $d = Calendario::mais($d, 1)) if ($cal->util($d) && !isset($tem[$d]) && (!$o['fim'] || $d <= $o['fim'])) $out[] = ['tipo' => 'sem', 'obra' => $cod, 'projeto_id' => $pid, 'data' => $d];
-        foreach (todos("SELECT id, data, situacao, enviado_em, copia_assinada FROM rdos WHERE projeto_id = ? AND excluido_em IS NULL AND situacao <> 'Assinado' ORDER BY data", [$pid]) as $r)
+        $limite = $cal->andar($hoje, -$R['rdo_prazo']);   // dia útil sem RDO só vira pendência depois do prazo da empresa
+        for ($d = $ini; $d <= $limite; $d = Calendario::mais($d, 1)) if ($cal->util($d) && !isset($tem[$d]) && (!$o['fim'] || $d <= $o['fim'])) $out[] = ['tipo' => 'sem', 'obra' => $cod, 'projeto_id' => $pid, 'data' => $d];
+        foreach (todos("SELECT id, data, situacao, enviado_em, copia_assinada FROM rdos WHERE projeto_id = ? AND excluido_em IS NULL AND situacao <> 'Assinado'" . ($R['rdo_assinatura'] ? '' : " AND situacao <> 'Entregue'") . ' ORDER BY data', [$pid]) as $r)
             $out[] = ['tipo' => ['Rascunho' => 'rasc', 'Fechado' => 'fech', 'Entregue' => 'entr'][$r['situacao']], 'obra' => $cod, 'projeto_id' => $pid, 'data' => $r['data'], 'id' => (int)$r['id'], 'enviado' => (bool)$r['enviado_em']];
     }
     // o que o gestor precisa fazer primeiro: rascunho enviado, rascunho, fechado (imprimir), entregue (folha) e, por último, dias sem RDO (mais recentes antes)
@@ -134,14 +135,14 @@ function rota_rdos(): array {
     $ini = "$mes-01"; $fim = gmdate('Y-m-t', strtotime("$ini 12:00:00 UTC"));
     $cal = calendario_da_obra($pid, $eid);
     $R = array_column(todos('SELECT * FROM rdos WHERE projeto_id = ? AND excluido_em IS NULL AND data BETWEEN ? AND ?', [$pid, $ini, $fim]), null, 'data');
-    $dias = []; $k = ['sem' => 0, 'rasc' => 0, 'fech' => 0, 'entr' => 0, 'ass' => 0];
+    $dias = []; $k = ['sem' => 0, 'rasc' => 0, 'fech' => 0, 'entr' => 0, 'ass' => 0]; $RG = empresa_regras($eid); $limite = $cal->andar($hoje, -$RG['rdo_prazo']);
     for ($d = $ini; $d <= $fim; $d = Calendario::mais($d, 1)) {
         $util = $cal->util($d) && (!$p['inicio'] || $d >= $p['inicio']) && (!$p['fim'] || $d <= $p['fim']);
-        $r = $R[$d] ?? null; $e = $r ? ['Rascunho' => 'rasc', 'Fechado' => 'fech', 'Entregue' => 'entr', 'Assinado' => 'ass'][$r['situacao']] : ($d > $hoje ? 'futuro' : ($util ? ($d === $hoje ? 'hoje' : 'sem') : 'nao'));
+        $r = $R[$d] ?? null; $e = $r ? ['Rascunho' => 'rasc', 'Fechado' => 'fech', 'Entregue' => 'entr', 'Assinado' => 'ass'][$r['situacao']] : ($d > $hoje ? 'futuro' : ($util ? ($d === $hoje ? 'hoje' : ($d > $limite ? 'prazo' : 'sem')) : 'nao'));
         if (isset($k[$e])) $k[$e]++;
         $dias[] = ['data' => $d, 'util' => $util, 'estado' => $e, 'rdo' => $r ? rdo_resumo($r) : null];
     }
-    return $out + ['obra' => ['id' => $pid, 'codigo' => $p['codigo'], 'nome' => $p['nome']], 'mes' => $mes, 'dias' => $dias, 'indicadores' => $k];
+    return $out + ['obra' => ['id' => $pid, 'codigo' => $p['codigo'], 'nome' => $p['nome']], 'mes' => $mes, 'dias' => $dias, 'indicadores' => $k, 'assinatura' => $RG['rdo_assinatura']];
 }
 
 /** POST /api/obras/{id}/rdos {data} — abre (ou devolve) o RDO do dia. */

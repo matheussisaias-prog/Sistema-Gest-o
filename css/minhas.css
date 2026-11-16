@@ -89,3 +89,4 @@
 }
 
 .mi-rdo { height: 40px; padding: 0 14px; border: 1.5px solid #2563eb; border-radius: 10px; background: #eff6ff; color: #1d4ed8; font: 700 13.5px 'DM Sans', system-ui, sans-serif; cursor: pointer; white-space: nowrap; }
+.mi-rdo.lembrete { border-color: #d97706; background: #fffbeb; color: #92400e; white-space: normal; height: auto; min-height: 40px; padding: 8px 14px; text-align: left; }

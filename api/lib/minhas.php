@@ -82,7 +82,10 @@ function rota_minhas_atividades(): array {
     $nome = um('SELECT nome FROM usuarios WHERE id = ?', [$u['id']])['nome'] ?? '';
     $encObras = $u['perfil'] === 'encarregado' ? array_column(todos('SELECT p.codigo FROM projeto_membros m JOIN projetos p ON p.id = m.projeto_id WHERE m.usuario_id = ? AND p.excluido_em IS NULL', [$u['id']]), 'codigo') : [];
     return ['hoje' => $hoje, 'ver' => $ver, 'pode_equipe' => $podeEquipe, 'tem_ficha' => (bool)$fid, 'nome' => $nome, 'perfil' => $u['perfil'],
-            'foto_obrigatoria' => $u['perfil'] === 'funcionario', 'obras_encarregado' => $encObras,
+            'foto_obrigatoria' => foto_obrigatoria_para($u), 'comentario_concluir' => empresa_regras((int)$u['empresa_id'])['comentario_concluir'], 'obras_encarregado' => $encObras,
+            'rdo_lembrete' => empresa_regras((int)$u['empresa_id'])['rdo_lembrete'] && $u['perfil'] !== 'funcionario',
+            'rdos_hoje' => $u['perfil'] !== 'funcionario' && $obras ? array_column(array_map(fn($r) => ['projeto_id' => (int)$r['projeto_id'], 'situacao' => $r['situacao'], 'enviado' => (bool)$r['enviado_em']],
+                todos('SELECT projeto_id, situacao, enviado_em FROM rdos WHERE empresa_id = ? AND data = ? AND excluido_em IS NULL', [$u['empresa_id'], $hoje])), null, 'projeto_id') : (object)[],
             'obras' => array_values($obras), 'obra' => $obraF,
             'resumo' => ['atrasadas' => count($G['atrasadas']), 'travadas' => $travadas, 'hoje' => count($G['hoje']), 'semana' => count($G['semana']), 'proximas' => count($G['proximas']), 'concluidas' => count($G['concluidas'])],
             'grupos' => $G, 'motivos' => array_map(fn($k, $m) => ['id' => $k, 'nome' => $m[1]], array_keys(MOTIVOS_TRAVOU), MOTIVOS_TRAVOU)];
@@ -151,7 +154,9 @@ function rota_atividade_avanco(int $id): array {
     if (!isset($d['avanco']) || !is_numeric($d['avanco'])) throw new ErroApi('Informe o avanço (0 a 100)');
     $novo = max(0, min(100, (int)round((float)$d['avanco'])));
     $fotos = is_array($d['fotos'] ?? null) ? $d['fotos'] : [];
-    if ($u['perfil'] === 'funcionario' && !$fotos) throw new ErroApi('Tire uma foto do serviço para registrar o avanço');
+    if (!$fotos && foto_obrigatoria_para($u)) throw new ErroApi('Tire uma foto do serviço para registrar o avanço');
+    if ($novo >= 100 && (int)$a['avanco'] < 100 && empresa_regras((int)$u['empresa_id'])['comentario_concluir'] && trim((string)($d['comentario'] ?? '')) === '')
+        throw new ErroApi('Escreva um comentário sobre o que foi entregue para concluir');
     $sit = $novo >= 100 ? 'Concluído' : ($novo > 0 ? 'Em andamento' : ($a['situacao'] === 'Concluído' ? 'Em andamento' : $a['situacao']));
     db()->beginTransaction();
     try {
@@ -212,13 +217,14 @@ function rota_atividade_impedimento(int $id): array {
     // aviso ao gestor da obra (no sistema e por e-mail)
     $p = um('SELECT codigo, nome, gestor_id FROM projetos WHERE id = ?', [$a['projeto_id']]);
     $avisados = [];
-    $gestores = $p['gestor_id'] ? todos('SELECT id, nome, email FROM usuarios WHERE id = ? AND excluido_em IS NULL', [$p['gestor_id']])
-        : todos("SELECT id, nome, email FROM usuarios WHERE empresa_id = ? AND perfil = 'administrador' AND excluido_em IS NULL AND email_confirmado_em IS NOT NULL", [$u['empresa_id']]);
+    $gestores = $p['gestor_id'] ? todos('SELECT id, nome, email FROM usuarios WHERE id = ? AND excluido_em IS NULL AND desativado_em IS NULL', [$p['gestor_id']])
+        : todos("SELECT id, nome, email FROM usuarios WHERE empresa_id = ? AND perfil = 'administrador' AND excluido_em IS NULL AND desativado_em IS NULL AND email_confirmado_em IS NOT NULL", [$u['empresa_id']]);
+    $porEmail = empresa_regras((int)$u['empresa_id'])['travou_email'];
     foreach ($gestores as $g) {
         if ((int)$g['id'] === (int)$u['id']) continue;
         $quem = um('SELECT nome FROM usuarios WHERE id = ?', [$u['id']])['nome'];
         q('INSERT INTO avisos (empresa_id, usuario_id, tipo, titulo, link) VALUES (?,?,?,?,?)', [$u['empresa_id'], $g['id'], 'ocorrencia', mb_substr("Travou: {$a['descricao']} ({$p['codigo']})", 0, 160), "obra:{$a['projeto_id']}:{$id}"]);
-        if ($g['email'] && enviar_email($g['email'], email_aviso_impedimento($g['nome'], $quem, trim(($p['codigo'] ? $p['codigo'] . ' · ' : '') . $p['nome']), $a['descricao'], $m[1], $texto, link_app('/index.html'))))
+        if ($porEmail && $g['email'] && enviar_email($g['email'], email_aviso_impedimento($g['nome'], $quem, trim(($p['codigo'] ? $p['codigo'] . ' · ' : '') . $p['nome']), $a['descricao'], $m[1], $texto, link_app('/index.html'))))
             q('UPDATE avisos SET email_enviado_em = UTC_TIMESTAMP() WHERE id = LAST_INSERT_ID()');
         $avisados[] = $g['nome'];
     }

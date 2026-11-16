@@ -156,10 +156,16 @@
         h('td', { class: 'num', 'data-r': 'Equipe' }, `${e.funcionarios}`),
         h('td', { 'data-r': 'Último acesso', title: e.ultimo_acesso ? quando(e.ultimo_acesso, true) : '' }, e.ultimo_acesso ? quando(e.ultimo_acesso) : 'nunca'),
         h('td', { 'data-r': 'Cadastro' }, data(e.criado_em).toLocaleDateString('pt-BR')),
-        h('td', { 'data-r': 'Situação' }, h('span', { class: 'chip ' + cls }, rot)),
+        h('td', { 'data-r': 'Situação' }, h('span', { class: 'chip ' + cls }, rot),
+          h('select', { class: 'em-plano', 'aria-label': 'Plano de ' + e.nome, onchange: ev => mudarPlano(e, ev.target.value) },
+            [['teste', 'Teste'], ['essencial', 'Essencial'], ['profissional', 'Profissional'], ['empresa', 'Empresa'], ['corporativo', 'Corporativo']].map(([v, t]) => h('option', { value: v, selected: e.plano === v ? 'selected' : null }, t)))),
         h('td', { class: 'td-acao' }, e.sua ? null : h('button', { class: 'bt bt-mini ' + (susp ? 'bt-ok' : 'bt-perigo'), onclick: () => mudarSituacao(e) },
           susp ? [ic('fa-solid fa-play'), 'Reativar'] : [ic('fa-solid fa-ban'), 'Suspender']))));
     });
+  }
+  async function mudarPlano(e, plano) {
+    try { await api('painel/empresas/' + e.id, 'PATCH', { plano }); aviso(`Plano de ${e.nome} mudado.`); e.plano = plano; }
+    catch (err) { aviso(err.message, true); await carregar(); }
   }
   async function mudarSituacao(e) {
     const susp = e.situacao !== 'suspenso';

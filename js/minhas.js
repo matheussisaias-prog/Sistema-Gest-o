@@ -139,7 +139,9 @@
       h('option', { value: '' }, 'Todas as obras'), d.obras.map(o => h('option', { value: o.id, selected: String(o.id) === String(M.obra) }, `${o.codigo ? o.codigo + ' · ' : ''}${o.nome}`))));
     if (window.tfRdo && eu().perfil && eu().perfil !== 'funcionario' && d.obras.length) {        // encarregado e gestor: RDO do dia da obra
       const alvo = d.obras.find(o => String(o.id) === String(M.obra)) || d.obras.find(o => (d.obras_encarregado || []).includes(o.codigo)) || d.obras[0];
-      ctr.append(h('button', { class: 'mi-rdo', onclick: () => tfRdo.hoje(alvo.id) }, h('i', { class: 'fa-solid fa-clipboard-list', 'aria-hidden': 'true' }), ` RDO de hoje · ${alvo.codigo || alvo.nome}`));
+      const rh = (d.rdos_hoje || {})[alvo.id], tarde = new Date().getHours() >= 16, falta = d.rdo_lembrete && tarde && (!rh || (rh.situacao === 'Rascunho' && !rh.enviado));
+      ctr.append(h('button', { class: 'mi-rdo' + (falta ? ' lembrete' : ''), onclick: () => tfRdo.hoje(alvo.id) }, h('i', { class: 'fa-solid ' + (falta ? 'fa-bell' : 'fa-clipboard-list'), 'aria-hidden': 'true' }),
+        falta ? ` RDO de hoje ainda não enviado · ${alvo.codigo || alvo.nome}` : ` RDO de hoje · ${alvo.codigo || alvo.nome}`));
     }
     if (ctr.childNodes.length) cab.append(ctr);
     box.append(cab);
@@ -187,7 +189,7 @@
     else if (grupo === 'semana' || grupo === 'proximas') datas = `Começa ${diaSem(a.inicio)}, ${dBR(a.inicio)}${a.duracao_dias ? ' · ' + plural(Math.round(a.duracao_dias), 'dia útil', 'dias úteis') : ''}`;
     else datas = `${dBR(a.inicio)} → ${dBR(a.fim)}`;
     const quem = a.minha ? 'Você' : (a.responsavel_nome || 'Sem responsável');
-    const pode = !d.foto_obrigatoria || a.minha;
+    const pode = d.perfil !== 'funcionario' || a.minha;
     const passo = n => () => {
       const alvo = Math.max(0, Math.min(100, n));
       if (d.foto_obrigatoria || alvo >= 100) folhaAvanco(a, alvo); else salvarAvanco(a, alvo, [], '');
@@ -265,7 +267,7 @@
   }
   function folhaAvanco(a, alvo) {
     const d = M.d, obrig = d.foto_obrigatoria;
-    if (obrig && !a.minha) return;
+    if (d.perfil === 'funcionario' && !a.minha) return;
     pedirGps();
     const atual = a.avanco;
     let novo = alvo != null ? alvo : Math.min(100, Math.ceil((atual + 1) / 10) * 10);
@@ -275,22 +277,24 @@
     const opcoes = h('div', { class: 'mi-ops', role: 'radiogroup', 'aria-label': 'Novo avanço' });
     const sug = [...new Set([Math.min(100, Math.floor(atual / 10) * 10 + 10), Math.min(100, Math.floor(atual / 10) * 10 + 20), Math.min(100, Math.floor(atual / 10) * 10 + 30), novo, 100])].filter(v => v > atual || v === novo).sort((x, y) => x - y).slice(-4);
     const faixa = h('input', { type: 'range', min: '0', max: '100', step: '5', value: novo, 'aria-label': 'Avanço em %', oninput: e => { novo = +e.target.value; atualizar(); } });
-    const com = h('textarea', { rows: '2', placeholder: 'Ex.: concluído o trecho A, falta o trecho B', 'aria-label': 'Comentário' });
+    const com = h('textarea', { rows: '2', placeholder: 'Ex.: concluído o trecho A, falta o trecho B', 'aria-label': 'Comentário', oninput: () => atualizar() });
+    const rotCom = h('span', { class: 'mi-rot' });
     const salvar = h('button', { class: 'mi-bt-pri' });
     const nota = h('p', { class: 'mi-nota-f' });
     const atualizar = () => {
       valor.innerHTML = ''; valor.append(h('s', null, `${atual}%`), ' → ', h('b', null, `${novo}%`));
       opcoes.innerHTML = '';
       sug.forEach(v => opcoes.append(h('button', { class: novo === v ? 'on' : '', role: 'radio', 'aria-checked': novo === v ? 'true' : 'false', onclick: () => { novo = v; faixa.value = v; atualizar(); } }, v === 100 ? '100% ✓' : `${v}%`)));
-      const falta = obrig && !fotos.length;
-      salvar.disabled = falta || novo === atual;
+      const falta = obrig && !fotos.length, semCom = d.comentario_concluir && novo >= 100 && atual < 100 && !com.value.trim();
+      rotCom.textContent = d.comentario_concluir && novo >= 100 ? 'Comentário · obrigatório para concluir' : 'Comentário (opcional)';
+      salvar.disabled = falta || semCom || novo === atual;
       salvar.textContent = novo >= 100 ? `Concluir${fotos.length ? ' com ' + plural(fotos.length, 'foto', 'fotos') : ''}` : `Salvar avanço${fotos.length ? ' com ' + plural(fotos.length, 'foto', 'fotos') : ''}`;
-      nota.textContent = falta ? 'Tire uma foto do serviço para salvar.' : !navigator.onLine ? 'Sem internet: fica guardado e envia quando a conexão voltar.' : '';
+      nota.textContent = falta ? 'Tire uma foto do serviço para salvar.' : semCom ? 'Escreva o que foi entregue para concluir.' : !navigator.onLine ? 'Sem internet: fica guardado e envia quando a conexão voltar.' : '';
     };
     const corpo = h('div', { class: 'mi-folha-corpo' },
       h('div', { class: 'mi-campo' }, h('div', { class: 'mi-rot linha' }, h('span', null, 'Avanço'), valor), opcoes, faixa),
       seletorFotos(fotos, obrig, atualizar),
-      h('label', { class: 'mi-campo' }, h('span', { class: 'mi-rot' }, 'Comentário (opcional)'), com),
+      h('label', { class: 'mi-campo' }, rotCom, com),
       salvar, nota);
     const fechar = folha(a.descricao, `${a.codigo ? a.codigo + ' · ' : ''}${a.obra}`, corpo);
     salvar.onclick = async () => { salvar.disabled = true; await salvarAvanco(a, novo, fotos, com.value.trim()); fechar(); };

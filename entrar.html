@@ -39,10 +39,10 @@
       <!-- ENTRAR -->
       <section class="passo" id="v-entrar">
         <h2>Entrar</h2>
-        <p class="sub">Use o e-mail e a senha da sua conta.</p>
+        <p class="sub">Use o e-mail (ou o celular) e a senha da sua conta.</p>
         <form id="f-entrar" novalidate>
-          <label class="campo"><span>E-mail</span>
-            <input type="email" id="e-email" autocomplete="username" placeholder="voce@empresa.com.br" required/></label>
+          <label class="campo"><span>E-mail ou celular</span>
+            <input type="text" id="e-email" autocomplete="username" inputmode="email" autocapitalize="none" spellcheck="false" placeholder="voce@empresa.com.br ou (81) 99876-5432" required/></label>
           <label class="campo"><span>Senha</span>
             <div class="senha"><input type="password" id="e-senha" autocomplete="current-password" placeholder="Sua senha" required/>
               <button type="button" class="olho" aria-label="Mostrar senha"><i class="fa-regular fa-eye"></i></button></div></label>
@@ -51,7 +51,7 @@
         </form>
         <div class="divisor"><span>Primeira vez aqui?</span></div>
         <button class="btn-secundario" data-ir="cadastro-1"><i class="fa-solid fa-building"></i>Cadastrar minha empresa</button>
-        <p class="nota"><i class="fa-solid fa-tablet-screen-button"></i> Funcionário sem e-mail entra pelo tablet da obra, com o PIN.</p>
+        <p class="nota"><i class="fa-solid fa-mobile-screen-button"></i> Sem e-mail? Entre com o número do celular que o administrador cadastrou no seu convite.</p>
       </section>
 
       <!-- CADASTRO · 1 EMPRESA -->
@@ -128,7 +128,7 @@
         <h2>Esqueci minha senha</h2>
         <p class="sub">Informe o e-mail da conta. Se ele tiver cadastro, enviamos um link para criar uma nova senha.</p>
         <form id="f-esqueci" novalidate>
-          <label class="campo"><span>E-mail</span><input type="email" id="r-email" autocomplete="username" placeholder="voce@empresa.com.br" required/></label>
+          <label class="campo"><span>E-mail</span><input type="text" inputmode="email" autocapitalize="none" id="r-email" autocomplete="username" placeholder="voce@empresa.com.br" required/></label>
           <button class="btn-principal" type="submit"><span>Enviar link</span><i class="fa-solid fa-paper-plane"></i></button>
         </form>
       </section>
@@ -187,6 +187,6 @@
   </div>
 </template>
 
-<script src="js/entrar.js?v=2026.11.16.6"></script>
+<script src="js/entrar.js?v=2026.11.16.8"></script>
 </body>
 </html>

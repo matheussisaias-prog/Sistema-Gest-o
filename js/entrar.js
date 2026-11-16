@@ -78,7 +78,8 @@
   $('#f-entrar').addEventListener('submit', async e => {
     e.preventDefault(); const f = e.target; limparErros(f);
     const email = $('#e-email'), senha = $('#e-senha');
-    if (!emailOk(email.value)) return marcarErro(email, 'Digite um e-mail válido.');
+    const dig = email.value.replace(/\D/g, '');
+    if (!emailOk(email.value) && (email.value.includes('@') || dig.length < 10)) return marcarErro(email, 'Digite o e-mail ou o celular com DDD.');
     if (!senha.value) return marcarErro(senha, 'Digite a senha.');
     const b = f.querySelector('button[type=submit]'); ocupado(b, true);
     try {
@@ -171,6 +172,7 @@
   $('#f-esqueci').addEventListener('submit', async e => {
     e.preventDefault(); const f = e.target; limparErros(f);
     const email = $('#r-email');
+    if (!emailOk(email.value) && email.value.replace(/\D/g, '').length >= 10) return avisar('Quem entra pelo celular recebe a nova senha pelo WhatsApp: peça ao administrador da sua empresa um link de nova senha.');
     if (!emailOk(email.value)) return marcarErro(email, 'Digite um e-mail válido.');
     const b = f.querySelector('button[type=submit]'); ocupado(b, true);
     try { const r = await api('esqueci-senha', { email: email.value.trim() }); ir('entrar'); avisar(r.mensagem, 'ok'); }
@@ -225,7 +227,12 @@
       $('#senha-titulo').textContent = modoSenha === 'convite' ? 'Criar sua senha' : 'Nova senha';
       $('#senha-sub').textContent = modoSenha === 'convite' ? 'Você foi convidado para o sistema. Crie uma senha para entrar.'
         : 'Crie uma nova senha. Os aparelhos conectados com a senha antiga serão desconectados.';
-      ir('senha'); return;
+      ir('senha');
+      if (modoSenha === 'convite') api('convites/info?token=' + encodeURIComponent(tokenSenha)).then(c => {
+        $('#senha-titulo').textContent = `Olá, ${c.nome.split(' ')[0]}! Crie sua senha`;
+        $('#senha-sub').textContent = `Você foi convidado para o Task Flow da ${c.empresa}, como ${c.perfil.toLowerCase()}. Depois, para entrar, use ${c.por_telefone ? 'o celular ' : ''}${c.entrar_com} e esta senha.`;
+      }).catch(err => avisar(err.message));
+      return;
     }
     if (location.hash === '#cadastro') { ir('cadastro-1'); return; }
     if (location.hash === '#contato') { ir('contato'); return; }

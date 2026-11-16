@@ -243,6 +243,17 @@ const TF_MIGRACOES = [
   CONSTRAINT fk_rel_empresa FOREIGN KEY (empresa_id) REFERENCES empresas(id),
   CONSTRAINT fk_rel_projeto FOREIGN KEY (projeto_id) REFERENCES projetos(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"],
+    11 => [['coluna', 'usuarios', 'telefone', "ALTER TABLE usuarios ADD COLUMN telefone VARCHAR(15) NULL AFTER email, ADD UNIQUE KEY uq_usuarios_tel (telefone)"],
+           "ALTER TABLE usuarios MODIFY email VARCHAR(190) NULL",
+           ['coluna', 'usuarios', 'desativado_em', "ALTER TABLE usuarios ADD COLUMN desativado_em DATETIME NULL AFTER avisos_email"],
+           "ALTER TABLE convites MODIFY email VARCHAR(190) NULL",
+           ['coluna', 'convites', 'telefone', "ALTER TABLE convites ADD COLUMN telefone VARCHAR(15) NULL AFTER email"],
+           ['coluna', 'convites', 'canal', "ALTER TABLE convites ADD COLUMN canal ENUM('email','whatsapp') NOT NULL DEFAULT 'email' AFTER telefone"],
+           ['coluna', 'empresas', 'endereco', "ALTER TABLE empresas ADD COLUMN endereco VARCHAR(200) NULL AFTER telefone"],
+           ['coluna', 'empresas', 'email_contato', "ALTER TABLE empresas ADD COLUMN email_contato VARCHAR(190) NULL AFTER uf"],
+           ['coluna', 'empresas', 'site', "ALTER TABLE empresas ADD COLUMN site VARCHAR(120) NULL AFTER email_contato"],
+           ['coluna', 'empresas', 'regras', "ALTER TABLE empresas ADD COLUMN regras TEXT NULL AFTER dias_uteis"],
+           ['coluna', 'empresas', 'calendario_id', "ALTER TABLE empresas ADD COLUMN calendario_id INT UNSIGNED NULL AFTER regras"]],
 ];
 function migrar(PDO $pdo): void {
     $alvo = max(array_keys(TF_MIGRACOES));
@@ -333,7 +344,7 @@ function usuario_atual(): ?array {
     if ($t === '') return null;
     $r = um('SELECT u.id, u.empresa_id, u.nome, u.email, u.perfil, u.funcionario_id, e.nome AS empresa_nome
              FROM sessoes s JOIN usuarios u ON u.id = s.usuario_id JOIN empresas e ON e.id = u.empresa_id
-             WHERE s.id = ? AND s.expira_em > UTC_TIMESTAMP() AND u.excluido_em IS NULL AND e.excluido_em IS NULL AND e.situacao <> "suspenso"',
+             WHERE s.id = ? AND s.expira_em > UTC_TIMESTAMP() AND u.excluido_em IS NULL AND u.desativado_em IS NULL AND e.excluido_em IS NULL AND e.situacao <> "suspenso"',
             [hash_token($t)]);
     if ($r) { q('UPDATE sessoes SET usado_em = UTC_TIMESTAMP() WHERE id = ?', [hash_token($t)]); $r['dono_plataforma'] = eh_dono_plataforma($r['email']) ? 1 : 0; $u = $r; }
     return $u;

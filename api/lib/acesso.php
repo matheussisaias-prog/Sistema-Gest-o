@@ -108,10 +108,12 @@ function rota_confirmar_email(): array {
 /** POST /api/entrar {email, senha} */
 function rota_entrar(): array {
     $d = corpo();
-    $email = mb_strtolower(trim((string)($d['email'] ?? '')));
+    $login = mb_strtolower(trim((string)($d['email'] ?? $d['login'] ?? '')));
     $senha = (string)($d['senha'] ?? '');
-    $u = um('SELECT id, senha_hash, email_confirmado_em, tentativas_erradas, bloqueado_ate FROM usuarios WHERE email = ? AND excluido_em IS NULL', [$email]);
-    $erro = new ErroApi('E-mail ou senha incorretos', 401);
+    $erro = new ErroApi('E-mail (ou celular) ou senha incorretos', 401);
+    if (str_contains($login, '@')) $u = um('SELECT id, senha_hash, email_confirmado_em, tentativas_erradas, bloqueado_ate, desativado_em FROM usuarios WHERE email = ? AND excluido_em IS NULL', [$login]);
+    else { try { $tel = tel_norm($login); } catch (ErroApi $e) { $tel = null; }   // quem não tem e-mail entra com o celular
+           $u = $tel ? um('SELECT id, senha_hash, email_confirmado_em, tentativas_erradas, bloqueado_ate, desativado_em FROM usuarios WHERE telefone = ? AND excluido_em IS NULL', [$tel]) : null; }
     if (!$u) { password_hash($senha, PASSWORD_DEFAULT); throw $erro; } // gasta o mesmo tempo, para não revelar se o e-mail existe
     if ($u['bloqueado_ate'] && strtotime($u['bloqueado_ate'] . ' UTC') > time())
         throw new ErroApi('Muitas tentativas erradas. Tente de novo em ' . TF_BLOQUEIO_MIN . ' minutos.', 429);
@@ -121,6 +123,7 @@ function rota_entrar(): array {
         else q('UPDATE usuarios SET tentativas_erradas = ? WHERE id = ?', [$n, $u['id']]);
         throw $erro;
     }
+    if ($u['desativado_em']) throw new ErroApi('Seu acesso foi desativado pelo administrador da empresa.', 403);
     if (!$u['email_confirmado_em']) throw new ErroApi('Confirme seu e-mail antes de entrar (veja a caixa de entrada)', 403);
     if (um('SELECT e.id FROM usuarios u JOIN empresas e ON e.id = u.empresa_id WHERE u.id = ? AND (e.situacao = "suspenso" OR e.excluido_em IS NOT NULL)', [$u['id']]))
         throw new ErroApi('O acesso desta empresa está suspenso. Use o Fale conosco para falar com a equipe Task Flow.', 403);
@@ -133,7 +136,7 @@ function rota_entrar(): array {
 }
 
 function dados_eu(int $id): array {
-    $r = um('SELECT u.id, u.nome, u.email, u.perfil, u.funcionario_id, u.empresa_id, e.nome AS empresa, (e.logo IS NOT NULL) AS empresa_logo
+    $r = um('SELECT u.id, u.nome, u.email, u.telefone, u.perfil, u.funcionario_id, u.empresa_id, e.nome AS empresa, (e.logo IS NOT NULL) AS empresa_logo
              FROM usuarios u JOIN empresas e ON e.id = u.empresa_id WHERE u.id = ?', [$id]);
     $r['empresa_logo'] = (int)$r['empresa_logo'];
     $r['dono_plataforma'] = eh_dono_plataforma($r['email']) ? 1 : 0;
@@ -142,22 +145,6 @@ function dados_eu(int $id): array {
 function rota_eu(): array { $u = exigir_login(); return ['usuario' => dados_eu((int)$u['id'])]; }
 function rota_sair(): array { fechar_sessao(); return ['ok' => true]; }
 
-/** POST /api/convites — administrador convida alguém depois do cadastro */
-function rota_convidar(): array {
-    $u = exigir_login(); exigir_perfil($u, ['administrador']);
-    $d = corpo();
-    $email = email_valido($d['email'] ?? '');
-    $perfil = $d['perfil'] ?? '';
-    if (!in_array($perfil, TF_PERFIS, true)) throw new ErroApi('Perfil inválido');
-    if (um('SELECT id FROM usuarios WHERE email = ?', [$email])) throw new ErroApi('Este e-mail já tem cadastro', 409);
-    $fid = isset($d['funcionario_id']) ? (int)$d['funcionario_id'] : null;
-    if ($fid && !um('SELECT id FROM funcionarios WHERE id = ? AND empresa_id = ?', [$fid, $u['empresa_id']])) throw new ErroApi('Funcionário não encontrado', 404);
-    $c = criar_convite($u, (int)$u['empresa_id'], campo($d, 'nome', true, 160), $email, $perfil, $fid);
-    registrar($u, (int)$u['empresa_id'], 'convites', null, 'criou', null, ['email' => $email, 'perfil' => $perfil]);
-    enviar_convite($c, $u['empresa_nome'], $u['nome']);
-    return ['ok' => true];
-}
-
 /** POST /api/convites/aceitar {token, nome?, senha} */
 function rota_aceitar_convite(): array {
     $d = corpo();
@@ -165,11 +152,12 @@ function rota_aceitar_convite(): array {
             [hash_token(campo($d, 'token', true, 64))]);
     if (!$c) throw new ErroApi('Convite inválido ou vencido. Peça um novo ao administrador.', 400);
     $senha = senha_valida($d['senha'] ?? '');
-    if (um('SELECT id FROM usuarios WHERE email = ?', [$c['email']])) throw new ErroApi('Este e-mail já tem cadastro. Faça login.', 409);
+    if ($c['email'] && um('SELECT id FROM usuarios WHERE email = ?', [$c['email']])) throw new ErroApi('Este e-mail já tem cadastro. Faça login.', 409);
+    if ($c['telefone'] && um('SELECT id FROM usuarios WHERE telefone = ?', [$c['telefone']])) throw new ErroApi('Este celular já tem cadastro. Faça login.', 409);
     $pdo = db(); $pdo->beginTransaction();
     try {
-        q('INSERT INTO usuarios (empresa_id, nome, email, senha_hash, perfil, funcionario_id, email_confirmado_em) VALUES (?,?,?,?,?,?, UTC_TIMESTAMP())',
-          [$c['empresa_id'], $c['nome'], $c['email'], password_hash($senha, PASSWORD_DEFAULT), $c['perfil'], $c['funcionario_id']]);
+        q('INSERT INTO usuarios (empresa_id, nome, email, telefone, senha_hash, perfil, funcionario_id, email_confirmado_em) VALUES (?,?,?,?,?,?,?, UTC_TIMESTAMP())',
+          [$c['empresa_id'], $c['nome'], $c['email'], $c['telefone'], password_hash($senha, PASSWORD_DEFAULT), $c['perfil'], $c['funcionario_id']]);
         $uid = (int)$pdo->lastInsertId();
         q('UPDATE convites SET aceito_em = UTC_TIMESTAMP() WHERE id = ?', [$c['id']]);
         registrar(['id' => $uid], (int)$c['empresa_id'], 'usuarios', $uid, 'criou', null, ['via' => 'convite', 'perfil' => $c['perfil']]);
@@ -182,7 +170,7 @@ function rota_aceitar_convite(): array {
 /** POST /api/esqueci-senha {email} — responde igual exista ou não o e-mail */
 function rota_esqueci_senha(): array {
     $email = mb_strtolower(trim((string)(corpo()['email'] ?? '')));
-    $u = um('SELECT id, nome FROM usuarios WHERE email = ? AND excluido_em IS NULL AND email_confirmado_em IS NOT NULL', [$email]);
+    $u = um('SELECT id, nome FROM usuarios WHERE email = ? AND excluido_em IS NULL AND desativado_em IS NULL AND email_confirmado_em IS NOT NULL', [$email]);
     if ($u) {
         $tok = token();
         q('UPDATE usuarios SET acao_token_hash = ?, acao_tipo = "redefinir_senha", acao_expira = DATE_ADD(UTC_TIMESTAMP(), INTERVAL 1 HOUR) WHERE id = ?', [hash_token($tok), $u['id']]);
@@ -194,7 +182,7 @@ function rota_esqueci_senha(): array {
 /** POST /api/redefinir-senha {token, senha} — encerra todas as sessões abertas */
 function rota_redefinir_senha(): array {
     $d = corpo();
-    $u = um('SELECT id, empresa_id FROM usuarios WHERE acao_token_hash = ? AND acao_tipo = "redefinir_senha" AND acao_expira > UTC_TIMESTAMP()', [hash_token(campo($d, 'token', true, 64))]);
+    $u = um('SELECT id, empresa_id FROM usuarios WHERE acao_token_hash = ? AND acao_tipo = "redefinir_senha" AND acao_expira > UTC_TIMESTAMP() AND desativado_em IS NULL', [hash_token(campo($d, 'token', true, 64))]);
     if (!$u) throw new ErroApi('Link inválido ou vencido', 400);
     $senha = senha_valida($d['senha'] ?? '');
     q('UPDATE usuarios SET senha_hash = ?, acao_token_hash = NULL, acao_tipo = NULL, acao_expira = NULL, tentativas_erradas = 0, bloqueado_ate = NULL WHERE id = ?',

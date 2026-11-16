@@ -100,5 +100,5 @@ function rota_obras_resumo(): array {
 /** GET /api/usuarios — pessoas com acesso ao sistema (para escolher o gestor da obra). */
 function rota_usuarios_listar(): array {
     $u = exigir_login(); exigir_perfil($u, PODE_TUDO);
-    return ['usuarios' => todos('SELECT id, nome, perfil FROM usuarios WHERE empresa_id = ? AND excluido_em IS NULL AND email_confirmado_em IS NOT NULL ORDER BY nome', [$u['empresa_id']])];
+    return ['usuarios' => todos('SELECT id, nome, perfil FROM usuarios WHERE empresa_id = ? AND excluido_em IS NULL AND desativado_em IS NULL AND email_confirmado_em IS NOT NULL ORDER BY nome', [$u['empresa_id']])];
 }

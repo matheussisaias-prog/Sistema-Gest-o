@@ -12,7 +12,7 @@ button.rd-dia:hover { box-shadow: 0 4px 12px rgba(15,23,42,.08); }
 .rd-dia-t { font-size: 11px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .rd-dia-t.vc { color: #b91c1c; } .rd-dia-t.ven { color: #b45309; } .rd-dia-t.az { color: #1d4ed8; } .rd-dia-t.rx { color: #6d28d9; } .rd-dia-t.ok { color: #15803d; } .rd-dia-t.cz { color: #64748b; }
 .rd-dia.sem { border-left-color: #dc2626; } .rd-dia.rasc { border-left-color: #d97706; } .rd-dia.fech { border-left-color: #2563eb; } .rd-dia.entr { border-left-color: #7c3aed; } .rd-dia.ass { border-left-color: #16a34a; }
-.rd-dia.hoje { border-left-color: #2563eb; } .rd-dia.nao { background: #f8fafc; } .rd-dia.futuro { background: none; border: 1px dashed #e2e8f0; color: #cbd5e1; cursor: default; }
+.rd-dia.hoje, .rd-dia.prazo { border-left-color: #2563eb; } .rd-dia.nao { background: #f8fafc; } .rd-dia.futuro { background: none; border: 1px dashed #e2e8f0; color: #cbd5e1; cursor: default; }
 .rd-dia.hj { outline: 2.5px solid #2563eb; outline-offset: -1px; }
 .rd-lado { display: flex; flex-direction: column; gap: 12px; }
 .rd-pend { display: flex; flex-direction: column; padding: 0 8px 10px; } .rd-pend button { display: flex; gap: 8px; align-items: center; text-align: left; border: 0; background: none; padding: 7px 8px; border-radius: 8px; font: 13px 'DM Sans', system-ui, sans-serif; color: #0f172a; cursor: pointer; }

@@ -146,7 +146,7 @@ function rota_equipe(): array {
     $fids = array_map(fn($p) => (int)$p['id'], $P);
     $exig = eq_exigencias($eid, $P, $hoje); $docs = eq_documentos($eid, $fids); $cargas = eq_cargas($eid, $fids, $hoje); $aus = eq_ausencia_hoje($eid, $fids, $hoje);
     $nomes = eq_nomes_tipos($eid);
-    $usuarios = []; foreach (todos('SELECT funcionario_id, perfil FROM usuarios WHERE empresa_id = ? AND excluido_em IS NULL AND funcionario_id IS NOT NULL', [$eid]) as $x) $usuarios[(int)$x['funcionario_id']] = $x['perfil'];
+    $usuarios = []; foreach (todos('SELECT funcionario_id, perfil FROM usuarios WHERE empresa_id = ? AND excluido_em IS NULL AND desativado_em IS NULL AND funcionario_id IS NOT NULL', [$eid]) as $x) $usuarios[(int)$x['funcionario_id']] = $x['perfil'];
     $pode = in_array($u['perfil'], PODE_TUDO, true);
     $pessoas = array_map(function ($p) use ($exig, $docs, $cargas, $aus, $nomes, $hoje, $usuarios, $pode) {
         $f = (int)$p['id']; $r = eq_resumo_docs($exig[$f] ?? [], $docs[$f] ?? [], $hoje, $nomes);
@@ -190,7 +190,7 @@ function rota_equipe_ficha(int $id): array {
     $avancos = todos('SELECT v.criado_em, v.de_avanco, v.para_avanco, v.comentario, a.descricao AS atividade, p.codigo FROM avancos v JOIN atividades a ON a.id = v.atividade_id JOIN projetos p ON p.id = a.projeto_id
                       JOIN usuarios us ON us.id = v.usuario_id WHERE v.empresa_id = ? AND us.funcionario_id = ? ORDER BY v.criado_em DESC LIMIT 12', [$eid, $id]);
     $carga = eq_cargas($eid, [$id], $hoje)[$id];
-    $acc = um('SELECT perfil, email FROM usuarios WHERE funcionario_id = ? AND empresa_id = ? AND excluido_em IS NULL', [$id, $eid]);
+    $acc = um('SELECT perfil, email FROM usuarios WHERE funcionario_id = ? AND empresa_id = ? AND excluido_em IS NULL AND desativado_em IS NULL', [$id, $eid]);
     $pode = in_array($u['perfil'], PODE_TUDO, true);
     $resumo = eq_resumo_docs($exig, $docs, $hoje, $nomes);
     $ah = eq_ausencia_hoje($eid, [$id], $hoje)[$id] ?? null;

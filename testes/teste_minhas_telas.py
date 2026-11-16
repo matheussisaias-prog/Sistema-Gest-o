@@ -16,8 +16,9 @@ pid, ids = criar(); erros = []
 adm = requests.Session(); adm.post(A+"/entrar", json={"email": "wendell@rawtech.com.br", "senha": "Obra-Segura-2026"})
 ativ = lambda i: [a for a in adm.get(A+f"/obras/{pid}/cronograma").json()["atividades"] if a["id"] == i][0]
 def nova(nav, vp, mob=False):
-    c = nav.new_context(viewport=vp, is_mobile=mob, has_touch=mob, locale="pt-BR"); pg = c.new_page(); rotas(pg)
-    pg.route("**/chart.umd.min.js", lambda r: r.fulfill(body=STUB, content_type="application/javascript")); pg.on("pageerror", lambda e: erros.append(str(e))); return c, pg
+    # rotas no contexto (não só na página): assim também valem para o que o service worker busca (fontes, ícones, Chart)
+    c = nav.new_context(viewport=vp, is_mobile=mob, has_touch=mob, locale="pt-BR"); rotas(c)
+    c.route("**/chart.umd.min.js", lambda r: r.fulfill(body=STUB, content_type="application/javascript")); pg = c.new_page(); pg.on("pageerror", lambda e: erros.append(str(e))); return c, pg
 def entrar(pg, email, senha):
     pg.goto(B+"/entrar.html"); pg.fill("#e-email", email); pg.fill("#e-senha", senha); pg.click("#f-entrar button[type=submit]")
     pg.wait_for_url("**/index.html"); pg.wait_for_selector(".tf-user")
@@ -69,16 +70,20 @@ with sync_playwright() as p:
     m.wait_for_function("!document.querySelector('.mi-aviso')", timeout=20000)
     check("Internet voltou: enviado sozinho, com a foto", ativ(ids["a23"])["avanco"] == 10 and ativ(ids["a23"])["fotos"] == 1)
     # abrir o sistema já sem internet
-    m.evaluate("localStorage.setItem('tf-sw', '1')"); m.reload(); m.wait_for_selector(".mi-card")
-    m.evaluate("navigator.serviceWorker.ready"); m.wait_for_timeout(1500); m.reload(); m.wait_for_selector(".mi-card"); m.wait_for_timeout(1500)
-    c.set_offline(True); m.reload(); m.wait_for_selector(".mi-card", timeout=15000)
+    # (espera o cabeçalho, não um cartão: conforme o dia da semana a Malha pode estar só em "Próximas")
+    m.evaluate("localStorage.setItem('tf-sw', '1')"); m.reload(); m.wait_for_selector(".mi-ola")
+    m.evaluate("navigator.serviceWorker.ready"); m.wait_for_timeout(1500); m.reload(); m.wait_for_selector(".mi-ola"); m.wait_for_timeout(1500)
+    c.set_offline(True); m.reload(); m.wait_for_selector(".mi-ola", timeout=15000)
+    if "Malha" not in m.inner_text("#view-minhas") and m.locator(".mi-mais").count(): m.click(".mi-mais"); m.wait_for_timeout(300)
     check("Abre sem internet: última lista guardada e o aviso", "Malha" in m.inner_text("#view-minhas") and "Sem internet" in m.inner_text(".mi-aviso"))
     c.set_offline(False); c.close()
     # ── encarregado no computador ──
     c, e = nova(nav, {"width": 1440, "height": 1000}); entrar(e, "bruno@rawtech.com.br", "Bruno-Costa-2026"); e.wait_for_selector(".mi-ind")
     check("Encarregado entra em Minhas atividades com a chave Minhas/Equipe", e.locator(".mi-seg button").count() == 2 and "encarregado na ELE-014" in e.inner_text(".mi-ola"))
-    e.click(".mi-seg button >> text=Da minha equipe"); e.wait_for_selector(".mi-card >> text=Malha de aterramento")
-    check("Da minha equipe: vê as da Carla, em 3 colunas", "Carla Mendes" in e.inner_text(".mi-grupos") and e.evaluate("getComputedStyle(document.querySelector('.mi-grupos')).display") == "grid")
+    e.click(".mi-seg button >> text=Da minha equipe"); e.wait_for_selector(".mi-grupos")
+    if not e.locator(".mi-card", has_text="Malha de aterramento").count() and e.locator(".mi-mais").count(): e.click(".mi-mais")   # conforme o dia, a Malha está em "Próximas"
+    e.wait_for_selector(".mi-card >> text=Malha de aterramento")
+    check("Da minha equipe: vê as da Carla, em 3 colunas", "Carla Mendes" in e.inner_text("#view-minhas") and e.evaluate("getComputedStyle(document.querySelector('.mi-grupos')).display") == "grid", (e.evaluate("getComputedStyle(document.querySelector('.mi-grupos')).display"), "Carla Mendes" in e.inner_text("#view-minhas")))
     check("Indicador de travadas", e.locator(".mi-ind.lar b").inner_text() == "1")
     antes = ativ(ids["a21"])["avanco"]
     card(e, "Base dos transformadores").locator(".mi-bt[aria-label='Aumentar 10%']").click(); e.wait_for_timeout(1500)

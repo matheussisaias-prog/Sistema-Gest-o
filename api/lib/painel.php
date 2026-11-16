@@ -9,7 +9,7 @@ function rota_painel_empresas(): array {
         SELECT e.id, e.nome, e.razao_social, e.cnpj, e.telefone, e.cidade, e.uf, e.plano, e.situacao, e.criado_em,
                a.nome AS admin_nome, a.email AS admin_email,
                (SELECT COUNT(*) FROM usuarios x WHERE x.empresa_id = e.id AND x.excluido_em IS NULL) AS usuarios,
-               (SELECT COUNT(*) FROM usuarios x WHERE x.empresa_id = e.id AND x.excluido_em IS NULL AND x.email_confirmado_em IS NOT NULL) AS usuarios_ativos,
+               (SELECT COUNT(*) FROM usuarios x WHERE x.empresa_id = e.id AND x.excluido_em IS NULL AND x.desativado_em IS NULL AND x.email_confirmado_em IS NOT NULL) AS usuarios_ativos,
                (SELECT COUNT(*) FROM projetos x WHERE x.empresa_id = e.id AND x.excluido_em IS NULL) AS obras,
                (SELECT COUNT(*) FROM funcionarios x WHERE x.empresa_id = e.id AND x.excluido_em IS NULL) AS funcionarios,
                (SELECT COUNT(*) FROM fale_conosco x WHERE x.empresa_id = e.id) AS mensagens,
@@ -26,12 +26,19 @@ function rota_painel_empresas(): array {
     return ['empresas' => $lista];
 }
 
-/** PATCH /api/painel/empresas/{id} {situacao: "ativo"|"suspenso"} — suspende ou reativa o acesso */
+/** PATCH /api/painel/empresas/{id} {situacao: "ativo"|"suspenso"} ou {plano} — suspende/reativa o acesso ou muda o plano */
 function rota_painel_empresa_situacao(int $id): array {
     $u = exigir_dono();
-    $e = um('SELECT id, nome, situacao FROM empresas WHERE id = ? AND excluido_em IS NULL', [$id]);
+    $e = um('SELECT id, nome, situacao, plano FROM empresas WHERE id = ? AND excluido_em IS NULL', [$id]);
     if (!$e) throw new ErroApi('Empresa não encontrada', 404);
-    $nova = (string)(corpo()['situacao'] ?? '');
+    $d = corpo();
+    if (array_key_exists('plano', $d)) {
+        $pl = (string)$d['plano']; if (!isset(TF_PLANOS[$pl])) throw new ErroApi('Plano inválido');
+        q('UPDATE empresas SET plano = ? WHERE id = ?', [$pl, $id]);
+        registrar($u, $id, 'empresas', $id, 'alterou', ['plano' => $e['plano']], ['plano' => $pl]);
+        return ['ok' => true, 'plano' => $pl];
+    }
+    $nova = (string)($d['situacao'] ?? '');
     if (!in_array($nova, ['ativo', 'suspenso'], true)) throw new ErroApi('Situação inválida');
     if ($nova === 'suspenso' && $id === (int)$u['empresa_id']) throw new ErroApi('Você não pode suspender a sua própria empresa', 400);
     q('UPDATE empresas SET situacao = ? WHERE id = ?', [$nova, $id]);

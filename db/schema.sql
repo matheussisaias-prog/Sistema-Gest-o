@@ -17,8 +17,11 @@ CREATE TABLE empresas (
   razao_social  VARCHAR(200) NULL,
   cnpj          VARCHAR(18)  NULL,
   telefone      VARCHAR(30)  NULL,
+  endereco      VARCHAR(200) NULL,
   cidade        VARCHAR(100) NULL,
   uf            CHAR(2)      NULL,
+  email_contato VARCHAR(190) NULL,
+  site          VARCHAR(120) NULL,
   cadastrada_por INT UNSIGNED NULL,               -- quem fez o cadastro (vira administrador)
   logo          VARCHAR(255) NULL,
   logo_cor      VARCHAR(7)   NULL,               -- cor principal da logo (linha do cabeçalho dos PDFs)
@@ -26,6 +29,8 @@ CREATE TABLE empresas (
   situacao      ENUM('teste','ativo','suspenso') NOT NULL DEFAULT 'teste',
   fuso          VARCHAR(40)  NOT NULL DEFAULT 'America/Sao_Paulo',
   dias_uteis    VARCHAR(20)  NOT NULL DEFAULT '1,2,3,4,5',
+  regras        TEXT NULL,                       -- regras do campo (JSON): foto, comentário, Travou, RDO
+  calendario_id INT UNSIGNED NULL,               -- calendário padrão: obras sem calendário próprio usam este
   criado_em     DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   atualizado_em DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   excluido_em   DATETIME NULL,
@@ -36,7 +41,8 @@ CREATE TABLE usuarios (
   id             INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   empresa_id     INT UNSIGNED NOT NULL,
   nome           VARCHAR(160) NOT NULL,
-  email          VARCHAR(190) NOT NULL,
+  email          VARCHAR(190) NULL,
+  telefone       VARCHAR(15)  NULL,               -- só números com DDD: quem entra pelo celular (convite pelo WhatsApp)
   senha_hash     VARCHAR(255) NULL,
   perfil         ENUM('administrador','gestor','encarregado','funcionario') NOT NULL,
   funcionario_id INT UNSIGNED NULL,
@@ -49,10 +55,12 @@ CREATE TABLE usuarios (
   bloqueado_ate  DATETIME NULL,
   ultimo_acesso  DATETIME NULL,
   avisos_email   TINYINT(1) NOT NULL DEFAULT 1,
+  desativado_em  DATETIME NULL,                   -- saiu da empresa: sem acesso, nome mantido nos registros
   criado_em      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   atualizado_em  DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   excluido_em    DATETIME NULL,
   UNIQUE KEY uq_usuarios_email (email),
+  UNIQUE KEY uq_usuarios_tel (telefone),
   UNIQUE KEY uq_usuarios_microsoft (microsoft_id),
   UNIQUE KEY uq_usuarios_acao (acao_token_hash),
   KEY ix_usuarios_empresa (empresa_id),
@@ -64,7 +72,9 @@ CREATE TABLE convites (
   id             INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   empresa_id     INT UNSIGNED NOT NULL,
   nome           VARCHAR(160) NOT NULL,
-  email          VARCHAR(190) NOT NULL,
+  email          VARCHAR(190) NULL,
+  telefone       VARCHAR(15)  NULL,
+  canal          ENUM('email','whatsapp') NOT NULL DEFAULT 'email',
   perfil         ENUM('administrador','gestor','encarregado','funcionario') NOT NULL,
   funcionario_id INT UNSIGNED NULL,               -- ficha criada no cadastro da empresa
   token_hash     CHAR(64) NOT NULL,

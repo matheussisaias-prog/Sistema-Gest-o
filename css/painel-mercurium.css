@@ -174,3 +174,4 @@ button { cursor: pointer; }
   .tabela td.td-acao .bt { width: 100%; }
   .tabela .num { text-align: right; }
 }
+.em-plano { display: block; margin-top: 6px; height: 30px; border: 1px solid #cbd5e1; border-radius: 8px; padding: 0 6px; font: 12.5px inherit; background: #fff; color: #0f172a; }
