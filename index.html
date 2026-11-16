@@ -11,9 +11,9 @@
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@600;700&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
-<link rel="stylesheet" href="css/base.css?v=2026.11.16.1"/>
-<link rel="stylesheet" href="css/obras.css?v=2026.11.16.1"/>
-<link rel="stylesheet" href="css/obra.css?v=2026.11.16.1"/>
+<link rel="stylesheet" href="css/base.css?v=2026.11.16.3"/>
+<link rel="stylesheet" href="css/obras.css?v=2026.11.16.3"/>
+<link rel="stylesheet" href="css/obra.css?v=2026.11.16.3"/>
 </head>
 <body>
 
@@ -70,7 +70,7 @@
 
   <div class="sidebar-section">
     <div class="sidebar-section-label">Analytics</div>
-    <a class="nav-item" onclick="switchView('equipe', this)" data-tooltip="Equipe">
+    <a class="nav-item" onclick="switchView('pessoas', this)" data-tooltip="Equipe" id="nav-pessoas">
       <span class="nav-icon"><i class="fa-solid fa-users"></i></span>
       <span>Equipe</span>
     </a>
@@ -345,6 +345,7 @@
     <!-- ══════════════════ PROJETOS ══════════════════ -->
     <!-- ══════════════════ OBRAS (tela nova) ══════════════════ -->
     <div class="view" id="view-minhas"></div>
+    <div class="view" id="view-pessoas"></div>
     <div class="view" id="view-obras"></div>
     <div class="view" id="view-obra"></div>
 
@@ -1136,25 +1137,25 @@
 <!-- TOAST -->
 <div class="toast-wrap" id="toast-wrap"></div>
 
-<script src="js/sincronizacao.js?v=2026.11.16.1"></script>
-<script src="js/dados.js?v=2026.11.16.1"></script>
-<script src="js/inicio.js?v=2026.11.16.1"></script>
-<script src="js/utilitarios.js?v=2026.11.16.1"></script>
-<script src="js/painel.js?v=2026.11.16.1"></script>
-<script src="js/atividades.js?v=2026.11.16.1"></script>
-<script src="js/projetos-equipe.js?v=2026.11.16.1"></script>
-<script src="js/cadastros.js?v=2026.11.16.1"></script>
-<script src="js/interface.js?v=2026.11.16.1"></script>
-<script src="js/cronograma.js?v=2026.11.16.1"></script>
-<script src="js/calendarios.js?v=2026.11.16.1"></script>
-<script src="js/importar-pdf-ia.js?v=2026.11.16.1"></script>
-<script src="js/assistente-ia.js?v=2026.11.16.1"></script>
-<script src="js/importar-exportar.js?v=2026.11.16.1"></script>
-<script src="js/historico.js?v=2026.11.16.1"></script>
-<script src="js/dias-uteis.js?v=2026.11.16.1"></script>
+<script src="js/sincronizacao.js?v=2026.11.16.3"></script>
+<script src="js/dados.js?v=2026.11.16.3"></script>
+<script src="js/inicio.js?v=2026.11.16.3"></script>
+<script src="js/utilitarios.js?v=2026.11.16.3"></script>
+<script src="js/painel.js?v=2026.11.16.3"></script>
+<script src="js/atividades.js?v=2026.11.16.3"></script>
+<script src="js/projetos-equipe.js?v=2026.11.16.3"></script>
+<script src="js/cadastros.js?v=2026.11.16.3"></script>
+<script src="js/interface.js?v=2026.11.16.3"></script>
+<script src="js/cronograma.js?v=2026.11.16.3"></script>
+<script src="js/calendarios.js?v=2026.11.16.3"></script>
+<script src="js/importar-pdf-ia.js?v=2026.11.16.3"></script>
+<script src="js/assistente-ia.js?v=2026.11.16.3"></script>
+<script src="js/importar-exportar.js?v=2026.11.16.3"></script>
+<script src="js/historico.js?v=2026.11.16.3"></script>
+<script src="js/dias-uteis.js?v=2026.11.16.3"></script>
 
-<link rel="stylesheet" href="css/extensoes.css?v=2026.11.16.1"/>
-<script src="js/extensoes.js?v=2026.11.16.1"></script>
+<link rel="stylesheet" href="css/extensoes.css?v=2026.11.16.3"/>
+<script src="js/extensoes.js?v=2026.11.16.3"></script>
 
 
   <!-- MODAL: ANOTAÇÃO NA ATIVIDADE -->
@@ -1177,15 +1178,17 @@
   </div>
 
   <!-- Assistente Task Flow (balão do canto + Ctrl+K): busca e montar obra por perguntas -->
-  <link rel="stylesheet" href="css/assistente.css?v=2026.11.16.1"/>
-  <script src="js/assistente.js?v=2026.11.16.1"></script>
-<script src="js/obras.js?v=2026.11.16.1"></script>
-<script src="js/obra.js?v=2026.11.16.1"></script>
-<script src="js/obra-abas.js?v=2026.11.16.1"></script>
-<script src="js/obra-montar.js?v=2026.11.16.1"></script>
-<link rel="stylesheet" href="css/minhas.css?v=2026.11.16.1"/>
-<script src="js/minhas.js?v=2026.11.16.1"></script>
-<script src="js/servidor.js?v=2026.11.16.1"></script>
+  <link rel="stylesheet" href="css/assistente.css?v=2026.11.16.3"/>
+  <script src="js/assistente.js?v=2026.11.16.3"></script>
+<script src="js/obras.js?v=2026.11.16.3"></script>
+<script src="js/obra.js?v=2026.11.16.3"></script>
+<script src="js/obra-abas.js?v=2026.11.16.3"></script>
+<script src="js/obra-montar.js?v=2026.11.16.3"></script>
+<link rel="stylesheet" href="css/minhas.css?v=2026.11.16.3"/>
+<link rel="stylesheet" href="css/equipe.css?v=2026.11.16.3"/>
+<script src="js/equipe.js?v=2026.11.16.3"></script>
+<script src="js/minhas.js?v=2026.11.16.3"></script>
+<script src="js/servidor.js?v=2026.11.16.3"></script>
 <script>if ('serviceWorker' in navigator && (location.protocol === 'https:' || localStorage.getItem('tf-sw') === '1')) navigator.serviceWorker.register('sw.js').catch(() => {});</script>
 
 </body>

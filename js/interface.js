@@ -65,7 +65,8 @@ function toast(msg, type='info') {
   const el   = document.createElement('div');
   el.className = `toast toast-${type}`;
   const icons = { success:'fa-check', error:'fa-xmark', warning:'fa-triangle-exclamation', info:'fa-info' };
-  el.innerHTML = `<i class="fa-solid ${icons[type]||'fa-info'}"></i> ${msg}`;
+  const ic = document.createElement('i'); ic.className = `fa-solid ${icons[type]||'fa-info'}`;
+  el.append(ic, ' ' + String(msg).replace(/^\s*✓\s*/, ''));   // texto puro (nomes vindos do usuário) e sem "✓" repetido junto do ícone
   wrap.appendChild(el);
   setTimeout(() => { el.style.opacity='0'; el.style.transform='translateX(20px)'; setTimeout(()=>el.remove(),300); }, 3500);
 }

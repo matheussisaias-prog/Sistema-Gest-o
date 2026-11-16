@@ -328,7 +328,13 @@
       if (campo === 'descricao') { if (v && v !== a.descricao) campos = { descricao: v }; }
       else if (campo === 'inicio' || campo === 'fim') { if (v && v !== a[campo]) campos = { [campo]: v }; }
       else if (campo === 'duracao_dias') { const n = Number(v.replace(/[dD\s]/g, '').replace(',', '.')); if (v === '' || Number.isNaN(n) || n < 0) { avisar('Duração inválida. Use, por exemplo, 5d.', 'error'); desenhar(); return; } if (n !== Number(a.duracao_dias)) campos = { duracao_dias: n }; }
-      else if (campo === 'responsavel_id') { const n = v ? +v : null; if (n !== a.responsavel_id) campos = { responsavel_id: n }; }
+      else if (campo === 'responsavel_id') {
+        const n = v ? +v : null;
+        if (n !== a.responsavel_id) {
+          campos = { responsavel_id: n };
+          if (n && !a.etapa) { const ok = await checarResponsavel(a, n); if (!ok) { desenhar(); return; } campos = { responsavel_id: ok.id, ...(ok.pendencias ? { alocacao_pendencias: ok.pendencias } : {}) }; }
+        }
+      }
       else if (campo === 'pct') { const n = Math.max(0, Math.min(100, Math.round(Number(v)))); if (!Number.isNaN(n) && n !== a.avanco) campos = { avanco: n, situacao: n >= 100 ? 'Concluído' : n > 0 && a.situacao === 'Pendente' ? 'Em andamento' : a.situacao }; }
       if (campos) await salvarAtividade(a, campos);
       else desenhar();
@@ -408,6 +414,33 @@
   }
 
   /* ── painel da atividade ────────────────────── */
+  /* ── aviso ao escolher o responsável (documentos, ausência, carga) ── */
+  async function checarResponsavel(a, fid) {
+    let r; try { r = await api(`atividades/${a.id}/checar-responsavel?funcionario_id=${fid}`); } catch (_) { return { id: fid }; }
+    if (!r.pendencias.length) return { id: fid };
+    return new Promise(res => {
+      const fechar = v => { f.remove(); document.removeEventListener('keydown', esc); res(v); };
+      const esc = ev => { if (ev.key === 'Escape') fechar(null); };
+      const ICO = { grave: 'fa-circle-xmark', atencao: 'fa-triangle-exclamation', aviso: 'fa-chart-line' };
+      const f = h('div', { class: 'ob-fundo og-modal og-aloc', role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'og-aloc-t' },
+        h('div', { class: 'og-janela' },
+          h('small', { class: 'og-sub' }, `${a.eap || ''} · ${a.descricao} · ${dBR(a.inicio)} → ${dBR(a.fim)}`),
+          h('h3', { id: 'og-aloc-t' }, `${r.pessoa.nome} tem pendências para esta atividade`),
+          h('div', { class: 'og-aloc-lista' }, r.pendencias.map(p => h('div', { class: 'og-aloc-p ' + p.nivel }, ic(ICO[p.nivel] || 'fa-circle-info'), h('span', null, p.texto)))),
+          r.sugestoes.length ? h('div', { class: 'og-aloc-sug' }, h('b', null, 'Quem pode fazer, sem pendência'),
+            r.sugestoes.map(s2 => h('button', { class: 'og-aloc-pess', onclick: () => fechar({ id: s2.id }) },
+              h('span', { class: 'og-aloc-av' }, s2.nome.split(' ').map(x => x[0]).slice(0, 2).join('').toUpperCase()),
+              h('span', { class: 'og-aloc-n' }, h('b', null, s2.nome), h('small', null, s2.cargo || '')),
+              h('span', { class: 'og-aloc-c' }, `carga ${s2.carga}%`), h('span', { class: 'ob-chip-farol verd' }, s2.atencao ? 'Com atenção' : 'Em dia')))) : null,
+          h('div', { class: 'og-bts' }, h('button', { class: 'ob-bt', onclick: () => fechar(null) }, 'Escolher outra pessoa'),
+            h('button', { class: 'ob-bt og-bt-laranja', onclick: () => fechar({ id: fid, pendencias: r.pendencias.map(p => p.texto).join('; ') }) }, 'Alocar mesmo assim')),
+          h('small', { class: 'og-sub' }, 'Se alocar mesmo assim, fica registrado no histórico quem decidiu e as pendências.')));
+      f.addEventListener('mousedown', ev => { if (ev.target === f) fechar(null); });
+      document.addEventListener('keydown', esc); document.body.append(f);
+      f.querySelector('.og-bts .ob-bt').focus();
+    });
+  }
+
   async function painel(a, foco) {
     document.querySelectorAll('.og-painel-fundo').forEach(x => x.remove());
     const nova = !a, edita = podeTudo(), enc = eu().perfil === 'encarregado';
@@ -487,11 +520,27 @@
         if (x.acao === 'criou') return 'criou a atividade'; if (x.acao === 'excluiu') return 'excluiu';
         if ('travou' in d) return 'informou que travou: ' + d.travou + (d.descricao ? ' (' + d.descricao + ')' : '');
         if ('liberou' in d) return 'liberou a atividade';
+        if ('alocou_com_pendencias' in d) return 'alocou o responsável mesmo com pendências: ' + d.alocou_com_pendencias;
+        if ('documentos_exigidos' in d) return `mudou os documentos exigidos (${d.documentos_exigidos})`;
         return 'mudou ' + Object.keys(d).filter(k => k !== 'fotos').map(k => nomes[k] || k).join(', ') + ('avanco' in d ? ` para ${d.avanco}%` : '') + (d.fotos ? ` (com ${d.fotos} foto${d.fotos > 1 ? 's' : ''})` : ''); };
       (r.historico || []).slice(0, 8).forEach(x => hist.append(h('li', null, h('b', null, x.usuario || 'Sistema'), ' ', oque(x), ' · ', new Date(x.quando.replace(' ', 'T') + 'Z').toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' }))));
       if (!hist.children.length) hist.append(h('li', null, 'Sem alterações registradas.'));
     }).catch(() => {});
     const fotosBox = h('div', { class: 'og-fotos' });
+    const exigBox = h('div', { class: 'og-exig' });
+    if (a && !a.etapa) (async () => {
+      let atuais = [], cat = [];
+      try { atuais = (await api(`atividades/${a.id}/exigencias`)).tipos; if (edita) cat = (await api('tipos-documento')).tipos; } catch (_) {}
+      const salvarEx = async ids => { try { atuais = (await api(`atividades/${a.id}/exigencias`, 'PUT', { tipos: ids })).tipos; des(); } catch (e) { avisar(e.message, 'error'); } };
+      const des = () => {
+        exigBox.innerHTML = '';
+        atuais.forEach(t => exigBox.append(h('span', { class: 'og-exig-chip' }, t.nome, edita ? h('button', { 'aria-label': 'Tirar ' + t.nome, onclick: () => salvarEx(atuais.filter(x => x.id !== t.id).map(x => x.id)) }, '×') : null)));
+        if (!atuais.length) exigBox.append(h('small', { class: 'og-sub' }, edita ? 'Só os do cargo de cada pessoa. Inclua aqui o que esta atividade pede a mais (ex.: NR-33, NR-35).' : 'Só os do cargo de cada pessoa.'));
+        if (edita) exigBox.append(h('select', { class: 'og-exig-sel', 'aria-label': 'Exigir documento', onchange: e => { if (e.target.value) salvarEx([...atuais.map(x => x.id), +e.target.value]); } },
+          h('option', { value: '' }, '+ Exigir documento…'), cat.filter(t => !atuais.some(x => x.id === t.id)).map(t => h('option', { value: t.id }, `${t.nr && !t.nome.startsWith(t.nr) ? t.nr + ' · ' : ''}${t.nome}`))));
+      };
+      des();
+    })();
     if (a && a.fotos) api(`atividades/${a.id}/fotos`).then(r => (r.fotos || []).forEach(f => fotosBox.append(h('a', { href: `api/fotos/${f.id}`, target: '_blank', rel: 'noopener', title: `${f.por} · ${f.tirada_em}` },
       h('img', { src: `api/fotos/${f.id}?mini=1`, alt: `Foto de ${f.por}`, loading: 'lazy' }),
       h('small', null, `${(f.por || '').split(' ')[0]} · ${f.tirada_em.slice(8, 10)}/${f.tirada_em.slice(5, 7)}${f.tipo === 'travou' ? ' · travou' : f.para != null ? ` · ${f.para}%` : ''}`))))).catch(() => {});
@@ -511,6 +560,7 @@
         if ((fObs.value || '') !== (v.observacoes || '')) c.observacoes = fObs.value;
       }
       if (c.avanco === 100 && !('situacao' in c)) c.situacao = 'Concluído';
+      if (!nova && c.responsavel_id && !a.etapa) { const ok = await checarResponsavel(a, c.responsavel_id); if (!ok) return; c.responsavel_id = ok.id; if (ok.pendencias) c.alocacao_pendencias = ok.pendencias; }
       if (c.situacao === 'Reprogramado' && !c.observacoes) {
         const mot = h('textarea', { rows: 3, class: 'og-txt', placeholder: 'Por que foi reprogramada?' });
         const ok = await modal('Motivo da reprogramação', h('div', { class: 'og-corpo' }, mot), [['Cancelar', null], ['Confirmar', true, 'ob-bt-pri']]);
@@ -548,6 +598,7 @@
           h('div', null, h('b', null, 'Travou: '), a.travada.descricao, h('small', null, `${a.travada.por || ''} · ${new Date(a.travada.desde.replace(' ', 'T') + 'Z').toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' })}`)),
           (edita || enc) ? h('button', { class: 'ob-bt', onclick: async () => { try { await api(`ocorrencias/${a.travada.id}/liberar`, 'PATCH', {}); fechar(); await aposMudar(null, 'Atividade liberada.'); } catch (e) { avisar(e.message, 'error'); } } }, 'Liberar') : null) : null,
         a && a.fotos ? h('div', { class: 'og-sec' }, h('b', null, `Fotos de campo (${a.fotos})`), fotosBox) : null,
+        a && !a.etapa ? h('div', { class: 'og-sec' }, h('b', null, 'Documentos exigidos de quem fizer'), exigBox) : null,
         campo('Nome da atividade', fDesc),
         campo('Responsável', fResp),
         h('div', { class: 'ob-g3' }, campo('Início', fIni), campo('Fim', fFim), campo('Duração', fDur)),

@@ -168,8 +168,10 @@
     if (!l) return;
     if (l.tipo === 'montar') { S.aba = 'm'; if (!M.tipos) iniciarMontar(); else desenhar(); return; }
     if (l.tipo === 'contato') { fechar(); window.tfContato ? tfContato() : avisar('Use o link Fale conosco no rodapé.', 'info'); return; }
+    if (l.tipo === 'pessoa' && window.tfEquipe && ['administrador', 'gestor', 'encarregado'].includes(eu().perfil)) { if (celular()) fechar(); tfEquipe.abrirFicha(l.id, 'documentos'); return; }
     if (l.tipo === 'pessoa') { S.q = 'atividades de ' + l.texto; const i = jan.querySelector('.tfa-busca input'); if (i) i.value = S.q; buscar(); return; }
     if (l.tipo === 'view') {
+      if (l.view === 'equipe') l.view = 'pessoas';
       if (!document.getElementById('view-' + l.view)) { avisar('Esta tela está sendo refeita e chega nas próximas entregas.', 'info'); return; }
       if (celular()) fechar();
       window.switchView(l.view, document.querySelector(`[onclick*="'${l.view}'"]`)); return;

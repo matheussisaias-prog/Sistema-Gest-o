@@ -221,7 +221,8 @@ function rota_atividades_alterar(int $id): array {
     validar_ligacoes_atividade($u, $c + ['inicio' => $antes['inicio'], 'fim' => $antes['fim']]);
     if (!$c) throw new ErroApi('Nada para alterar');
     atualizar('atividades', $id, $c);
-    registrar($u, (int)$u['empresa_id'], 'atividades', $id, 'alterou', array_intersect_key($antes, $c), $c);
+    $pend = isset($d['alocacao_pendencias']) && array_key_exists('responsavel_id', $c) ? mb_substr(trim((string)$d['alocacao_pendencias']), 0, 500) : '';
+    registrar($u, (int)$u['empresa_id'], 'atividades', $id, 'alterou', array_intersect_key($antes, $c), $c + ($pend !== '' ? ['alocou_com_pendencias' => $pend] : []));
     $mov = ($datas || array_key_exists('pai_id', $c)) ? recalcular_obra((int)$antes['projeto_id'], (int)$u['empresa_id']) : [];
     $a = um('SELECT inicio, fim, duracao_dias FROM atividades WHERE id = ?', [$id]);
     return ['ok' => true, 'inicio' => $a['inicio'], 'fim' => $a['fim'], 'duracao_dias' => $a['duracao_dias'], 'movidas' => $mov];
