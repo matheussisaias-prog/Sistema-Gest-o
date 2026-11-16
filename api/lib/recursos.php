@@ -1,5 +1,5 @@
 <?php
-/* Mercronos · servidor · Recursos: equipamentos, veículos e ferramentas — reserva por atividade (as datas vêm da atividade),
+/* Aprumo · servidor · Recursos: equipamentos, veículos e ferramentas — reserva por atividade (as datas vêm da atividade),
    conflitos, locação (fornecedor, período, custo, devolução), calibração/manutenção/inspeção com vencimento e paradas. */
 declare(strict_types=1);
 

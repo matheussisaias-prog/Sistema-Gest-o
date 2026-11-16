@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════
-   Mercronos · inicio.js
+   Aprumo · inicio.js
    Inicialização da página, carregamento e gravação base, renderAll
    (separado do index.html na Fase 0 — a ordem de carregamento importa)
 ═══════════════════════════════════════════════════════════════ */

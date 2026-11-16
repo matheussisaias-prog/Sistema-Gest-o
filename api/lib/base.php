@@ -1,6 +1,6 @@
 <?php
 /* ═══════════════════════════════════════════════════════════════
-   Mercronos · servidor · base (configuração, banco, respostas, sessão)
+   Aprumo · servidor · base (configuração, banco, respostas, sessão)
    A configuração com a senha do banco fica FORA de qualquer site, na raiz da hospedagem:
      /home/<usuário>/tf-config-gestao.php   ("Todos os arquivos de hospedagem" no Gerenciador)
 ═══════════════════════════════════════════════════════════════ */
@@ -378,7 +378,7 @@ function enviar_email(string $para, array $m): bool {
     }
     $de = $c['email_remetente'] ?? 'nao-responda@localhost';
     $sep = 'tf-' . bin2hex(random_bytes(8));
-    $cab = "From: =?UTF-8?B?" . base64_encode('Mercronos') . "?= <$de>\r\n"
+    $cab = "From: =?UTF-8?B?" . base64_encode('Aprumo') . "?= <$de>\r\n"
          . (!empty($m['responder_para']) ? 'Reply-To: ' . $m['responder_para'] . "\r\n" : '')
          . "MIME-Version: 1.0\r\nContent-Type: multipart/alternative; boundary=\"$sep\"\r\n";
     $corpo = "--$sep\r\nContent-Type: text/plain; charset=UTF-8\r\nContent-Transfer-Encoding: base64\r\n\r\n" . chunk_split(base64_encode($m['texto']))

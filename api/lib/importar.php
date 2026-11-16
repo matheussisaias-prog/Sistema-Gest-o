@@ -1,5 +1,5 @@
 <?php
-/* Mercronos · servidor · tela "Importar cronograma": arquivo do MS Project (.xml), Excel (.xlsx) ou CSV → prévia (atividades,
+/* Aprumo · servidor · tela "Importar cronograma": arquivo do MS Project (.xml), Excel (.xlsx) ou CSV → prévia (atividades,
    etapas, ligações, responsáveis achados na Equipe) → obra nova ou obra que já existe (acrescenta ou substitui).
    A leitura dos arquivos é a mesma do "Montar cronograma" da obra (montar.php). */
 declare(strict_types=1);
@@ -111,6 +111,6 @@ function rota_importar_modelo(): array {
         ['1.2', 'Integração NR-10 e NR-35', 1, '', '', '1.1'], ['2', 'Infraestrutura', '', '', '', ''], ['2.1', 'Base dos transformadores', 10, '', '', '1.2'],
         ['2.2', 'Eletrodutos e caixas de passagem', 14, '', '', '2.1CC+5'], ['3', 'Entrega', '', '', '', ''], ['3.1', 'Testes e comissionamento', 5, '', '', '2.2']]]);
     header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'); header('Content-Length: ' . strlen($bin));
-    header('Content-Disposition: attachment; filename="modelo-cronograma-mercronos.xlsx"'); header('Cache-Control: private, no-store');
+    header('Content-Disposition: attachment; filename="modelo-cronograma-aprumo.xlsx"'); header('Cache-Control: private, no-store');
     echo $bin; exit;
 }

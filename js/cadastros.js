@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════
-   Mercronos · cadastros.js
+   Aprumo · cadastros.js
    Criar, concluir e excluir atividades e projetos; calculadora de prazo do projeto
    (separado do index.html na Fase 0 — a ordem de carregamento importa)
 ═══════════════════════════════════════════════════════════════ */

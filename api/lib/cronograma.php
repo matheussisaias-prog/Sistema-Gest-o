@@ -1,5 +1,5 @@
 <?php
-/* Mercronos · servidor · cronograma da obra: calendário de trabalho, dias úteis, dependências que empurram datas,
+/* Aprumo · servidor · cronograma da obra: calendário de trabalho, dias úteis, dependências que empurram datas,
    etapas calculadas, caminho crítico e linhas de base. */
 declare(strict_types=1);
 

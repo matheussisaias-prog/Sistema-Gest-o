@@ -1,5 +1,5 @@
 <?php
-/* Mercronos · servidor · instalador do banco (roda uma vez só, com o token do tf-config.php) */
+/* Aprumo · servidor · instalador do banco (roda uma vez só, com o token do tf-config.php) */
 declare(strict_types=1);
 
 function sql_em_comandos(string $sql): array {

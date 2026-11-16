@@ -1,4 +1,4 @@
-/* Mercronos · obra.css — tela "Obra aberta" (quadro aprovado em 15/11/2026) */
+/* Aprumo · obra.css — tela "Obra aberta" (quadro aprovado em 15/11/2026) */
 .og [hidden], .og-painel [hidden] { display: none !important; }
 .og { display: flex; flex-direction: column; gap: 16px; font-family: 'DM Sans', sans-serif; color: var(--text-1); }
 .og-link { background: none; border: 0; padding: 0; color: var(--blue); font: 600 .8125rem 'DM Sans', sans-serif; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }

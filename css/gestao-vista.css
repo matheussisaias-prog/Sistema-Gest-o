@@ -1,4 +1,4 @@
-/* Mercronos · gestao-vista.css — tela "Início" (gestão à vista) e modo TV */
+/* Aprumo · gestao-vista.css — tela "Início" (gestão à vista) e modo TV */
 .eq.gv { width: 100%; } .gv, .gv *, .gv-tv, .gv-tv * { box-sizing: border-box; }
 .gv-kpis { grid-template-columns: repeat(5, 1fr); } .gv-kpis .eq-kpi { cursor: default; }
 .eq-kpi.azul { border-top-color: #2563eb; } .eq-kpi.roxo { border-top-color: #7c3aed; } .eq-kpi.verm { border-top-color: #dc2626; }

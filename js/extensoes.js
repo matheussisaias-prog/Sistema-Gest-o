@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════
-   Mercronos · extensoes.js
+   Aprumo · extensoes.js
    Telas Projetos, Equipe, Gantt, Portfólio, Recursos, Kanban, Calendários e Relatório PDF; funcionários e pastas de projetos
    (separado do index.html na Fase 0 — a ordem de carregamento importa)
 ═══════════════════════════════════════════════════════════════ */

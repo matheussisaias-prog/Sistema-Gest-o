@@ -1,4 +1,4 @@
-/* Mercronos · gestao-vista.js — tela "Início" (gestão à vista) para administrador e gestor: números do dia, farol das
+/* Aprumo · gestao-vista.js — tela "Início" (gestão à vista) para administrador e gestor: números do dia, farol das
    obras, atrasos e Travou abertos, RDO e documentos, agenda da semana; e o modo TV (tela cheia, atualiza sozinho a cada
    2 min e troca de página a cada 20 s). Usa as peças eq-* da Equipe e as gv-*. */
 (() => {

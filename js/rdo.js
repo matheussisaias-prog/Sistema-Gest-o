@@ -1,4 +1,4 @@
-/* Mercronos · rdo.js — tela "RDO": calendário da obra (dias úteis, situação de cada dia), pendências de todas as obras,
+/* Aprumo · rdo.js — tela "RDO": calendário da obra (dias úteis, situação de cada dia), pendências de todas as obras,
    RDO do dia (o sistema monta; encarregado completa; gestor fecha), documento A4 com a logo, entrega e folha assinada.
    Usa as peças visuais da Equipe (eq-*) e as próprias (rd-*). */
 (() => {

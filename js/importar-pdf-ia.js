@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════
-   Mercronos · importar-pdf-ia.js
+   Aprumo · importar-pdf-ia.js
    Importação de cronograma em PDF lido pela IA
    (separado do index.html na Fase 0 — a ordem de carregamento importa)
 ═══════════════════════════════════════════════════════════════ */

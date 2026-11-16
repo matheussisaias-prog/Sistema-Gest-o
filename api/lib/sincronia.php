@@ -1,5 +1,5 @@
 <?php
-/* Mercronos · servidor · equipe (alterar), recursos, ausências e importação dos dados do navegador */
+/* Aprumo · servidor · equipe (alterar), recursos, ausências e importação dos dados do navegador */
 declare(strict_types=1);
 
 /* ── Equipe: alterar e desligar ──────────────────────────────── */

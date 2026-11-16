@@ -1,6 +1,6 @@
 <?php
 /* ═══════════════════════════════════════════════════════════════
-   Mercronos · servidor · porta de entrada de todas as chamadas /api/...
+   Aprumo · servidor · porta de entrada de todas as chamadas /api/...
 ═══════════════════════════════════════════════════════════════ */
 declare(strict_types=1);
 require __DIR__ . '/lib/base.php';
@@ -185,6 +185,6 @@ try {
 } catch (ErroApi $e) {
     responder(['erro' => $e->getMessage()], $e->status);
 } catch (Throwable $e) {
-    error_log('[Mercronos API] ' . $e->getMessage() . ' @ ' . $e->getFile() . ':' . $e->getLine());
+    error_log('[Aprumo API] ' . $e->getMessage() . ' @ ' . $e->getFile() . ':' . $e->getLine());
     responder(['erro' => 'Erro interno no servidor. Tente de novo; se continuar, avise o suporte.'], 500);
 }

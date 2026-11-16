@@ -1,5 +1,5 @@
 -- ═══════════════════════════════════════════════════════════════
--- Mercronos · Fase 1 · Banco de dados (MySQL 8 / MariaDB 10.6+)
+-- Aprumo · Fase 1 · Banco de dados (MySQL 8 / MariaDB 10.6+)
 -- 25 tabelas em 5 blocos: Acesso, Planejamento, Equipe, Campo,
 -- Comunicação e histórico.
 -- Regras:
@@ -162,7 +162,7 @@ CREATE TABLE calendario_dias (
   CONSTRAINT fk_caldias_cal FOREIGN KEY (calendario_id) REFERENCES calendarios(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Modelos de cronograma da empresa (os do Mercronos ficam no código)
+-- Modelos de cronograma da empresa (os do Aprumo ficam no código)
 CREATE TABLE modelos_cronograma (
   id            INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   empresa_id    INT UNSIGNED NOT NULL,

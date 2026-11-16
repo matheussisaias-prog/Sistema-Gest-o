@@ -1,5 +1,5 @@
 <?php
-/* Mercronos · servidor · RDO (diário de obra): o sistema monta o rascunho com o que o campo registrou (avanços com foto,
+/* Aprumo · servidor · RDO (diário de obra): o sistema monta o rascunho com o que o campo registrou (avanços com foto,
    Travou, recursos), o encarregado completa (clima, presentes, terceiros, observações), o gestor fecha (conteúdo congelado
    e documento A4 com a logo), entrega e anexa a foto da folha assinada. Um RDO por obra por dia; cobra os dias úteis. */
 declare(strict_types=1);
@@ -334,7 +334,7 @@ td.n{white-space:nowrap}.k td:first-child{width:38mm;background:#f8fafc;font-wei
 <h2>Observações</h2><div class="caixa">' . rdo_e($r['resumo'] ?: '—') . '</div>
 ' . ($fh ? '<h2>Fotos (' . count($fotos) . ')</h2><div class="fotos">' . $fh . '</div>' : '') . '
 <div class="ass"><div>' . rdo_e($E['nome']) . ($enc ? ' · ' . rdo_e($enc) : '') . '</div><div>Cliente · nome, data e assinatura</div></div>
-<div class="rod">' . ($rasc ? 'Rascunho gerado em ' . rdo_br(rdo_hoje()) : 'Fechado em ' . rdo_e(rdo_br(substr((string)$D['fechado_em'], 0, 10)) . ' ' . substr((string)$D['fechado_em'], 11, 5)) . ' por ' . rdo_e($D['fechado_por']) . ' · código de conferência ' . rdo_e($r['codigo'])) . ' · Mercronos</div>
+<div class="rod">' . ($rasc ? 'Rascunho gerado em ' . rdo_br(rdo_hoje()) : 'Fechado em ' . rdo_e(rdo_br(substr((string)$D['fechado_em'], 0, 10)) . ' ' . substr((string)$D['fechado_em'], 11, 5)) . ' por ' . rdo_e($D['fechado_por']) . ' · código de conferência ' . rdo_e($r['codigo'])) . ' · Aprumo</div>
 </div>' . (!empty($_GET['imprimir']) ? '<script>window.addEventListener("load",()=>setTimeout(()=>window.print(),400))</script>' : '') . '</body></html>';
     header('Content-Type: text/html; charset=utf-8'); header('Cache-Control: private, no-store'); header('X-Content-Type-Options: nosniff');
     header("Content-Security-Policy: default-src 'none'; img-src 'self' data:; style-src 'unsafe-inline'; script-src 'unsafe-inline'; base-uri 'none'; form-action 'none'");

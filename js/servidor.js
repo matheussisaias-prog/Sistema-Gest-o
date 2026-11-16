@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════
-   Mercronos · servidor.js
+   Aprumo · servidor.js
    Liga as telas ao servidor: exige login, carrega obras/atividades/equipe/ausências/recursos
    e grava cada mudança (as telas continuam usando load()/save() como antes).
    Carregado por último: substitui window.load / window.save definidos em extensoes.js.
@@ -259,7 +259,7 @@
       try {
         const copia = {}; CHAVES_LOCAIS.forEach(k => { copia[k] = ler(k); });
         const url = URL.createObjectURL(new Blob([JSON.stringify(copia, null, 1)], { type: 'application/json' }));
-        const lk = document.createElement('a'); lk.href = url; lk.download = 'mercronos-copia-do-navegador.json'; document.body.appendChild(lk); lk.click(); lk.remove();
+        const lk = document.createElement('a'); lk.href = url; lk.download = 'aprumo-copia-do-navegador.json'; document.body.appendChild(lk); lk.click(); lk.remove();
         const r = await api('importar', 'POST', dados);
         localStorage.setItem('tf_importado', new Date().toISOString());
         fundo.remove();
@@ -270,7 +270,7 @@
   }
 
   /* ── Cabeçalho: quem está logado, situação da gravação, sair ── */
-  /* logo da empresa na barra lateral (as cores do sistema continuam as do Mercronos) */
+  /* logo da empresa na barra lateral (as cores do sistema continuam as do Aprumo) */
   function logoEmpresa(tem) {
     document.querySelector('.sidebar-empresa')?.remove();
     if (!tem) return;
@@ -334,11 +334,11 @@
       bt.innerHTML = '<i class="fa-solid fa-gauge-high"></i><span>Painel Mercurium</span><b class="tf-badge" id="tf-badge" hidden></b>';
       bt.onclick = () => { window.location.href = 'painel.html'; }; contarCaixa();
     } else box.querySelector('#tf-contato').remove();
-    // rodapé discreto: o Fale conosco fica só aqui (o balão do canto é o Assistente Mercronos)
+    // rodapé discreto: o Fale conosco fica só aqui (o balão do canto é o Assistente Aprumo)
     const mw = document.querySelector('.main-wrap');
     if (mw && !document.getElementById('tf-rodape')) {
       const pe = document.createElement('footer'); pe.id = 'tf-rodape'; pe.className = 'tf-rodape';
-      pe.innerHTML = '<span>Mercronos · Mercurium</span>';
+      pe.innerHTML = '<span>Aprumo · Mercurium</span>';
       if (!+E.usuario.dono_plataforma) {
         const a = document.createElement('a'); a.href = '#'; a.id = 'tf-rodape-contato'; a.textContent = 'Fale conosco';
         a.onclick = ev => { ev.preventDefault(); abrirContato(); };

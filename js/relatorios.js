@@ -1,4 +1,4 @@
-/* Mercronos · relatorios.js — tela "Relatórios": os 4 tipos (obra para o cliente, gerencial, Equipe e SST, Recursos e locação),
+/* Aprumo · relatorios.js — tela "Relatórios": os 4 tipos (obra para o cliente, gerencial, Equipe e SST, Recursos e locação),
    formulário com período, seções e resumo do gestor, prévia ao lado (o mesmo A4 que sai impresso), emissão numerada com
    conteúdo congelado, lista dos emitidos (Abrir / Excel). Usa as peças visuais da Equipe (eq-*) e as próprias (rl-*). */
 (() => {

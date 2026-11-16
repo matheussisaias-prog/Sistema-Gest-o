@@ -1,4 +1,4 @@
-/* Mercronos · obras.css — tela Obras (quadro aprovado em 15/11/2026) */
+/* Aprumo · obras.css — tela Obras (quadro aprovado em 15/11/2026) */
 .ob { display: flex; flex-direction: column; gap: 18px; font-family: 'DM Sans', var(--font-body, system-ui), sans-serif; color: var(--text-1); }
 .ob-cab { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 14px; }
 .ob-titulo { margin: 0; font-family: Outfit, var(--font-head, sans-serif); font-size: 1.75rem; font-weight: 700; }

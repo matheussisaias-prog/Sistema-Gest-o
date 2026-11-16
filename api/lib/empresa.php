@@ -1,5 +1,5 @@
 <?php
-/* Mercronos · servidor · tela "Empresa e usuários": usuários (perfil, desativar/reativar, link de nova senha), convites por
+/* Aprumo · servidor · tela "Empresa e usuários": usuários (perfil, desativar/reativar, link de nova senha), convites por
    e-mail ou link para WhatsApp, dados da empresa, calendário padrão, regras do campo e plano (uso e limites).
    Só o administrador altera; o gestor vê. */
 declare(strict_types=1);
@@ -138,7 +138,7 @@ function rota_usuario_link_senha(int $id): array {
     q('UPDATE usuarios SET acao_token_hash = ?, acao_tipo = "redefinir_senha", acao_expira = DATE_ADD(UTC_TIMESTAMP(), INTERVAL 24 HOUR) WHERE id = ?', [hash_token($tok), $id]);
     registrar($u, (int)$u['empresa_id'], 'usuarios', $id, 'alterou', null, ['link_senha' => 'gerado', 'nome' => $x['nome']]);
     $link = link_app("/entrar.html?redefinir=$tok"); $p = explode(' ', trim($x['nome']))[0];
-    $msg = "Olá, $p! Para criar uma nova senha do Mercronos da {$u['empresa_nome']}, toque no link (vale por 24 horas): $link";
+    $msg = "Olá, $p! Para criar uma nova senha do Aprumo da {$u['empresa_nome']}, toque no link (vale por 24 horas): $link";
     return ['ok' => true, 'link' => $link, 'mensagem' => $msg, 'whatsapp' => wa_link($x['telefone'], $msg)];
 }
 function wa_link(?string $tel, string $msg): string { return 'https://wa.me/' . ($tel ? '55' . $tel : '') . '?text=' . rawurlencode($msg); }
@@ -146,7 +146,7 @@ function wa_link(?string $tel, string $msg): string { return 'https://wa.me/' . 
 /* ══ Convites ════════════════════════════════════════════════════ */
 function convite_mensagem(string $nome, string $empresa, string $quem, string $perfil, string $link, ?string $loginTel): string {
     $p = explode(' ', trim($nome))[0];
-    return "Olá, $p! $quem convidou você para o Mercronos da $empresa, como " . mb_strtolower(TF_PERFIL_NOME[$perfil]) . '. Toque no link para criar sua senha (vale por ' . TF_CONVITE_DIAS . ' dias): ' . $link
+    return "Olá, $p! $quem convidou você para o Aprumo da $empresa, como " . mb_strtolower(TF_PERFIL_NOME[$perfil]) . '. Toque no link para criar sua senha (vale por ' . TF_CONVITE_DIAS . ' dias): ' . $link
         . ($loginTel ? ' Depois, para entrar, use o número ' . tel_fmt($loginTel) . ' e a senha que você criar.' : '');
 }
 /** Envia (e-mail) ou devolve o link pronto para o WhatsApp. */

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Mercronos — Calendário de Equipe</title>
+<title>Aprumo — Calendário de Equipe</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%23059669'/><text x='50%' y='54%' font-size='16' text-anchor='middle' dominant-baseline='middle' fill='white'>👥</text></svg>"/>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -684,7 +684,7 @@ input[type=color] { padding:3px 6px; height:36px; cursor:pointer; }
   <div class="sidebar-logo">
     <div class="logo-icon">⬡</div>
     <div>
-      <div class="logo-text">Mercronos</div>
+      <div class="logo-text">Aprumo</div>
       <div class="logo-sub">Equipe</div>
     </div>
   </div>
@@ -1225,7 +1225,7 @@ function showPanel(name) {
     rotinas:'🔄 Rotinas & Eventos',
     importar:'⇪ Importar Excel',
   };
-  document.getElementById('page-title').textContent = titles[name]||'Mercronos Equipe';
+  document.getElementById('page-title').textContent = titles[name]||'Aprumo Equipe';
   if (name==='calendario') renderCal();
   if (name==='funcionarios') renderEmployees();
   if (name==='rotinas') renderRotinas();
@@ -2059,7 +2059,7 @@ function downloadModelo() {
 
   // Instruções
   const wsInst = XLSX.utils.aoa_to_sheet([
-    ['MERCRONOS — INSTRUÇÕES DE IMPORTAÇÃO'],
+    ['APRUMO — INSTRUÇÕES DE IMPORTAÇÃO'],
     [''],
     ['COMO USAR'],
     ['1. Preencha a aba "Funcionários" com um membro por linha'],
@@ -2078,7 +2078,7 @@ function downloadModelo() {
   ]);
   XLSX.utils.book_append_sheet(wb, wsInst, '📋 Instruções');
 
-  XLSX.writeFile(wb, 'modelo_mercronos_equipe.xlsx');
+  XLSX.writeFile(wb, 'modelo_aprumo_equipe.xlsx');
   showToast('✓ Modelo Excel baixado!','ok');
 }
 
@@ -2119,7 +2119,7 @@ function exportarExcel() {
   XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(rotRows), 'Rotinas');
 
   const date = new Date().toLocaleDateString('pt-BR').replace(/\//g,'-');
-  XLSX.writeFile(wb, `mercronos_equipe_${date}.xlsx`);
+  XLSX.writeFile(wb, `aprumo_equipe_${date}.xlsx`);
   showToast('✓ Exportado com sucesso!','ok');
 }
 

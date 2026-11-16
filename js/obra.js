@@ -1,4 +1,4 @@
-/* Mercronos · obra.js — tela "Obra aberta": cabeçalho, abas e cronograma (tabela + Gantt), painel da atividade e celular */
+/* Aprumo · obra.js — tela "Obra aberta": cabeçalho, abas e cronograma (tabela + Gantt), painel da atividade e celular */
 (() => {
   'use strict';
   const PODE_TUDO = ['administrador', 'gestor'];

@@ -1,7 +1,7 @@
-# Mercronos — Sistema de Gestão
+# Aprumo — Sistema de Gestão
 
 Sistema de planejamento e gestão de obras e serviços de engenharia.
-Publicado em https://gestao.mercurium.com.br (a Hostinger implanta sozinha a cada push no `main`).
+Publicado em https://aprumo.mercurium.com.br (a Hostinger implanta sozinha a cada push no `main`).
 
 ## Estrutura
 

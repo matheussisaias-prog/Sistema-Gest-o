@@ -1,4 +1,4 @@
-/* Mercronos · assistente.js — Assistente Mercronos (balão flutuante e Ctrl+K), sem IA externa:
+/* Aprumo · assistente.js — Assistente Aprumo (balão flutuante e Ctrl+K), sem IA externa:
    Buscar (dados do sistema + dúvidas de uso) e Montar obra por perguntas (com prévia do Gantt). */
 (() => {
   'use strict';
@@ -107,8 +107,8 @@
   let bt, jan;
   function criar() {
     if (bt) return;
-    bt = h('button', { id: 'tfa-bt', class: 'tfa-bt', 'aria-label': 'Abrir o Assistente Mercronos', 'aria-expanded': 'false', title: 'Assistente Mercronos (Ctrl+K)', onclick: () => S.aberto ? fechar() : abrir() }, ic('fa-magnifying-glass'));
-    jan = h('div', { id: 'tfa-jan', class: 'tfa-jan', role: 'dialog', 'aria-label': 'Assistente Mercronos', hidden: true });
+    bt = h('button', { id: 'tfa-bt', class: 'tfa-bt', 'aria-label': 'Abrir o Assistente Aprumo', 'aria-expanded': 'false', title: 'Assistente Aprumo (Ctrl+K)', onclick: () => S.aberto ? fechar() : abrir() }, ic('fa-magnifying-glass'));
+    jan = h('div', { id: 'tfa-jan', class: 'tfa-jan', role: 'dialog', 'aria-label': 'Assistente Aprumo', hidden: true });
     document.body.append(jan, bt);
     document.addEventListener('keydown', ev => {
       if ((ev.ctrlKey || ev.metaKey) && !ev.altKey && sem(ev.key) === 'k') { ev.preventDefault(); abrir('b'); }
@@ -127,7 +127,7 @@
     if (S.aba === 'm' && !M.tipos && !semIniciar) iniciarMontar();
   }
   function fechar() {
-    S.aberto = false; jan.hidden = true; bt.setAttribute('aria-expanded', 'false'); bt.setAttribute('aria-label', 'Abrir o Assistente Mercronos'); bt.innerHTML = ''; bt.append(ic('fa-magnifying-glass'));
+    S.aberto = false; jan.hidden = true; bt.setAttribute('aria-expanded', 'false'); bt.setAttribute('aria-label', 'Abrir o Assistente Aprumo'); bt.innerHTML = ''; bt.append(ic('fa-magnifying-glass'));
     document.body.classList.remove('tfa-aberto');
     const f = document.querySelector('.tfa-folha'); if (f) f.remove();
     bt.focus();
@@ -138,7 +138,7 @@
     jan.innerHTML = '';
     const cab = h('div', { class: 'tfa-cab' },
       h('span', { class: 'tfa-logo' }, ic('fa-magnifying-glass')),
-      h('div', { class: 'tfa-cab-t' }, h('h2', null, 'Assistente Mercronos'),
+      h('div', { class: 'tfa-cab-t' }, h('h2', null, 'Assistente Aprumo'),
         h('p', null, S.aba === 'b' ? 'Busca nas obras, pessoas, recursos, RDOs e na ajuda' : M.passos ? `Montar obra por perguntas · ${M.i < contaPerguntas() ? `pergunta ${M.i + 1} de ${contaPerguntas()}` : 'pronto para criar'}` : 'Montar obra por perguntas')),
       h('button', { class: 'tfa-x', 'aria-label': 'Fechar o assistente', onclick: fechar }, ic('fa-xmark')));
     const abas = podeTudo() ? h('div', { class: 'tfa-abas', role: 'tablist', 'aria-label': 'Assistente' },

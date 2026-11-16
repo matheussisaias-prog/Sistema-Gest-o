@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════
-   Mercronos · sincronizacao.js
+   Aprumo · sincronizacao.js
    Sincronização opcional com GitHub Gist e proteção dos dados do navegador entre versões
    (separado do index.html na Fase 0 — a ordem de carregamento importa)
 ═══════════════════════════════════════════════════════════════ */

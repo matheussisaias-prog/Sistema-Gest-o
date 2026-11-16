@@ -1,5 +1,5 @@
 <?php
-/* Mercronos · servidor · tela "Início" (gestão à vista): farol das obras, atrasos e Travou abertos, RDO e documentos,
+/* Aprumo · servidor · tela "Início" (gestão à vista): farol das obras, atrasos e Travou abertos, RDO e documentos,
    agenda da semana. Também alimenta o modo TV. Administrador e gestor; liberado em todos os planos. */
 declare(strict_types=1);
 

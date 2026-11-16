@@ -1,4 +1,4 @@
-/* Mercronos · entrar.js — login, cadastro da empresa, convite, senha e confirmação de e-mail */
+/* Aprumo · entrar.js — login, cadastro da empresa, convite, senha e confirmação de e-mail */
 (function () {
   'use strict';
   const $ = (s, r = document) => r.querySelector(s);
@@ -230,7 +230,7 @@
       ir('senha');
       if (modoSenha === 'convite') api('convites/info?token=' + encodeURIComponent(tokenSenha)).then(c => {
         $('#senha-titulo').textContent = `Olá, ${c.nome.split(' ')[0]}! Crie sua senha`;
-        $('#senha-sub').textContent = `Você foi convidado para o Mercronos da ${c.empresa}, como ${c.perfil.toLowerCase()}. Depois, para entrar, use ${c.por_telefone ? 'o celular ' : ''}${c.entrar_com} e esta senha.`;
+        $('#senha-sub').textContent = `Você foi convidado para o Aprumo da ${c.empresa}, como ${c.perfil.toLowerCase()}. Depois, para entrar, use ${c.por_telefone ? 'o celular ' : ''}${c.entrar_com} e esta senha.`;
       }).catch(err => avisar(err.message));
       return;
     }

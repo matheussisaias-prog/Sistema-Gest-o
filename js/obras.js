@@ -1,4 +1,4 @@
-/* Mercronos · obras.js — tela Obras (cartões, lista, filtros e formulário), ligada a /api/obras/resumo */
+/* Aprumo · obras.js — tela Obras (cartões, lista, filtros e formulário), ligada a /api/obras/resumo */
 (() => {
   'use strict';
   const PODE_TUDO = ['administrador', 'gestor'];

@@ -1,5 +1,5 @@
 <?php
-/* Mercronos · servidor · tela Obras: resumo de cada obra (avanço real × previsto, farol, atrasos, equipe, NR) */
+/* Aprumo · servidor · tela Obras: resumo de cada obra (avanço real × previsto, farol, atrasos, equipe, NR) */
 declare(strict_types=1);
 
 /** Fração do período já decorrida em $hoje (0 a 1), contando dias corridos com início e fim inclusos. */
