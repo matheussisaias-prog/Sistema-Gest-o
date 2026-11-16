@@ -270,8 +270,19 @@
   }
 
   /* ── Cabeçalho: quem está logado, situação da gravação, sair ── */
+  /* logo da empresa na barra lateral (as cores do sistema continuam as do Task Flow) */
+  function logoEmpresa(tem) {
+    document.querySelector('.sidebar-empresa')?.remove();
+    if (!tem) return;
+    const box = document.createElement('div'); box.className = 'sidebar-empresa'; box.title = E.usuario.empresa || '';
+    const img = document.createElement('img'); img.alt = E.usuario.empresa || 'Logo da empresa'; img.src = 'api/empresa/logo?v=' + Date.now();
+    img.onerror = () => box.remove(); box.append(img);
+    document.querySelector('.sidebar-logo')?.after(box);
+  }
+  window.tfLogoEmpresa = logoEmpresa;
   function montarCabecalho() {
-    if (E.usuario.perfil === 'funcionario') { document.getElementById('nav-obras')?.remove(); document.getElementById('nav-recursos')?.remove(); }   // funcionário usa "Minhas atividades"
+    logoEmpresa(!!E.usuario.empresa_logo);
+    if (E.usuario.perfil === 'funcionario') { document.getElementById('nav-obras')?.remove(); document.getElementById('nav-recursos')?.remove(); document.getElementById('nav-rdo')?.remove(); }   // funcionário usa "Minhas atividades"
     const st = document.createElement('style');
     st.textContent = `.tf-user{display:flex;align-items:center;gap:10px;margin-left:6px;padding-left:12px;border-left:1px solid var(--border)}
       .tf-user-txt{display:flex;flex-direction:column;line-height:1.15;max-width:170px}.tf-user-txt b{font-size:.8rem;color:var(--text-1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}

@@ -88,6 +88,20 @@
     finally { ocupado(b, false); }
   });
 
+  /* ── Logo da empresa (opcional): reduz no aparelho e mantém a transparência do PNG ── */
+  let logoDados = null;
+  $('#c-logo').addEventListener('change', e => {
+    const a = e.target.files[0]; if (!a) return;
+    if (!/^image\/(png|jpeg|webp)$/.test(a.type)) { e.target.value = ''; return marcarErro($('#c-logo'), 'Envie a logo em PNG ou JPG.'); }
+    const url = URL.createObjectURL(a), img = new Image();
+    img.onload = () => { const k = Math.min(1, 1200 / img.naturalWidth, 400 / img.naturalHeight); const c = document.createElement('canvas');
+      c.width = Math.round(img.naturalWidth * k); c.height = Math.round(img.naturalHeight * k); c.getContext('2d').drawImage(img, 0, 0, c.width, c.height); URL.revokeObjectURL(url);
+      logoDados = c.toDataURL('image/png'); $('#c-logo-img').src = logoDados; $('#c-logo-img').hidden = false; $('#c-logo-txt').hidden = true; $('#c-logo-tirar').hidden = false; };
+    img.onerror = () => { URL.revokeObjectURL(url); marcarErro($('#c-logo'), 'Não consegui abrir a imagem.'); };
+    img.src = url;
+  });
+  $('#c-logo-tirar').addEventListener('click', () => { logoDados = null; $('#c-logo').value = ''; $('#c-logo-img').hidden = true; $('#c-logo-txt').hidden = false; $('#c-logo-tirar').hidden = true; });
+
   /* ── Cadastro: empresa ───────────────────────── */
   $('#f-empresa').addEventListener('submit', e => {
     e.preventDefault(); const f = e.target; limparErros(f);
@@ -95,7 +109,7 @@
     if (!nome.value.trim()) return marcarErro(nome, 'Informe o nome da empresa.');
     if (cnpj.value && cnpj.value.replace(/\D/g, '').length !== 14) return marcarErro(cnpj, 'O CNPJ precisa ter 14 números.');
     cadastro.empresa = { nome: nome.value.trim(), razao_social: $('#c-razao').value.trim(), cnpj: cnpj.value,
-      telefone: $('#c-tel').value, cidade: $('#c-cidade').value.trim(), uf: $('#c-uf').value };
+      telefone: $('#c-tel').value, cidade: $('#c-cidade').value.trim(), uf: $('#c-uf').value, ...(logoDados ? { logo: { dados: logoDados } } : {}) };
     ir('cadastro-2');
   });
 

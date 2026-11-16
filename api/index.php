@@ -18,6 +18,7 @@ require __DIR__ . '/lib/assistente.php';
 require __DIR__ . '/lib/minhas.php';
 require __DIR__ . '/lib/equipe.php';
 require __DIR__ . '/lib/recursos.php';
+require __DIR__ . '/lib/rdo.php';
 
 $metodo = $_SERVER['REQUEST_METHOD'] ?? 'GET';
 $caminho = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';
@@ -98,6 +99,22 @@ $rotas = [
     'GET recursos'              => 'rota_recursos_listar',
     'POST recursos'             => 'rota_recursos_criar',
     'DELETE recursos/#'         => 'rota_recursos_excluir',
+    'GET rdos'                  => 'rota_rdos',
+    'POST obras/#/rdos'         => 'rota_rdo_abrir',
+    'GET rdos/#'                => 'rota_rdo',
+    'PATCH rdos/#'              => 'rota_rdo_alterar',
+    'DELETE rdos/#'             => 'rota_rdo_excluir',
+    'POST rdos/#/enviar'        => 'rota_rdo_enviar',
+    'POST rdos/#/fechar'        => 'rota_rdo_fechar',
+    'POST rdos/#/reabrir'       => 'rota_rdo_reabrir',
+    'POST rdos/#/entregue'      => 'rota_rdo_entregue',
+    'POST rdos/#/assinado'      => 'rota_rdo_assinado',
+    'GET rdos/#/folha'          => 'rota_rdo_folha',
+    'GET rdos/#/documento'      => 'rota_rdo_documento',
+    'GET empresa/logo'          => 'rota_empresa_logo',
+    'POST empresa/logo'         => 'rota_empresa_logo',
+    'DELETE empresa/logo'       => 'rota_empresa_logo',
+    'GET empresa/cabecalho'     => 'rota_empresa_cabecalho',
     'GET recursos/#'            => 'rota_recurso_ficha',
     'PATCH recursos/#'          => 'rota_recursos_alterar',
     'GET recursos-mapa'         => 'rota_recursos_mapa',

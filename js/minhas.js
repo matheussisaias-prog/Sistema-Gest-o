@@ -137,6 +137,10 @@
     }
     if (d.obras.length > 1 || M.obra) ctr.append(h('select', { class: 'mi-sel', 'aria-label': 'Obra', onchange: e => { M.obra = e.target.value; M.d = null; carregar(); } },
       h('option', { value: '' }, 'Todas as obras'), d.obras.map(o => h('option', { value: o.id, selected: String(o.id) === String(M.obra) }, `${o.codigo ? o.codigo + ' · ' : ''}${o.nome}`))));
+    if (window.tfRdo && eu().perfil && eu().perfil !== 'funcionario' && d.obras.length) {        // encarregado e gestor: RDO do dia da obra
+      const alvo = d.obras.find(o => String(o.id) === String(M.obra)) || d.obras.find(o => (d.obras_encarregado || []).includes(o.codigo)) || d.obras[0];
+      ctr.append(h('button', { class: 'mi-rdo', onclick: () => tfRdo.hoje(alvo.id) }, h('i', { class: 'fa-solid fa-clipboard-list', 'aria-hidden': 'true' }), ` RDO de hoje · ${alvo.codigo || alvo.nome}`));
+    }
     if (ctr.childNodes.length) cab.append(ctr);
     box.append(cab);
     const r = d.resumo;

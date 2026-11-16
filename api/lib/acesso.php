@@ -48,6 +48,7 @@ function rota_cadastro(): array {
             $nome_emp, campo($emp, 'razao_social', false, 200), $cnpj, campo($emp, 'telefone', false, 30),
             campo($emp, 'cidade', false, 100), ($uf = campo($emp, 'uf', false, 2)) ? mb_strtoupper($uf) : null]);
         $eid = (int)$pdo->lastInsertId();
+        if (!empty($emp['logo']['dados'])) { [$lrel, $lcor] = logo_gravar($eid, (string)$emp['logo']['dados']); q('UPDATE empresas SET logo = ?, logo_cor = ? WHERE id = ?', [$lrel, $lcor, $eid]); }
 
         $tok = token();
         q('INSERT INTO usuarios (empresa_id, nome, email, senha_hash, perfil, acao_token_hash, acao_tipo, acao_expira)
@@ -132,8 +133,9 @@ function rota_entrar(): array {
 }
 
 function dados_eu(int $id): array {
-    $r = um('SELECT u.id, u.nome, u.email, u.perfil, u.funcionario_id, u.empresa_id, e.nome AS empresa
+    $r = um('SELECT u.id, u.nome, u.email, u.perfil, u.funcionario_id, u.empresa_id, e.nome AS empresa, (e.logo IS NOT NULL) AS empresa_logo
              FROM usuarios u JOIN empresas e ON e.id = u.empresa_id WHERE u.id = ?', [$id]);
+    $r['empresa_logo'] = (int)$r['empresa_logo'];
     $r['dono_plataforma'] = eh_dono_plataforma($r['email']) ? 1 : 0;
     return $r;
 }
