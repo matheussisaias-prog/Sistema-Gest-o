@@ -10,7 +10,7 @@
 <meta name="theme-color" content="#0b1220"/>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=DM+Sans:wght@400;500;600&family=Space+Grotesk:wght@700&family=Manrope:wght@500&display=swap" rel="stylesheet"/>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
-<link rel="stylesheet" href="css/entrar.css?v=2026.11.14.6"/>
+<link rel="stylesheet" href="css/entrar.css?v=2026.11.16.6"/>
 </head>
 <body>
 <div class="tela">
@@ -70,6 +70,11 @@
           <div class="duas d-cidade">
             <label class="campo"><span>Cidade</span><input id="c-cidade" placeholder="Recife"/></label>
             <label class="campo"><span>UF</span><select id="c-uf"></select></label>
+          </div>
+          <div class="logo-campo">
+            <label class="logo-area" for="c-logo"><img id="c-logo-img" alt="Logo da empresa" hidden/><span id="c-logo-txt"><i class="fa-solid fa-image"></i>Logo da empresa <small>(opcional)</small></span></label>
+            <input id="c-logo" type="file" accept="image/png,image/jpeg,image/webp"/>
+            <p class="logo-dica">Sai no cabeçalho do RDO e dos relatórios. PNG ou JPG, de preferência horizontal e com fundo transparente. <button type="button" id="c-logo-tirar" hidden>Tirar</button></p>
           </div>
           <button class="btn-principal" type="submit"><span>Continuar</span><i class="fa-solid fa-arrow-right"></i></button>
         </form>
@@ -182,6 +187,6 @@
   </div>
 </template>
 
-<script src="js/entrar.js?v=2026.11.14.6"></script>
+<script src="js/entrar.js?v=2026.11.16.6"></script>
 </body>
 </html>

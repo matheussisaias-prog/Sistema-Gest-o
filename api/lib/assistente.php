@@ -341,7 +341,7 @@ function ass_resp_rdos(array $c): array {
     if (!empty($int['assinatura'])) $sql .= " AND r.situacao IN ('Fechado','Entregue')";
     $L = todos($sql . ' ORDER BY r.data DESC LIMIT 50', $p);
     $itens = array_map(fn($r) => ['titulo' => 'RDO de ' . ass_data_br($r['data']) . '/' . substr($r['data'], 0, 4) . ' · ' . ($r['codigo'] ?: $r['nome']), 'info' => $r['nome'] . ($r['efetivo'] ? ' · efetivo ' . $r['efetivo'] : ''),
-        'selo' => $r['situacao'], 'selo_cor' => $r['situacao'] === 'Rascunho' ? 'amar' : ($r['situacao'] === 'Assinado' ? 'verd' : 'azul'), 'link' => ['tipo' => 'view', 'view' => 'rdo']], array_slice($L, 0, 8));
+        'selo' => $r['situacao'], 'selo_cor' => $r['situacao'] === 'Rascunho' ? 'amar' : ($r['situacao'] === 'Assinado' ? 'verd' : 'azul'), 'link' => ['tipo' => 'rdo', 'id' => (int)$r['id']]], array_slice($L, 0, 8));
     $tit = ass_plural(count($L), 'RDO', 'RDOs') . (!empty($int['rascunho']) ? ' em rascunho' : '') . (!empty($int['assinatura']) ? ' esperando assinatura' : '') . (!empty($int['hoje']) ? ' de hoje' : '') . (!empty($int['ontem']) ? ' de ontem' : '') . (!empty($int['semana']) ? ' dos últimos 7 dias' : '');
     return ['tipo' => 'rdos', 'titulo' => $tit, 'sub' => count($c['obraAchada']) === 1 ? array_values($c['obraAchada'])[0]['nome'] : '', 'itens' => $itens, 'total' => count($L), 'chave' => 'rdos',
             'nota' => $L ? null : 'A tela de RDO ainda está sendo refeita; os RDOs aparecem aqui assim que forem lançados.'];

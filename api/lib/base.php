@@ -205,6 +205,24 @@ const TF_MIGRACOES = [
   CONSTRAINT fk_ar_atividade FOREIGN KEY (atividade_id) REFERENCES atividades(id),
   CONSTRAINT fk_ar_recurso FOREIGN KEY (recurso_id) REFERENCES recursos(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"],
+    9 => [['coluna', 'rdos', 'numero', "ALTER TABLE rdos ADD COLUMN numero INT UNSIGNED NULL AFTER data"],
+          ['coluna', 'rdos', 'terceiros', "ALTER TABLE rdos ADD COLUMN terceiros SMALLINT UNSIGNED NULL AFTER efetivo"],
+          ['coluna', 'rdos', 'terceiros_desc', "ALTER TABLE rdos ADD COLUMN terceiros_desc VARCHAR(200) NULL AFTER terceiros"],
+          ['coluna', 'rdos', 'aberto_por', "ALTER TABLE rdos ADD COLUMN aberto_por INT UNSIGNED NULL AFTER situacao"],
+          ['coluna', 'rdos', 'enviado_por', "ALTER TABLE rdos ADD COLUMN enviado_por INT UNSIGNED NULL AFTER aberto_por"],
+          ['coluna', 'rdos', 'enviado_em', "ALTER TABLE rdos ADD COLUMN enviado_em DATETIME NULL AFTER enviado_por"],
+          ['coluna', 'rdos', 'dados', "ALTER TABLE rdos ADD COLUMN dados MEDIUMTEXT NULL AFTER pdf"],
+          ['coluna', 'rdos', 'codigo', "ALTER TABLE rdos ADD COLUMN codigo VARCHAR(12) NULL AFTER dados"],
+          ['coluna', 'empresas', 'logo_cor', "ALTER TABLE empresas ADD COLUMN logo_cor VARCHAR(7) NULL AFTER logo"],
+          "CREATE TABLE IF NOT EXISTS rdo_presencas (
+  id             INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  rdo_id         INT UNSIGNED NOT NULL,
+  funcionario_id INT UNSIGNED NOT NULL,
+  presente       TINYINT(1) NOT NULL DEFAULT 1,
+  UNIQUE KEY uq_rdo_pessoa (rdo_id, funcionario_id),
+  CONSTRAINT fk_rdop_rdo FOREIGN KEY (rdo_id) REFERENCES rdos(id) ON DELETE CASCADE,
+  CONSTRAINT fk_rdop_func FOREIGN KEY (funcionario_id) REFERENCES funcionarios(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"],
 ];
 function migrar(PDO $pdo): void {
     $alvo = max(array_keys(TF_MIGRACOES));

@@ -21,6 +21,7 @@ CREATE TABLE empresas (
   uf            CHAR(2)      NULL,
   cadastrada_por INT UNSIGNED NULL,               -- quem fez o cadastro (vira administrador)
   logo          VARCHAR(255) NULL,
+  logo_cor      VARCHAR(7)   NULL,               -- cor principal da logo (linha do cabeçalho dos PDFs)
   plano         VARCHAR(30)  NOT NULL DEFAULT 'teste',
   situacao      ENUM('teste','ativo','suspenso') NOT NULL DEFAULT 'teste',
   fuso          VARCHAR(40)  NOT NULL DEFAULT 'America/Sao_Paulo',
@@ -486,14 +487,22 @@ CREATE TABLE rdos (
   empresa_id     INT UNSIGNED NOT NULL,
   projeto_id     INT UNSIGNED NOT NULL,
   data           DATE NOT NULL,
+  numero         INT UNSIGNED NULL,               -- nº do RDO na obra
   clima_manha    ENUM('Bom','Nublado','Chuva','Impraticável') NULL,
   clima_tarde    ENUM('Bom','Nublado','Chuva','Impraticável') NULL,
   efetivo        SMALLINT UNSIGNED NULL,
+  terceiros      SMALLINT UNSIGNED NULL,
+  terceiros_desc VARCHAR(200) NULL,
   resumo         TEXT NULL,
   situacao       ENUM('Rascunho','Fechado','Entregue','Assinado') NOT NULL DEFAULT 'Rascunho',
+  aberto_por     INT UNSIGNED NULL,
+  enviado_por    INT UNSIGNED NULL,               -- encarregado completou e mandou ao gestor
+  enviado_em     DATETIME NULL,
   fechado_por    INT UNSIGNED NULL,               -- gestor revisou e gerou o PDF
   fechado_em     DATETIME NULL,
   pdf            VARCHAR(255) NULL,               -- PDF de entrega para imprimir
+  dados          MEDIUMTEXT NULL,                 -- conteúdo congelado ao fechar
+  codigo         VARCHAR(12) NULL,                -- código de conferência impresso no documento
   entregue_em    DATE NULL,                       -- dia da entrega ao cliente
   cliente_assinante VARCHAR(160) NULL,            -- quem assinou no papel
   assinado_cliente_em DATE NULL,                  -- data escrita na folha
@@ -509,6 +518,16 @@ CREATE TABLE rdos (
   CONSTRAINT ck_rdo_assinado CHECK (situacao <> 'Assinado' OR copia_assinada IS NOT NULL),
   CONSTRAINT fk_rdo_fechou FOREIGN KEY (fechado_por) REFERENCES usuarios(id),
   CONSTRAINT fk_rdo_copia FOREIGN KEY (copia_enviada_por) REFERENCES usuarios(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE rdo_presencas (
+  id             INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  rdo_id         INT UNSIGNED NOT NULL,
+  funcionario_id INT UNSIGNED NOT NULL,
+  presente       TINYINT(1) NOT NULL DEFAULT 1,
+  UNIQUE KEY uq_rdo_pessoa (rdo_id, funcionario_id),
+  CONSTRAINT fk_rdop_rdo FOREIGN KEY (rdo_id) REFERENCES rdos(id) ON DELETE CASCADE,
+  CONSTRAINT fk_rdop_func FOREIGN KEY (funcionario_id) REFERENCES funcionarios(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE avancos (
