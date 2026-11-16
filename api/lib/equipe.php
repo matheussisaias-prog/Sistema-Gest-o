@@ -1,6 +1,6 @@
 <?php
 /* Task Flow · servidor · Equipe: pessoas, situação (férias/afastamento), documentos de NR exigidos (cargo + obra + atividade),
-   certificados, carga dos próximos 14 dias, aviso ao alocar e o e-mail semanal de vencimentos. */
+   certificados, carga dos próximos 14 dias e aviso ao alocar. Vencimentos aparecem só no painel (sem e-mail). */
 declare(strict_types=1);
 
 const DOC_MAX_BYTES = 10 * 1024 * 1024;
@@ -371,36 +371,4 @@ function rota_checar_responsavel(int $id): array {
     }
     return ['pessoa' => ['id' => $fid, 'nome' => $p['nome']], 'atividade' => ['id' => $id, 'descricao' => $a['descricao'], 'inicio' => $a['inicio'], 'fim' => $a['fim']],
             'pendencias' => $pend, 'carga' => $carga, 'sugestoes' => array_slice($sug, 0, 3)];
-}
-
-/* ══ E-mail semanal de vencimentos (rodado pela tarefa agendada da Hostinger) ══ */
-function eq_relatorio_vencimentos(int $eid): array {
-    $hoje = eq_hoje();
-    $P = todos("SELECT f.*, NULL AS encarregado_nome FROM funcionarios f WHERE f.empresa_id = ? AND f.excluido_em IS NULL AND f.ativo = 1", [$eid]);
-    $fids = array_map(fn($p) => (int)$p['id'], $P);
-    $exig = eq_exigencias($eid, $P, $hoje); $docs = eq_documentos($eid, $fids); $nomes = eq_nomes_tipos($eid);
-    $venc = []; $vencendo = [];
-    foreach ($P as $p) {
-        $f = (int)$p['id'];
-        foreach ($exig[$f] ?? [] as $t => $x) {
-            $d = $docs[$f][$t] ?? null; [$s] = eq_situacao($d, $hoje, $x['ate']);
-            $linha = $p['nome'] . ' · ' . ($nomes[$t] ?? 'documento');
-            if ($s === 'falta') $venc[] = "$linha · não tem";
-            elseif ($s === 'vencido') $venc[] = $linha . ((int)$d['invalidado_por_afastamento'] ? ' · invalidado por afastamento' : ' · venceu ' . ass_data_br($d['vence_em']));
-            elseif ($s === 'vencendo' || $s === 'vence_antes') $vencendo[] = "$linha · " . ass_data_br($d['vence_em']);
-        }
-    }
-    return [$venc, $vencendo];
-}
-function eq_enviar_vencimentos(?int $so = null): array {
-    $env = [];
-    foreach (todos("SELECT id, nome FROM empresas WHERE situacao <> 'suspenso'" . ($so ? ' AND id = ' . (int)$so : '')) as $e) {
-        [$venc, $vencendo] = eq_relatorio_vencimentos((int)$e['id']);
-        if (!$venc && !$vencendo) continue;
-        foreach (todos("SELECT nome, email FROM usuarios WHERE empresa_id = ? AND perfil IN ('administrador','gestor') AND excluido_em IS NULL AND email_confirmado_em IS NOT NULL", [$e['id']]) as $us) {
-            enviar_email($us['email'], email_vencimentos($us['nome'], $venc, $vencendo, link_app('/index.html')));
-            $env[] = $us['email'];
-        }
-    }
-    return $env;
 }

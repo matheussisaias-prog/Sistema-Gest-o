@@ -1,5 +1,5 @@
 """Equipe (servidor): lista com situação, documentos e carga; ficha; documentos com certificado (ASO restrito); cargos e exigências;
-exigência da atividade; checagem ao alocar com sugestões; histórico; e-mail semanal pela tarefa agendada."""
+exigência da atividade; checagem ao alocar com sugestões; histórico; vencimentos só no painel."""
 import sys, io, json, base64, subprocess, datetime as dt, requests
 sys.path.insert(0, "/home/claude/telas"); from dados_crono import criar
 from PIL import Image
@@ -93,11 +93,4 @@ adm.put(A+f"/ausencias/funcionario/{F['Carla']}", json={"periodos": [{"inicio": 
 dd = {d["nome"]: d for d in adm.get(A+f"/equipe/{F['Carla']}").json()["documentos"]}
 check("Afastamento > 180 dias depois da emissão invalida o treinamento", dd["NR-10 Básico"]["situacao"] == "vencido" and "afastamento" in dd["NR-10 Básico"]["situacao_texto"], dd["NR-10 Básico"])
 
-# ── e-mail semanal ──
-antes = sum(1 for _ in open("/home/claude/teste-api/emails.jsonl", encoding="utf-8"))
-out = subprocess.run(["php", "/home/claude/sistema-gest-o/api/tarefas/vencimentos.php"], capture_output=True, text=True, env={"TF_CONFIG": "/home/claude/teste-api/tf-config.php", "PATH": "/usr/bin:/bin"})
-novos = [json.loads(l) for l in open("/home/claude/teste-api/emails.jsonl", encoding="utf-8").read().splitlines()[antes:]]
-check("Tarefa agendada roda e manda para administrador e gestora", out.returncode == 0 and sorted(x["para"] for x in novos) == ["ana@rawtech.com.br", "wendell@rawtech.com.br"], (out.stdout, out.stderr, [x["para"] for x in novos]))
-check("E-mail lista vencidos e vencendo", novos and "Documentos da equipe:" in novos[0]["assunto"] and "Carla Mendes · NR-10 Básico · invalidado por afastamento" in novos[0]["texto"], novos[0]["texto"][:600] if novos else "")
-check("Pelo navegador a tarefa não roda (404)", requests.get("http://127.0.0.1:8900/api/tarefas/vencimentos.php").status_code in (404, 403))
 print(f"RESULTADO: {ok} ok, {f} falhas")

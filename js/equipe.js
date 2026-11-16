@@ -20,7 +20,7 @@
   const dBRano = s => s ? dBR(s) + '/' + s.slice(0, 4) : '—';
   const celular = () => window.innerWidth <= 760;
   const avisar = (m, t) => (typeof toast === 'function' ? toast(m, t) : alert(m));
-  const iniciais = n => String(n || '?').trim().split(/\s+/).filter(Boolean).map((p, i, a) => i === 0 || i === a.length - 1 ? p[0] : '').join('').slice(0, 2).toUpperCase();
+  const iniciais = n => String(n || '?').replace(/\([^)]*\)/g, ' ').trim().split(/\s+/).filter(w => /^\p{L}/u.test(w)).map((p, i, a) => i === 0 || i === a.length - 1 ? p[0] : '').join('').slice(0, 2).toUpperCase() || '?';
   const raiz = () => document.getElementById('view-pessoas');
   async function api(rota, metodo, dados) {
     const op = { method: metodo || 'GET', credentials: 'same-origin', headers: {}, cache: 'no-store' };
