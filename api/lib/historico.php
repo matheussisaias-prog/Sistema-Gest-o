@@ -125,7 +125,8 @@ function hist_texto(array $h, array $N): array {
             elseif (isset($d['travou'])) { $t = "informou que {$q($alvo)} travou: {$d['travou']}"; $sub = $d['descricao'] ?? ''; }
             elseif (isset($d['liberou'])) { $t = "liberou {$q($alvo)}" . (isset($a['travou']) ? " (estava: {$a['travou']})" : ''); }
             elseif (array_key_exists('avanco', $d) && count(array_diff(array_keys($d), ['avanco', 'situacao', 'fotos'])) === 0) {
-                $t = "atualizou {$q($alvo)} de " . (int)($a['avanco'] ?? 0) . '% para ' . (int)$d['avanco'] . '%' . ((int)$d['avanco'] >= 100 && (int)($a['avanco'] ?? 0) < 100 ? ' (concluída)' : '');
+                $t = (int)($a['avanco'] ?? -1) === (int)$d['avanco'] ? "registrou o andamento de {$q($alvo)} (" . (int)$d['avanco'] . '%, sem mudar o avanço)'
+                    : "atualizou {$q($alvo)} de " . (int)($a['avanco'] ?? 0) . '% para ' . (int)$d['avanco'] . '%' . ((int)$d['avanco'] >= 100 && (int)($a['avanco'] ?? 0) < 100 ? ' (concluída)' : '');
                 $sub = !empty($d['fotos']) ? 'com ' . (int)$d['fotos'] . ' foto' . ((int)$d['fotos'] > 1 ? 's' : '') : ''; }
             elseif (isset($d['recursos'])) { $t = isset($d['reservou_com_pendencias']) ? "reservou {$d['recursos']} em {$q($alvo)} mesmo com pendências" : "mudou os recursos de {$q($alvo)}"; $sub = isset($d['reservou_com_pendencias']) ? $d['reservou_com_pendencias'] : 'agora: ' . $d['recursos']; }
             elseif (isset($d['documentos_exigidos'])) { $t = "mudou os documentos exigidos em {$q($alvo)}"; $sub = $d['documentos_exigidos'] . ' documento' . ($d['documentos_exigidos'] == 1 ? '' : 's'); }
