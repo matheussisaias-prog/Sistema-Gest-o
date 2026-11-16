@@ -328,3 +328,11 @@
 .og-aloc-pess:hover { border-color: #93c5fd; } .og-aloc-av { width: 32px; height: 32px; border-radius: 50%; background: #e0e7ff; color: #3730a3; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: .72rem; flex-shrink: 0; }
 .og-aloc-n { flex: 1; display: flex; flex-direction: column; } .og-aloc-n small { color: var(--text-3); font-size: .72rem; } .og-aloc-c { font-size: .75rem; color: var(--text-3); }
 .og-bt-laranja { background: #ea580c !important; border-color: #ea580c !important; color: #fff !important; }
+
+/* recursos da atividade */
+.og-exig-chip.grave { background: #fee2e2; color: #b91c1c; } .og-exig-chip.atencao { background: #fef3c7; color: #92400e; }
+.og-exig-chip i { font-size: .7rem; }
+.og-rec-alugar { display: grid; grid-template-columns: 1.4fr 1fr auto; gap: 8px; } .og-rec-alugar[hidden] { display: none; }
+.og-rec-alugar input { height: 38px; border: 1.5px solid #cbd5e1; border-radius: 9px; padding: 0 10px; font: .85rem 'DM Sans', sans-serif; min-width: 0; }
+.og-rec-alugar-bt { border-style: dashed !important; }
+@media (max-width: 760px) { .og-rec-alugar { grid-template-columns: 1fr; } }

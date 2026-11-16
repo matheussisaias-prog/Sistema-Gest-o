@@ -17,6 +17,7 @@ require __DIR__ . '/lib/montar.php';
 require __DIR__ . '/lib/assistente.php';
 require __DIR__ . '/lib/minhas.php';
 require __DIR__ . '/lib/equipe.php';
+require __DIR__ . '/lib/recursos.php';
 
 $metodo = $_SERVER['REQUEST_METHOD'] ?? 'GET';
 $caminho = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';
@@ -97,6 +98,23 @@ $rotas = [
     'GET recursos'              => 'rota_recursos_listar',
     'POST recursos'             => 'rota_recursos_criar',
     'DELETE recursos/#'         => 'rota_recursos_excluir',
+    'GET recursos/#'            => 'rota_recurso_ficha',
+    'PATCH recursos/#'          => 'rota_recursos_alterar',
+    'GET recursos-mapa'         => 'rota_recursos_mapa',
+    'POST recursos/#/controles' => 'rota_controle_lancar',
+    'GET controles/#/arquivo'   => 'rota_controle_arquivo',
+    'DELETE controles/#'        => 'rota_controle_excluir',
+    'POST recursos/#/paradas'   => 'rota_parada_criar',
+    'DELETE paradas/#'          => 'rota_parada_excluir',
+    'POST recursos/#/locacoes'  => 'rota_locacao_criar',
+    'PATCH locacoes/#'          => 'rota_locacao_alterar',
+    'GET fornecedores'          => 'rota_fornecedores',
+    'POST fornecedores'         => 'rota_fornecedores',
+    'PATCH fornecedores/#'      => 'rota_fornecedor_alterar',
+    'DELETE fornecedores/#'     => 'rota_fornecedor_alterar',
+    'GET atividades/#/recursos' => 'rota_atividade_recursos',
+    'PUT atividades/#/recursos' => 'rota_atividade_recursos',
+    'GET atividades/#/checar-recurso' => 'rota_checar_recurso',
     'GET ausencias'             => 'rota_ausencias_listar',
     'PUT ausencias/funcionario/#' => 'rota_ausencias_substituir',
     'POST importar'             => 'rota_importar',

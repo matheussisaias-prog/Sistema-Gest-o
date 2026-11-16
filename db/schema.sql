@@ -385,11 +385,99 @@ CREATE TABLE recursos (
   custo         DECIMAL(10,2) NULL,
   custo_unidade ENUM('hora','dia') NULL,
   ativo         TINYINT(1) NOT NULL DEFAULT 1,
+  codigo        VARCHAR(30)  NULL,
+  modelo        VARCHAR(160) NULL,
+  numero_serie  VARCHAR(80)  NULL,
+  propriedade   ENUM('proprio','alugado') NOT NULL DEFAULT 'proprio',
+  observacao    TEXT NULL,
   id_antigo     VARCHAR(60) NULL,
   criado_em     DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   atualizado_em DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   excluido_em   DATETIME NULL,
   CONSTRAINT fk_rec_empresa FOREIGN KEY (empresa_id) REFERENCES empresas(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE fornecedores (
+  id            INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  empresa_id    INT UNSIGNED NOT NULL,
+  nome          VARCHAR(160) NOT NULL,
+  contato       VARCHAR(120) NULL,
+  telefone      VARCHAR(40)  NULL,
+  email         VARCHAR(190) NULL,
+  criado_em     DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  excluido_em   DATETIME NULL,
+  KEY ix_forn_empresa (empresa_id),
+  CONSTRAINT fk_forn_empresa FOREIGN KEY (empresa_id) REFERENCES empresas(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE locacoes (
+  id            INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  empresa_id    INT UNSIGNED NOT NULL,
+  recurso_id    INT UNSIGNED NOT NULL,
+  fornecedor_id INT UNSIGNED NULL,
+  contrato      VARCHAR(60)  NULL,
+  retirada      DATE NOT NULL,
+  devolucao_prevista DATE NOT NULL,
+  devolvido_em  DATE NULL,
+  custo         DECIMAL(12,2) NULL,
+  custo_unidade ENUM('dia','semana','mes') NOT NULL DEFAULT 'dia',
+  observacao    TEXT NULL,
+  criado_por    INT UNSIGNED NULL,
+  criado_em     DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  excluido_em   DATETIME NULL,
+  KEY ix_loc_recurso (recurso_id, devolvido_em),
+  CONSTRAINT fk_loc_empresa FOREIGN KEY (empresa_id) REFERENCES empresas(id),
+  CONSTRAINT fk_loc_recurso FOREIGN KEY (recurso_id) REFERENCES recursos(id),
+  CONSTRAINT fk_loc_fornecedor FOREIGN KEY (fornecedor_id) REFERENCES fornecedores(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE recurso_controles (
+  id            INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  empresa_id    INT UNSIGNED NOT NULL,
+  recurso_id    INT UNSIGNED NOT NULL,
+  tipo          ENUM('calibracao','manutencao','inspecao') NOT NULL,
+  item          VARCHAR(160) NOT NULL,
+  feito_em      DATE NOT NULL,
+  vence_em      DATE NULL,
+  instituicao   VARCHAR(160) NULL,
+  arquivo       VARCHAR(255) NULL,
+  observacao    TEXT NULL,
+  criado_por    INT UNSIGNED NULL,
+  criado_em     DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  excluido_em   DATETIME NULL,
+  KEY ix_ctrl_recurso (recurso_id, feito_em),
+  CONSTRAINT fk_ctrl_empresa FOREIGN KEY (empresa_id) REFERENCES empresas(id),
+  CONSTRAINT fk_ctrl_recurso FOREIGN KEY (recurso_id) REFERENCES recursos(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE recurso_paradas (
+  id            INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  empresa_id    INT UNSIGNED NOT NULL,
+  recurso_id    INT UNSIGNED NOT NULL,
+  inicio        DATE NOT NULL,
+  fim           DATE NOT NULL,
+  motivo        VARCHAR(200) NULL,
+  criado_por    INT UNSIGNED NULL,
+  criado_em     DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  excluido_em   DATETIME NULL,
+  KEY ix_parada_recurso (recurso_id, inicio),
+  CONSTRAINT fk_parada_empresa FOREIGN KEY (empresa_id) REFERENCES empresas(id),
+  CONSTRAINT fk_parada_recurso FOREIGN KEY (recurso_id) REFERENCES recursos(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE atividade_recursos (
+  id            INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  empresa_id    INT UNSIGNED NOT NULL,
+  atividade_id  INT UNSIGNED NOT NULL,
+  recurso_id    INT UNSIGNED NOT NULL,
+  pendencias    VARCHAR(500) NULL,
+  criado_por    INT UNSIGNED NULL,
+  criado_em     DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE KEY uq_ativ_recurso (atividade_id, recurso_id),
+  KEY ix_ar_recurso (recurso_id),
+  CONSTRAINT fk_ar_empresa FOREIGN KEY (empresa_id) REFERENCES empresas(id),
+  CONSTRAINT fk_ar_atividade FOREIGN KEY (atividade_id) REFERENCES atividades(id),
+  CONSTRAINT fk_ar_recurso FOREIGN KEY (recurso_id) REFERENCES recursos(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ── Bloco 4 · Campo ─────────────────────────────────────────────

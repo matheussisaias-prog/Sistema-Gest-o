@@ -271,7 +271,7 @@
 
   /* ── Cabeçalho: quem está logado, situação da gravação, sair ── */
   function montarCabecalho() {
-    if (E.usuario.perfil === 'funcionario') document.getElementById('nav-obras')?.remove();   // funcionário usa "Minhas atividades"
+    if (E.usuario.perfil === 'funcionario') { document.getElementById('nav-obras')?.remove(); document.getElementById('nav-recursos')?.remove(); }   // funcionário usa "Minhas atividades"
     const st = document.createElement('style');
     st.textContent = `.tf-user{display:flex;align-items:center;gap:10px;margin-left:6px;padding-left:12px;border-left:1px solid var(--border)}
       .tf-user-txt{display:flex;flex-direction:column;line-height:1.15;max-width:170px}.tf-user-txt b{font-size:.8rem;color:var(--text-1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}

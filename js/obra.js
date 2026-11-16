@@ -441,6 +441,47 @@
     });
   }
 
+  /* ── aviso ao reservar um recurso (conflito, manutenção, calibração vencida, locação) ── */
+  async function checarRecurso(a, rid) {
+    let r; try { r = await api(`atividades/${a.id}/checar-recurso?recurso=${rid}`); } catch (e) { avisar(e.message, 'error'); return null; }
+    if (!r.pendencias.length) return { id: rid };
+    return new Promise(res => {
+      const fechar = v => { f.remove(); document.removeEventListener('keydown', esc); res(v); };
+      const esc = ev => { if (ev.key === 'Escape') fechar(null); };
+      const ICO = { grave: 'fa-circle-xmark', atencao: 'fa-triangle-exclamation', aviso: 'fa-circle-info' };
+      const ICR = { equipamento: 'fa-gears', veiculo: 'fa-truck', ferramenta: 'fa-screwdriver-wrench', outro: 'fa-box' };
+      const fForn = h('input', { type: 'text', maxlength: '160', placeholder: 'Fornecedor (ex.: LocaMáq)', 'aria-label': 'Fornecedor' });
+      const fCusto = h('input', { type: 'number', min: '0', step: '0.01', placeholder: 'R$ por dia (opcional)', 'aria-label': 'Custo por dia' });
+      const alugar = h('div', { class: 'og-rec-alugar', hidden: true }, fForn, fCusto, h('button', { class: 'ob-bt ob-bt-pri', onclick: async ev => {
+        ev.target.disabled = true;
+        try {
+          const nome = r.recurso.nome + ' (alugado)';
+          const n = await api('recursos', 'POST', { nome, tipo: r.recurso.tipo, propriedade: 'alugado', locacao: { fornecedor_nome: fForn.value.trim() || null, retirada: a.inicio, devolucao_prevista: a.fim || a.inicio, custo: fCusto.value === '' ? null : +fCusto.value, custo_unidade: 'dia' } });
+          avisar(`Locação registrada: ${nome}, ${dBR(a.inicio)} a ${dBR(a.fim || a.inicio)}`, 'success'); fechar({ id: n.id });
+        } catch (e) { avisar(e.message, 'error'); ev.target.disabled = false; }
+      } }, 'Alugar e reservar'));
+      const f = h('div', { class: 'ob-fundo og-modal og-aloc', role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'og-rec-t' },
+        h('div', { class: 'og-janela' },
+          h('small', { class: 'og-sub' }, `${a.eap || ''} · ${a.descricao} · ${dBR(r.atividade.inicio)} → ${dBR(r.atividade.fim)}`),
+          h('h3', { id: 'og-rec-t' }, `${r.recurso.nome} tem pendências nessas datas`),
+          h('div', { class: 'og-aloc-lista' }, r.pendencias.map(p => h('div', { class: 'og-aloc-p ' + p.nivel }, ic(ICO[p.nivel] || 'fa-circle-info'), h('span', null, p.texto)))),
+          h('div', { class: 'og-aloc-sug' }, h('b', null, r.sugestoes.length ? 'Livres e parecidos nessas datas' : 'Nenhum parecido livre nessas datas'),
+            r.sugestoes.map(s2 => h('button', { class: 'og-aloc-pess og-rec-sug', onclick: () => fechar({ id: s2.id }) },
+              h('span', { class: 'og-aloc-av' }, ic(ICR[s2.tipo] || 'fa-box')),
+              h('span', { class: 'og-aloc-n' }, h('b', null, (s2.codigo ? s2.codigo + ' · ' : '') + s2.nome), h('small', null, `${s2.propriedade === 'alugado' ? 'Alugado' : 'Próprio'} · livre ${s2.livre}` + (s2.pendencias.length ? ' · ' + s2.pendencias[0].texto : ''))),
+              h('span', { class: 'og-aloc-c' }, `ocupação ${s2.ocupacao}%`), h('span', { class: 'ob-chip-farol verd' }, 'Usar este'))),
+            h('button', { class: 'og-aloc-pess og-rec-alugar-bt', onclick: () => { alugar.hidden = !alugar.hidden; if (!alugar.hidden) fForn.focus(); } },
+              h('span', { class: 'og-aloc-av' }, ic('fa-tag')), h('span', { class: 'og-aloc-n' }, h('b', null, 'Alugar um ' + r.recurso.nome.toLowerCase().replace(/\s+\d.*$/, '')), h('small', null, `Cria o recurso como alugado, de ${dBR(r.atividade.inicio)} a ${dBR(r.atividade.fim)}, e reserva`)), h('span', { class: 'og-aloc-c' }, 'Alugar')),
+            alugar),
+          h('div', { class: 'og-bts' }, h('button', { class: 'ob-bt', onclick: () => fechar(null) }, 'Escolher outro'),
+            h('button', { class: 'ob-bt og-bt-laranja', onclick: () => fechar({ id: rid, pendencias: r.pendencias.map(p => p.texto).join('; ') }) }, 'Reservar mesmo assim')),
+          h('small', { class: 'og-sub' }, 'Se reservar mesmo assim, fica registrado no histórico quem decidiu e as pendências.')));
+      f.addEventListener('mousedown', ev => { if (ev.target === f) fechar(null); });
+      document.addEventListener('keydown', esc); document.body.append(f);
+      f.querySelector('.og-bts .ob-bt').focus();
+    });
+  }
+
   async function painel(a, foco) {
     document.querySelectorAll('.og-painel-fundo').forEach(x => x.remove());
     const nova = !a, edita = podeTudo(), enc = eu().perfil === 'encarregado';
@@ -522,6 +563,8 @@
         if ('liberou' in d) return 'liberou a atividade';
         if ('alocou_com_pendencias' in d) return 'alocou o responsável mesmo com pendências: ' + d.alocou_com_pendencias;
         if ('documentos_exigidos' in d) return `mudou os documentos exigidos (${d.documentos_exigidos})`;
+        if ('reservou_com_pendencias' in d) return `reservou ${d.recursos} mesmo com pendências: ${d.reservou_com_pendencias}`;
+        if ('recursos' in d) return `mudou os recursos (${d.recursos})`;
         return 'mudou ' + Object.keys(d).filter(k => k !== 'fotos').map(k => nomes[k] || k).join(', ') + ('avanco' in d ? ` para ${d.avanco}%` : '') + (d.fotos ? ` (com ${d.fotos} foto${d.fotos > 1 ? 's' : ''})` : ''); };
       (r.historico || []).slice(0, 8).forEach(x => hist.append(h('li', null, h('b', null, x.usuario || 'Sistema'), ' ', oque(x), ' · ', new Date(x.quando.replace(' ', 'T') + 'Z').toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' }))));
       if (!hist.children.length) hist.append(h('li', null, 'Sem alterações registradas.'));
@@ -538,6 +581,30 @@
         if (!atuais.length) exigBox.append(h('small', { class: 'og-sub' }, edita ? 'Só os do cargo de cada pessoa. Inclua aqui o que esta atividade pede a mais (ex.: NR-33, NR-35).' : 'Só os do cargo de cada pessoa.'));
         if (edita) exigBox.append(h('select', { class: 'og-exig-sel', 'aria-label': 'Exigir documento', onchange: e => { if (e.target.value) salvarEx([...atuais.map(x => x.id), +e.target.value]); } },
           h('option', { value: '' }, '+ Exigir documento…'), cat.filter(t => !atuais.some(x => x.id === t.id)).map(t => h('option', { value: t.id }, `${t.nr && !t.nome.startsWith(t.nr) ? t.nr + ' · ' : ''}${t.nome}`))));
+      };
+      des();
+    })();
+    const recBox = h('div', { class: 'og-exig og-rec' });
+    if (a && !a.etapa) (async () => {
+      let atuais = [], disp = [];
+      try { const r = await api(`atividades/${a.id}/recursos`); atuais = r.recursos; disp = r.disponiveis; } catch (_) { return; }
+      const ICR = { equipamento: 'fa-gears', veiculo: 'fa-truck', ferramenta: 'fa-screwdriver-wrench', outro: 'fa-box' };
+      const salvar = async (ids, pend) => { try { const r = await api(`atividades/${a.id}/recursos`, 'PUT', { recursos: ids, pendencias: pend || {} }); atuais = r.recursos; disp = r.disponiveis; des(); } catch (e) { avisar(e.message, 'error'); } };
+      const des = () => {
+        recBox.innerHTML = '';
+        atuais.forEach(x => { const g = x.pendencias.some(p => p.nivel === 'grave'), at = x.pendencias.length;
+          recBox.append(h('span', { class: 'og-exig-chip' + (g ? ' grave' : at ? ' atencao' : ''), title: x.pendencias.map(p => p.texto).join('\n') || 'Sem pendências' }, ic(ICR[x.tipo] || 'fa-box'), ' ', (x.codigo ? x.codigo + ' ' : '') + x.nome,
+            edita ? h('button', { 'aria-label': 'Tirar ' + x.nome, onclick: () => salvar(atuais.filter(y => y.id !== x.id).map(y => y.id)) }, '×') : null)); });
+        if (!atuais.length) recBox.append(h('small', { class: 'og-sub' }, edita ? 'Equipamentos, veículos e ferramentas reservados nas datas da atividade. Mudou a data, a reserva acompanha.' : 'Nenhum recurso reservado.'));
+        if (edita && disp.length) recBox.append(h('select', { class: 'og-exig-sel og-rec-sel', 'aria-label': 'Adicionar recurso', onchange: async e => {
+            const id = +e.target.value; if (!id) return; e.target.disabled = true;
+            const ok = await checarRecurso(a, id); e.target.disabled = false; e.target.value = '';
+            if (!ok) return;
+            salvar([...atuais.map(x => x.id).filter(x => x !== ok.id), ok.id], ok.pendencias ? { [ok.id]: ok.pendencias } : {});
+          } }, h('option', { value: '' }, '+ Adicionar recurso…'),
+          Object.entries({ veiculo: 'Veículos', equipamento: 'Equipamentos', ferramenta: 'Ferramentas', outro: 'Outros' }).map(([t, rot]) => {
+            const L = disp.filter(x => x.tipo === t && !atuais.some(y => y.id === x.id)); return L.length ? h('optgroup', { label: rot }, L.map(x => h('option', { value: x.id }, (x.codigo ? x.codigo + ' · ' : '') + x.nome))) : null; })));
+        else if (edita) recBox.append(h('small', { class: 'og-sub' }, 'Cadastre equipamentos em Recursos.'));
       };
       des();
     })();
@@ -599,6 +666,7 @@
           (edita || enc) ? h('button', { class: 'ob-bt', onclick: async () => { try { await api(`ocorrencias/${a.travada.id}/liberar`, 'PATCH', {}); fechar(); await aposMudar(null, 'Atividade liberada.'); } catch (e) { avisar(e.message, 'error'); } } }, 'Liberar') : null) : null,
         a && a.fotos ? h('div', { class: 'og-sec' }, h('b', null, `Fotos de campo (${a.fotos})`), fotosBox) : null,
         a && !a.etapa ? h('div', { class: 'og-sec' }, h('b', null, 'Documentos exigidos de quem fizer'), exigBox) : null,
+        a && !a.etapa ? h('div', { class: 'og-sec' }, h('b', null, 'Recursos da atividade'), recBox) : null,
         campo('Nome da atividade', fDesc),
         campo('Responsável', fResp),
         h('div', { class: 'ob-g3' }, campo('Início', fIni), campo('Fim', fFim), campo('Duração', fDur)),

@@ -11,9 +11,9 @@
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@600;700&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
-<link rel="stylesheet" href="css/base.css?v=2026.11.16.4"/>
-<link rel="stylesheet" href="css/obras.css?v=2026.11.16.4"/>
-<link rel="stylesheet" href="css/obra.css?v=2026.11.16.4"/>
+<link rel="stylesheet" href="css/base.css?v=2026.11.16.5"/>
+<link rel="stylesheet" href="css/obras.css?v=2026.11.16.5"/>
+<link rel="stylesheet" href="css/obra.css?v=2026.11.16.5"/>
 </head>
 <body>
 
@@ -62,8 +62,8 @@
       <span class="nav-icon"><i class="fa-solid fa-bars-staggered"></i></span>
       <span>Gantt</span>
     </a>
-    <a class="nav-item" onclick="switchView('recursos', this)" data-tooltip="Recursos">
-      <span class="nav-icon"><i class="fa-solid fa-users-gear"></i></span>
+    <a class="nav-item" onclick="switchView('recursos', this)" data-tooltip="Recursos" id="nav-recursos">
+      <span class="nav-icon"><i class="fa-solid fa-truck-pickup"></i></span>
       <span>Recursos</span>
     </a>
   </div>
@@ -435,31 +435,10 @@
     </div>
 
     <!-- ══════════════════ RECURSOS ══════════════════ -->
-    <div class="view" id="view-recursos">
-      <div class="card">
-        <div class="card-header">
-          <i class="fa-solid fa-users-gear" style="color:var(--purple);font-size:.85rem"></i>
-          <span class="card-title">Conflito de Recursos</span>
-          <div style="margin-left:auto;display:flex;gap:6px">
-            <button class="btn-secondary" style="font-size:.72rem" onclick="setRecPeriod(4)">4 sem</button>
-            <button class="btn-secondary" style="font-size:.72rem" onclick="setRecPeriod(8)">8 sem</button>
-            <button class="btn-secondary" style="font-size:.72rem" onclick="setRecPeriod(12)">12 sem</button>
-          </div>
-        </div>
-        <div style="padding:6px 14px;display:flex;gap:16px;border-bottom:1px solid var(--border);font-size:.68rem;color:var(--text-3)">
-          <span style="display:flex;align-items:center;gap:5px"><span style="width:10px;height:10px;border-radius:2px;background:rgba(5,150,105,.3);display:inline-block"></span>Livre (&lt;70%)</span>
-          <span style="display:flex;align-items:center;gap:5px"><span style="width:10px;height:10px;border-radius:2px;background:rgba(217,119,6,.4);display:inline-block"></span>Atenção (70-99%)</span>
-          <span style="display:flex;align-items:center;gap:5px"><span style="width:10px;height:10px;border-radius:2px;background:rgba(220,38,38,.35);display:inline-block"></span>Sobrecarregado (≥100%)</span>
-        </div>
-        <div class="table-wrap" id="recursos-wrap"></div>
-        <div style="padding:14px 20px;border-top:1px solid var(--border)">
-          <div style="font-size:.75rem;font-weight:700;color:var(--text-2);margin-bottom:8px">Conflitos detectados</div>
-          <div id="conflitos-list"></div>
-        </div>
-      </div>
-    </div>
+    <div class="view" id="view-recursos"></div>
 
     <!-- ══════════════════ CAL. ATIVIDADES ══════════════════ -->
+
     <div class="view" id="view-cal-atividades">
       <div class="card">
         <div class="card-header">
@@ -1137,25 +1116,25 @@
 <!-- TOAST -->
 <div class="toast-wrap" id="toast-wrap"></div>
 
-<script src="js/sincronizacao.js?v=2026.11.16.4"></script>
-<script src="js/dados.js?v=2026.11.16.4"></script>
-<script src="js/inicio.js?v=2026.11.16.4"></script>
-<script src="js/utilitarios.js?v=2026.11.16.4"></script>
-<script src="js/painel.js?v=2026.11.16.4"></script>
-<script src="js/atividades.js?v=2026.11.16.4"></script>
-<script src="js/projetos-equipe.js?v=2026.11.16.4"></script>
-<script src="js/cadastros.js?v=2026.11.16.4"></script>
-<script src="js/interface.js?v=2026.11.16.4"></script>
-<script src="js/cronograma.js?v=2026.11.16.4"></script>
-<script src="js/calendarios.js?v=2026.11.16.4"></script>
-<script src="js/importar-pdf-ia.js?v=2026.11.16.4"></script>
-<script src="js/assistente-ia.js?v=2026.11.16.4"></script>
-<script src="js/importar-exportar.js?v=2026.11.16.4"></script>
-<script src="js/historico.js?v=2026.11.16.4"></script>
-<script src="js/dias-uteis.js?v=2026.11.16.4"></script>
+<script src="js/sincronizacao.js?v=2026.11.16.5"></script>
+<script src="js/dados.js?v=2026.11.16.5"></script>
+<script src="js/inicio.js?v=2026.11.16.5"></script>
+<script src="js/utilitarios.js?v=2026.11.16.5"></script>
+<script src="js/painel.js?v=2026.11.16.5"></script>
+<script src="js/atividades.js?v=2026.11.16.5"></script>
+<script src="js/projetos-equipe.js?v=2026.11.16.5"></script>
+<script src="js/cadastros.js?v=2026.11.16.5"></script>
+<script src="js/interface.js?v=2026.11.16.5"></script>
+<script src="js/cronograma.js?v=2026.11.16.5"></script>
+<script src="js/calendarios.js?v=2026.11.16.5"></script>
+<script src="js/importar-pdf-ia.js?v=2026.11.16.5"></script>
+<script src="js/assistente-ia.js?v=2026.11.16.5"></script>
+<script src="js/importar-exportar.js?v=2026.11.16.5"></script>
+<script src="js/historico.js?v=2026.11.16.5"></script>
+<script src="js/dias-uteis.js?v=2026.11.16.5"></script>
 
-<link rel="stylesheet" href="css/extensoes.css?v=2026.11.16.4"/>
-<script src="js/extensoes.js?v=2026.11.16.4"></script>
+<link rel="stylesheet" href="css/extensoes.css?v=2026.11.16.5"/>
+<script src="js/extensoes.js?v=2026.11.16.5"></script>
 
 
   <!-- MODAL: ANOTAÇÃO NA ATIVIDADE -->
@@ -1178,17 +1157,19 @@
   </div>
 
   <!-- Assistente Task Flow (balão do canto + Ctrl+K): busca e montar obra por perguntas -->
-  <link rel="stylesheet" href="css/assistente.css?v=2026.11.16.4"/>
-  <script src="js/assistente.js?v=2026.11.16.4"></script>
-<script src="js/obras.js?v=2026.11.16.4"></script>
-<script src="js/obra.js?v=2026.11.16.4"></script>
-<script src="js/obra-abas.js?v=2026.11.16.4"></script>
-<script src="js/obra-montar.js?v=2026.11.16.4"></script>
-<link rel="stylesheet" href="css/minhas.css?v=2026.11.16.4"/>
-<link rel="stylesheet" href="css/equipe.css?v=2026.11.16.4"/>
-<script src="js/equipe.js?v=2026.11.16.4"></script>
-<script src="js/minhas.js?v=2026.11.16.4"></script>
-<script src="js/servidor.js?v=2026.11.16.4"></script>
+  <link rel="stylesheet" href="css/assistente.css?v=2026.11.16.5"/>
+  <script src="js/assistente.js?v=2026.11.16.5"></script>
+<script src="js/obras.js?v=2026.11.16.5"></script>
+<script src="js/obra.js?v=2026.11.16.5"></script>
+<script src="js/obra-abas.js?v=2026.11.16.5"></script>
+<script src="js/obra-montar.js?v=2026.11.16.5"></script>
+<link rel="stylesheet" href="css/minhas.css?v=2026.11.16.5"/>
+<link rel="stylesheet" href="css/equipe.css?v=2026.11.16.5"/>
+<script src="js/equipe.js?v=2026.11.16.5"></script>
+<link rel="stylesheet" href="css/recursos.css?v=2026.11.16.5"/>
+<script src="js/recursos.js?v=2026.11.16.5"></script>
+<script src="js/minhas.js?v=2026.11.16.5"></script>
+<script src="js/servidor.js?v=2026.11.16.5"></script>
 <script>if ('serviceWorker' in navigator && (location.protocol === 'https:' || localStorage.getItem('tf-sw') === '1')) navigator.serviceWorker.register('sw.js').catch(() => {});</script>
 
 </body>
