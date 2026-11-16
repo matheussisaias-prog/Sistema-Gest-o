@@ -26,30 +26,7 @@ function rota_funcionarios_excluir(int $id): array {
     return ['ok' => true];
 }
 
-/* ── Recursos (equipamentos, veículos, ferramentas) ──────────── */
-const REGRAS_RECURSO = [
-    'nome' => ['texto', 160], 'tipo' => ['lista', ['equipamento', 'veiculo', 'ferramenta', 'outro']],
-    'custo' => ['num', 0, 1e9], 'custo_unidade' => ['lista', ['hora', 'dia']], 'ativo' => ['bool'],
-];
-function rota_recursos_listar(): array {
-    $u = exigir_login(); exigir_perfil($u, ['administrador', 'gestor', 'encarregado']);
-    return ['recursos' => todos('SELECT id, nome, tipo, custo, custo_unidade, ativo FROM recursos WHERE empresa_id = ? AND excluido_em IS NULL ORDER BY nome', [$u['empresa_id']])];
-}
-function rota_recursos_criar(): array {
-    $u = exigir_login(); exigir_perfil($u, PODE_TUDO);
-    $c = limpar(corpo(), REGRAS_RECURSO);
-    if (empty($c['nome'])) throw new ErroApi('Campo obrigatório: nome');
-    $id = inserir('recursos', ['empresa_id' => $u['empresa_id']] + $c);
-    registrar($u, (int)$u['empresa_id'], 'recursos', $id, 'criou', null, $c);
-    return ['ok' => true, 'id' => $id];
-}
-function rota_recursos_excluir(int $id): array {
-    $u = exigir_login(); exigir_perfil($u, PODE_TUDO);
-    if (!um('SELECT id FROM recursos WHERE id = ? AND empresa_id = ? AND excluido_em IS NULL', [$id, $u['empresa_id']])) throw new ErroApi('Recurso não encontrado', 404);
-    q('UPDATE recursos SET excluido_em = UTC_TIMESTAMP() WHERE id = ?', [$id]);
-    registrar($u, (int)$u['empresa_id'], 'recursos', $id, 'excluiu');
-    return ['ok' => true];
-}
+/* ── Recursos: ver api/lib/recursos.php ──────────────────────── */
 
 /* ── Ausências (calendário da equipe) ────────────────────────── */
 const TIPOS_AUSENCIA = ['Folga', 'Férias', 'Treinamento', 'Outra atividade', 'Afastamento – doença ou acidente', 'Afastamento – outro motivo'];
