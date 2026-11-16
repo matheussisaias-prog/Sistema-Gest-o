@@ -21,6 +21,8 @@ require __DIR__ . '/lib/recursos.php';
 require __DIR__ . '/lib/rdo.php';
 require __DIR__ . '/lib/relatorios.php';
 require __DIR__ . '/lib/empresa.php';
+require __DIR__ . '/lib/historico.php';
+require __DIR__ . '/lib/importar.php';
 
 $metodo = $_SERVER['REQUEST_METHOD'] ?? 'GET';
 $caminho = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';
@@ -113,6 +115,12 @@ $rotas = [
     'POST rdos/#/assinado'      => 'rota_rdo_assinado',
     'GET rdos/#/folha'          => 'rota_rdo_folha',
     'GET rdos/#/documento'      => 'rota_rdo_documento',
+    'GET historico'             => 'rota_historico',
+    'GET historico/excel'       => 'rota_historico_excel',
+    'POST importar/previa'      => 'rota_importar_previa',
+    'POST importar/obra'        => 'rota_importar_obra',
+    'GET importacoes'           => 'rota_importacoes',
+    'GET importar/modelo'       => 'rota_importar_modelo',
     'GET empresa'               => 'rota_empresa',
     'PATCH empresa'             => 'rota_empresa',
     'PUT empresa/regras'        => 'rota_empresa_regras',

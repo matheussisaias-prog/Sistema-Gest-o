@@ -283,7 +283,8 @@
   function montarCabecalho() {
     logoEmpresa(!!E.usuario.empresa_logo);
     if (E.usuario.perfil === 'funcionario') { document.getElementById('nav-obras')?.remove(); document.getElementById('nav-recursos')?.remove(); document.getElementById('nav-rdo')?.remove(); }   // funcionário usa "Minhas atividades"
-    if (!['administrador', 'gestor'].includes(E.usuario.perfil)) { document.getElementById('nav-relatorios')?.remove(); document.getElementById('nav-empresa')?.remove(); }   // relatórios e empresa: só a gestão
+    if (!['administrador', 'gestor'].includes(E.usuario.perfil)) { document.getElementById('nav-relatorios')?.remove(); document.getElementById('nav-empresa')?.remove(); document.getElementById('nav-importar')?.remove(); }   // relatórios, empresa e importar: só a gestão
+    if (E.usuario.perfil === 'funcionario') document.getElementById('nav-historico')?.remove();
     const st = document.createElement('style');
     st.textContent = `.tf-user{display:flex;align-items:center;gap:10px;margin-left:6px;padding-left:12px;border-left:1px solid var(--border)}
       .tf-user-txt{display:flex;flex-direction:column;line-height:1.15;max-width:170px}.tf-user-txt b{font-size:.8rem;color:var(--text-1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}

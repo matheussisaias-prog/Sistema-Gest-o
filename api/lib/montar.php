@@ -86,7 +86,7 @@ function normalizar_data(string $s): string {
 }
 
 /** Grava itens e ligações na obra. $inicio vale para quem não trouxe data; $deslocar soma dias corridos às datas trazidas. */
-function inserir_estrutura(array $u, int $pid, array $itens, array $deps, string $inicio, bool $substituir, int $deslocar = 0): array {
+function inserir_estrutura(array $u, int $pid, array $itens, array $deps, string $inicio, bool $substituir, int $deslocar = 0, array $extra = []): array {
     $eid = (int)$u['empresa_id'];
     if (!$itens) throw new ErroApi('Nada para criar');
     if (count($itens) > 1500) throw new ErroApi('Arquivo grande demais: até 1500 atividades por vez');
@@ -117,7 +117,7 @@ function inserir_estrutura(array $u, int $pid, array $itens, array $deps, string
         try { criar_dependencia($u, $a, $b, $d['tipo'], (int)$d['folga']); $lig++; } catch (ErroApi $e) { /* ciclo ou repetida: ignora */ }
     }
     $mov = recalcular_obra($pid, $eid);
-    registrar($u, $eid, 'projetos', $pid, 'importou', null, ['atividades' => count($id), 'ligacoes' => $lig, 'substituiu' => $substituir]);
+    registrar($u, $eid, 'projetos', $pid, 'importou', null, ['atividades' => count($id), 'ligacoes' => $lig, 'substituiu' => $substituir] + $extra);
     return ['ok' => true, 'atividades' => count($id), 'ligacoes' => $lig, 'empurradas' => count($mov)];
 }
 function obra_para_montar(int $pid): array {
@@ -285,6 +285,8 @@ function mspdi_para_linhas(string $xml): array {
         $tarefas[] = $t; $linhaDe[(string)$t->UID] = count($tarefas);
     }
     $tipos = ['0' => 'TT', '1' => 'TC', '2' => 'CT', '3' => 'CC'];
+    $recNome = []; if (isset($sx->Resources)) foreach ($sx->Resources->Resource as $r) if (trim((string)$r->Name) !== '') $recNome[(string)$r->UID] = trim((string)$r->Name);
+    $resp = []; if (isset($sx->Assignments)) foreach ($sx->Assignments->Assignment as $as) { $t = (string)$as->TaskUID; $r = $recNome[(string)$as->ResourceUID] ?? null; if ($r && !isset($resp[$t])) $resp[$t] = $r; }   // 1º recurso de cada tarefa = responsável
     $out = [];
     foreach ($tarefas as $t) {
         $h = 0.0; if (preg_match('/PT(\d+)H(\d+)M/', (string)$t->Duration, $mm)) $h = (int)$mm[1] + (int)$mm[2] / 60;
@@ -292,7 +294,7 @@ function mspdi_para_linhas(string $xml): array {
         foreach ($t->PredecessorLink as $pl) { $l = $linhaDe[(string)$pl->PredecessorUID] ?? null; if (!$l) continue;
             $lag = (int)round(((int)$pl->LinkLag) / 10 / $minDia); $preds[] = $l . ($tipos[(string)$pl->Type] ?? 'TC') . ($lag ? sprintf('%+d', $lag) : ''); }
         $out[] = ['nivel' => (int)$t->OutlineLevel - 1, 'descricao' => (string)$t->Name, 'duracao' => (string)$t->Milestone === '1' ? 0 : round($h * 60 / $minDia, 1),
-                  'inicio' => substr((string)$t->Start, 0, 10), 'pred' => implode(';', $preds)];
+                  'inicio' => substr((string)$t->Start, 0, 10), 'pred' => implode(';', $preds), 'responsavel' => $resp[(string)$t->UID] ?? ''];
     }
     return $out;
 }
@@ -352,7 +354,11 @@ function rota_exportar_cronograma(int $pid): array {
                 $t .= '<PredecessorLink><PredecessorUID>' . ($porId[$d['antes_id']] + 1) . '</PredecessorUID><Type>' . $tipo[$d['tipo']] . '</Type><LinkLag>' . ((int)$d['folga_dias'] * 4800) . '</LinkLag><LagFormat>7</LagFormat></PredecessorLink>';
             $t .= '</Task>';
         }
-        baixar($nomeArq . '.xml', 'application/xml; charset=utf-8', $t . '</Tasks></Project>');
+        // responsáveis como recursos do Project (volta certo ao importar)
+        $rec = []; foreach ($A as $a) if ($a['responsavel_nome'] && !$a['etapa']) $rec[$a['responsavel_nome']] ??= count($rec) + 1;
+        $t .= '</Tasks><Resources>' . implode('', array_map(fn($n, $k) => '<Resource><UID>' . $k . '</UID><ID>' . $k . '</ID><Name>' . xml_esc($n) . '</Name><Type>1</Type></Resource>', array_keys($rec), $rec)) . '</Resources><Assignments>';
+        $k = 0; foreach ($A as $i => $a) if ($a['responsavel_nome'] && !$a['etapa']) $t .= '<Assignment><UID>' . (++$k) . '</UID><TaskUID>' . ($i + 1) . '</TaskUID><ResourceUID>' . $rec[$a['responsavel_nome']] . '</ResourceUID><Units>1</Units></Assignment>';
+        baixar($nomeArq . '.xml', 'application/xml; charset=utf-8', $t . '</Assignments></Project>');
     }
     // Excel
     if (!class_exists('ZipArchive')) throw new ErroApi('Este servidor não gera .xlsx');
