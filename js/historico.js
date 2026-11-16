@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════
-   TaskFlow PRO · historico.js
+   Aprumo · historico.js
    Histórico de alterações
    (separado do index.html na Fase 0 — a ordem de carregamento importa)
 ═══════════════════════════════════════════════════════════════ */

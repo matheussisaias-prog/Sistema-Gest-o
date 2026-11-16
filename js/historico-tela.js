@@ -1,4 +1,4 @@
-/* Task Flow · historico-tela.js — telas "Histórico" (linha do tempo de quem mudou o quê, com filtros e Excel) e
+/* Aprumo · historico-tela.js — telas "Histórico" (linha do tempo de quem mudou o quê, com filtros e Excel) e
    "Importar cronograma" (MS Project ou planilha → prévia → obra nova ou existente). Usa as peças eq-* da Equipe e as hi-*. */
 (() => {
   'use strict';
@@ -149,7 +149,7 @@
           ic('fa-cloud-arrow-up'), h('b', null, mob ? 'Escolher o arquivo' : 'Arraste o arquivo aqui ou clique para escolher'), h('small', null, 'MS Project (.xml), Excel (.xlsx) ou CSV'));
     const s1 = h('section', { class: 'im-sec' }, h('b', { class: 'im-t' }, '1 · Arquivo'), inp, drop,
       h('small', { class: 'im-nota' }, 'No MS Project: Arquivo › Salvar como › “Formato XML (*.xml)”. Planilha: colunas Atividade, Duração, Início, Responsável e Predecessoras (EAP opcional). ',
-        h('a', { href: 'api/importar/modelo', download: 'modelo-cronograma-task-flow.xlsx' }, 'Baixar planilha modelo')));
+        h('a', { href: 'api/importar/modelo', download: 'modelo-cronograma-aprumo.xlsx' }, 'Baixar planilha modelo')));
     // 2 · para onde
     let s2 = null;
     if (pv) {

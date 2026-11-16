@@ -1,4 +1,4 @@
-/* Task Flow · equipe.js — tela "Equipe": pessoas, situação, documentos de NR (cargo + atividade), certificados,
+/* Aprumo · equipe.js — tela "Equipe": pessoas, situação, documentos de NR (cargo + atividade), certificados,
    ausências, agenda, fotos de campo; cargos e documentos exigidos. */
 (() => {
   'use strict';

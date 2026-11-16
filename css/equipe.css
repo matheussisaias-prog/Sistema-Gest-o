@@ -1,4 +1,4 @@
-/* Task Flow · equipe.css — tela "Equipe" */
+/* Aprumo · equipe.css — tela "Equipe" */
 .eq { max-width: 1320px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px; font-family: 'DM Sans', system-ui, sans-serif; color: #0f172a; padding-bottom: 40px; }
 .eq-cab { display: flex; align-items: flex-end; gap: 10px; flex-wrap: wrap; }
 .eq-cab-t { flex: 1; min-width: 200px; } .eq-cab-t h1 { margin: 0; font: 700 24px Outfit, 'DM Sans', sans-serif; } .eq-cab-t p { margin: 2px 0 0; font-size: 13px; color: #64748b; }

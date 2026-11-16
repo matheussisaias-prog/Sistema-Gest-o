@@ -1,4 +1,4 @@
-"""Assistente Task Flow (telas): balão, Ctrl+K, busca com 'Entendi', ir para o resultado, dúvidas, montar obra por perguntas (computador e celular)."""
+"""Assistente Aprumo (telas): balão, Ctrl+K, busca com 'Entendi', ir para o resultado, dúvidas, montar obra por perguntas (computador e celular)."""
 import sys, requests
 sys.path.insert(0, "/home/claude/telas"); from comum import rotas
 from dados_crono import criar

@@ -1,5 +1,5 @@
 <?php
-/* Task Flow · servidor · tela "Histórico": linha do tempo de quem mudou o quê, em português, com filtros por obra, pessoa,
+/* Aprumo · servidor · tela "Histórico": linha do tempo de quem mudou o quê, em português, com filtros por obra, pessoa,
    tipo e período, "antes → depois" dos campos e Excel. Segue o plano (Essencial 30 dias, Profissional 1 ano). A gestão vê
    tudo; o encarregado, só o que é das obras dele. */
 declare(strict_types=1);

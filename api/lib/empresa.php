@@ -1,14 +1,14 @@
 <?php
-/* Task Flow · servidor · tela "Empresa e usuários": usuários (perfil, desativar/reativar, link de nova senha), convites por
+/* Aprumo · servidor · tela "Empresa e usuários": usuários (perfil, desativar/reativar, link de nova senha), convites por
    e-mail ou link para WhatsApp, dados da empresa, calendário padrão, regras do campo e plano (uso e limites).
    Só o administrador altera; o gestor vê. */
 declare(strict_types=1);
 
 /* ── Planos (limites; o plano da empresa é definido pela Mercurium no painel) ── */
 const TF_PLANOS = [
-    'teste'        => ['nome' => 'Teste grátis', 'preco' => null, 'obras' => 10, 'escritorio' => 5, 'gb' => 5, 'gestao_vista' => false],
-    'essencial'    => ['nome' => 'Essencial', 'preco' => 297, 'obras' => 3, 'escritorio' => 2, 'gb' => 10, 'gestao_vista' => false],
-    'profissional' => ['nome' => 'Profissional', 'preco' => 697, 'obras' => 10, 'escritorio' => 5, 'gb' => 50, 'gestao_vista' => false],
+    'teste'        => ['nome' => 'Teste grátis', 'preco' => null, 'obras' => 10, 'escritorio' => 5, 'gb' => 5, 'gestao_vista' => true],
+    'essencial'    => ['nome' => 'Essencial', 'preco' => 297, 'obras' => 3, 'escritorio' => 2, 'gb' => 10, 'gestao_vista' => true],
+    'profissional' => ['nome' => 'Profissional', 'preco' => 697, 'obras' => 10, 'escritorio' => 5, 'gb' => 50, 'gestao_vista' => true],
     'empresa'      => ['nome' => 'Empresa', 'preco' => 1497, 'obras' => 30, 'escritorio' => 15, 'gb' => 200, 'gestao_vista' => true],
     'corporativo'  => ['nome' => 'Corporativo', 'preco' => null, 'obras' => null, 'escritorio' => null, 'gb' => null, 'gestao_vista' => true],
 ];
@@ -138,7 +138,7 @@ function rota_usuario_link_senha(int $id): array {
     q('UPDATE usuarios SET acao_token_hash = ?, acao_tipo = "redefinir_senha", acao_expira = DATE_ADD(UTC_TIMESTAMP(), INTERVAL 24 HOUR) WHERE id = ?', [hash_token($tok), $id]);
     registrar($u, (int)$u['empresa_id'], 'usuarios', $id, 'alterou', null, ['link_senha' => 'gerado', 'nome' => $x['nome']]);
     $link = link_app("/entrar.html?redefinir=$tok"); $p = explode(' ', trim($x['nome']))[0];
-    $msg = "Olá, $p! Para criar uma nova senha do Task Flow da {$u['empresa_nome']}, toque no link (vale por 24 horas): $link";
+    $msg = "Olá, $p! Para criar uma nova senha do Aprumo da {$u['empresa_nome']}, toque no link (vale por 24 horas): $link";
     return ['ok' => true, 'link' => $link, 'mensagem' => $msg, 'whatsapp' => wa_link($x['telefone'], $msg)];
 }
 function wa_link(?string $tel, string $msg): string { return 'https://wa.me/' . ($tel ? '55' . $tel : '') . '?text=' . rawurlencode($msg); }
@@ -146,7 +146,7 @@ function wa_link(?string $tel, string $msg): string { return 'https://wa.me/' . 
 /* ══ Convites ════════════════════════════════════════════════════ */
 function convite_mensagem(string $nome, string $empresa, string $quem, string $perfil, string $link, ?string $loginTel): string {
     $p = explode(' ', trim($nome))[0];
-    return "Olá, $p! $quem convidou você para o Task Flow da $empresa, como " . mb_strtolower(TF_PERFIL_NOME[$perfil]) . '. Toque no link para criar sua senha (vale por ' . TF_CONVITE_DIAS . ' dias): ' . $link
+    return "Olá, $p! $quem convidou você para o Aprumo da $empresa, como " . mb_strtolower(TF_PERFIL_NOME[$perfil]) . '. Toque no link para criar sua senha (vale por ' . TF_CONVITE_DIAS . ' dias): ' . $link
         . ($loginTel ? ' Depois, para entrar, use o número ' . tel_fmt($loginTel) . ' e a senha que você criar.' : '');
 }
 /** Envia (e-mail) ou devolve o link pronto para o WhatsApp. */

@@ -1,4 +1,4 @@
-/* Task Flow · assistente.css — Assistente Task Flow (balão, busca, montar obra por perguntas) */
+/* Aprumo · assistente.css — Assistente Aprumo (balão, busca, montar obra por perguntas) */
 .tfa-bt { position: fixed; right: 24px; bottom: 24px; z-index: 9990; width: 58px; height: 58px; border: 0; border-radius: 50%; background: #2563eb; color: #fff;
   font-size: 1.25rem; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 10px 24px rgba(37,99,235,.4); transition: transform .15s; }
 .tfa-bt:hover { transform: scale(1.05); } .tfa-bt:focus-visible { outline: 3px solid #93c5fd; outline-offset: 3px; }

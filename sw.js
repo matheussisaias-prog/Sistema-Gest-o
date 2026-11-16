@@ -1,4 +1,4 @@
-/* Task Flow · sw.js — guarda as telas do sistema no aparelho para abrir sem internet.
+/* Aprumo · sw.js — guarda as telas do sistema no aparelho para abrir sem internet.
    Sempre tenta a internet primeiro (versão nova); sem conexão, usa a cópia guardada.
    Os dados (api/) nunca ficam aqui: a lista de Minhas atividades e a fila de envio ficam no próprio app. */
 const CACHE = 'tf-app-v1';

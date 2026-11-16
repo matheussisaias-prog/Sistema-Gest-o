@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Task Flow</title>
+<title>Aprumo</title>
 <link rel="icon" type="image/svg+xml" href="img/icone.svg"/>
 <link rel="icon" type="image/png" sizes="32x32" href="img/favicon-32.png"/>
 <link rel="apple-touch-icon" href="img/apple-touch-icon.png"/>
@@ -11,28 +11,32 @@
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@600;700&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
-<link rel="stylesheet" href="css/base.css?v=2026.11.16.10"/>
-<link rel="stylesheet" href="css/obras.css?v=2026.11.16.10"/>
-<link rel="stylesheet" href="css/obra.css?v=2026.11.16.10"/>
+<link rel="stylesheet" href="css/base.css?v=2026.11.16.12"/>
+<link rel="stylesheet" href="css/obras.css?v=2026.11.16.12"/>
+<link rel="stylesheet" href="css/obra.css?v=2026.11.16.12"/>
 </head>
 <body>
 
 <!-- LOADER -->
 <div class="page-loader" id="loader">
-  <div class="loader-logo"><img src="img/marca.svg" width="40" height="40" alt=""/><span>TASK FLOW</span></div>
+  <div class="loader-logo"><img src="img/marca.svg" width="40" height="40" alt=""/><span aria-label="Aprumo"><svg class="tf-lam" viewBox="0 0 40 46" aria-hidden="true"><path d="M3 44 L20 4 L37 44" fill="none" stroke="currentColor" stroke-width="8"/></svg>PRUMO</span></div>
   <div class="loader-bar"><div class="loader-fill"></div></div>
 </div>
 
 <!-- SIDEBAR -->
 <aside class="sidebar">
   <div class="sidebar-logo">
-    <img class="logo-img" src="img/icone.svg" width="30" height="30" alt="Task Flow"/>
-    <span class="logo-name">Task Flow</span>
+    <img class="logo-img" src="img/icone.svg" width="30" height="30" alt="Aprumo"/>
+    <span class="logo-name" aria-label="Aprumo"><svg class="tf-lam" viewBox="0 0 40 46" aria-hidden="true"><path d="M3 44 L20 4 L37 44" fill="none" stroke="currentColor" stroke-width="8"/></svg>PRUMO</span>
     <span class="logo-version">by mercurium</span>
   </div>
 
   <div class="sidebar-section">
     <div class="sidebar-section-label">Principal</div>
+    <a class="nav-item" onclick="switchView('inicio', this)" data-tooltip="Início" id="nav-inicio">
+      <span class="nav-icon"><i class="fa-solid fa-house"></i></span>
+      <span>Início</span>
+    </a>
     <a class="nav-item active" onclick="switchView('dashboard', this)" data-tooltip="Dashboard">
       <span class="nav-icon"><i class="fa-solid fa-chart-pie"></i></span>
       <span>Dashboard</span>
@@ -98,7 +102,7 @@
 
   <div class="sidebar-section">
     <div class="sidebar-section-label">Sistema</div>
-    <!-- IA externa oculta (fica só o Assistente Task Flow): para voltar, tire o "hidden" e a classe tf-oculto -->
+    <!-- IA externa oculta (fica só o Assistente Aprumo): para voltar, tire o "hidden" e a classe tf-oculto -->
     <a class="nav-item tf-oculto" hidden onclick="switchView('ia-chat', this)" data-tooltip="Assistente IA" id="nav-ia-chat">
       <span class="nav-icon"><i class="fa-solid fa-robot"></i></span>
       <span>Assistente IA</span>
@@ -693,6 +697,7 @@
     <!-- ══════════════════ RELATÓRIOS ══════════════════ -->
     <div class="view" id="view-relatorio"></div>
     <div class="view" id="view-empresa"></div>
+    <div class="view" id="view-inicio"></div>
 
   </div><!-- /page-content -->
 </div><!-- /main-wrap -->
@@ -1003,25 +1008,25 @@
 <!-- TOAST -->
 <div class="toast-wrap" id="toast-wrap"></div>
 
-<script src="js/sincronizacao.js?v=2026.11.16.10"></script>
-<script src="js/dados.js?v=2026.11.16.10"></script>
-<script src="js/inicio.js?v=2026.11.16.10"></script>
-<script src="js/utilitarios.js?v=2026.11.16.10"></script>
-<script src="js/painel.js?v=2026.11.16.10"></script>
-<script src="js/atividades.js?v=2026.11.16.10"></script>
-<script src="js/projetos-equipe.js?v=2026.11.16.10"></script>
-<script src="js/cadastros.js?v=2026.11.16.10"></script>
-<script src="js/interface.js?v=2026.11.16.10"></script>
-<script src="js/cronograma.js?v=2026.11.16.10"></script>
-<script src="js/calendarios.js?v=2026.11.16.10"></script>
-<script src="js/importar-pdf-ia.js?v=2026.11.16.10"></script>
-<script src="js/assistente-ia.js?v=2026.11.16.10"></script>
-<script src="js/importar-exportar.js?v=2026.11.16.10"></script>
-<script src="js/historico.js?v=2026.11.16.10"></script>
-<script src="js/dias-uteis.js?v=2026.11.16.10"></script>
+<script src="js/sincronizacao.js?v=2026.11.16.12"></script>
+<script src="js/dados.js?v=2026.11.16.12"></script>
+<script src="js/inicio.js?v=2026.11.16.12"></script>
+<script src="js/utilitarios.js?v=2026.11.16.12"></script>
+<script src="js/painel.js?v=2026.11.16.12"></script>
+<script src="js/atividades.js?v=2026.11.16.12"></script>
+<script src="js/projetos-equipe.js?v=2026.11.16.12"></script>
+<script src="js/cadastros.js?v=2026.11.16.12"></script>
+<script src="js/interface.js?v=2026.11.16.12"></script>
+<script src="js/cronograma.js?v=2026.11.16.12"></script>
+<script src="js/calendarios.js?v=2026.11.16.12"></script>
+<script src="js/importar-pdf-ia.js?v=2026.11.16.12"></script>
+<script src="js/assistente-ia.js?v=2026.11.16.12"></script>
+<script src="js/importar-exportar.js?v=2026.11.16.12"></script>
+<script src="js/historico.js?v=2026.11.16.12"></script>
+<script src="js/dias-uteis.js?v=2026.11.16.12"></script>
 
-<link rel="stylesheet" href="css/extensoes.css?v=2026.11.16.10"/>
-<script src="js/extensoes.js?v=2026.11.16.10"></script>
+<link rel="stylesheet" href="css/extensoes.css?v=2026.11.16.12"/>
+<script src="js/extensoes.js?v=2026.11.16.12"></script>
 
 
   <!-- MODAL: ANOTAÇÃO NA ATIVIDADE -->
@@ -1043,28 +1048,30 @@
     </div>
   </div>
 
-  <!-- Assistente Task Flow (balão do canto + Ctrl+K): busca e montar obra por perguntas -->
-  <link rel="stylesheet" href="css/assistente.css?v=2026.11.16.10"/>
-  <script src="js/assistente.js?v=2026.11.16.10"></script>
-<script src="js/obras.js?v=2026.11.16.10"></script>
-<script src="js/obra.js?v=2026.11.16.10"></script>
-<script src="js/obra-abas.js?v=2026.11.16.10"></script>
-<script src="js/obra-montar.js?v=2026.11.16.10"></script>
-<link rel="stylesheet" href="css/minhas.css?v=2026.11.16.10"/>
-<link rel="stylesheet" href="css/equipe.css?v=2026.11.16.10"/>
-<script src="js/equipe.js?v=2026.11.16.10"></script>
-<link rel="stylesheet" href="css/recursos.css?v=2026.11.16.10"/>
-<script src="js/recursos.js?v=2026.11.16.10"></script>
-<link rel="stylesheet" href="css/rdo.css?v=2026.11.16.10"/>
-<script src="js/rdo.js?v=2026.11.16.10"></script>
-<link rel="stylesheet" href="css/relatorios.css?v=2026.11.16.10"/>
-<script src="js/relatorios.js?v=2026.11.16.10"></script>
-<link rel="stylesheet" href="css/empresa.css?v=2026.11.16.10"/>
-<script src="js/empresa.js?v=2026.11.16.10"></script>
-<link rel="stylesheet" href="css/historico.css?v=2026.11.16.10"/>
-<script src="js/historico-tela.js?v=2026.11.16.10"></script>
-<script src="js/minhas.js?v=2026.11.16.10"></script>
-<script src="js/servidor.js?v=2026.11.16.10"></script>
+  <!-- Assistente Aprumo (balão do canto + Ctrl+K): busca e montar obra por perguntas -->
+  <link rel="stylesheet" href="css/assistente.css?v=2026.11.16.12"/>
+  <script src="js/assistente.js?v=2026.11.16.12"></script>
+<script src="js/obras.js?v=2026.11.16.12"></script>
+<script src="js/obra.js?v=2026.11.16.12"></script>
+<script src="js/obra-abas.js?v=2026.11.16.12"></script>
+<script src="js/obra-montar.js?v=2026.11.16.12"></script>
+<link rel="stylesheet" href="css/minhas.css?v=2026.11.16.12"/>
+<link rel="stylesheet" href="css/equipe.css?v=2026.11.16.12"/>
+<script src="js/equipe.js?v=2026.11.16.12"></script>
+<link rel="stylesheet" href="css/recursos.css?v=2026.11.16.12"/>
+<script src="js/recursos.js?v=2026.11.16.12"></script>
+<link rel="stylesheet" href="css/rdo.css?v=2026.11.16.12"/>
+<script src="js/rdo.js?v=2026.11.16.12"></script>
+<link rel="stylesheet" href="css/relatorios.css?v=2026.11.16.12"/>
+<script src="js/relatorios.js?v=2026.11.16.12"></script>
+<link rel="stylesheet" href="css/empresa.css?v=2026.11.16.12"/>
+<script src="js/empresa.js?v=2026.11.16.12"></script>
+<link rel="stylesheet" href="css/historico.css?v=2026.11.16.12"/>
+<script src="js/historico-tela.js?v=2026.11.16.12"></script>
+<link rel="stylesheet" href="css/gestao-vista.css?v=2026.11.16.12"/>
+<script src="js/gestao-vista.js?v=2026.11.16.12"></script>
+<script src="js/minhas.js?v=2026.11.16.12"></script>
+<script src="js/servidor.js?v=2026.11.16.12"></script>
 <script>if ('serviceWorker' in navigator && (location.protocol === 'https:' || localStorage.getItem('tf-sw') === '1')) navigator.serviceWorker.register('sw.js').catch(() => {});</script>
 
 </body>

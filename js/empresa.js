@@ -1,4 +1,4 @@
-/* Task Flow · empresa.js — tela "Empresa e usuários": usuários (perfil, desativar, nova senha), convites por e-mail ou link
+/* Aprumo · empresa.js — tela "Empresa e usuários": usuários (perfil, desativar, nova senha), convites por e-mail ou link
    para WhatsApp, dados e logo da empresa, calendário padrão, regras do campo e plano. Só o administrador altera.
    Usa as peças visuais da Equipe (eq-*) e as próprias (em-*). */
 (() => {
@@ -97,7 +97,7 @@
     const lista = h('div', { id: 'em-lista' }, listaUsuarios());
     const bt = U.pode_editar ? h('button', { class: 'eq-bt pri', id: 'em-convidar', onclick: () => janelaConvite() }, ic('fa-user-plus'), ' Convidar pessoa') : null;
     const painel = h('section', { class: 'eq-painel' }, h('div', { class: 'eq-painel-cab' }, h('div', null, h('b', null, `Usuários (${U.usuarios.filter(x => x.situacao === 'ativo').length} ativos)`),
-      h('small', null, 'Quem entra no Task Flow. Desativar tira o acesso na hora e mantém o nome nos registros.')), mob ? null : bt), mob && bt ? h('div', { class: 'em-pad' }, bt) : null, h('div', { class: 'em-pad' }, filtros), lista);
+      h('small', null, 'Quem entra no Aprumo. Desativar tira o acesso na hora e mantém o nome nos registros.')), mob ? null : bt), mob && bt ? h('div', { class: 'em-pad' }, bt) : null, h('div', { class: 'em-pad' }, filtros), lista);
     const perfis = h('section', { class: 'eq-painel' }, h('div', { class: 'eq-painel-cab' }, h('b', null, 'O que cada perfil pode fazer')),
       h('div', { class: 'em-perfis' }, Object.values(PERF).map(p => h('div', null, h('b', null, p[0]), h('span', null, p[2])))));
     return [kpis, painel, perfis];
@@ -161,7 +161,7 @@
     catch (e) { avisar(e.message, 'error'); if (sel) sel.value = x.perfil; }
   }
   function desativar(x) {
-    janela('Desativar acesso', h('p', { class: 'rl-nota' }, `${x.nome} deixa de entrar no Task Flow agora (quem estiver usando é desconectado). O nome continua nos avanços, RDOs e fotos que já registrou. Dá para reativar depois.`),
+    janela('Desativar acesso', h('p', { class: 'rl-nota' }, `${x.nome} deixa de entrar no Aprumo agora (quem estiver usando é desconectado). O nome continua nos avanços, RDOs e fotos que já registrou. Dá para reativar depois.`),
       'Desativar', async () => { await api(`usuarios/${x.id}/desativar`, 'POST'); avisar(`${x.nome} desativado`, 'success'); await carregar('usuarios'); }, true);
   }
   async function reativar(x) { try { await api(`usuarios/${x.id}/reativar`, 'POST'); avisar(`${x.nome} reativado`, 'success'); await carregar('usuarios'); } catch (e) { avisar(e.message, 'error'); } }
@@ -335,7 +335,7 @@
   }
   function verPlanos() {
     const L = M.P.planos.filter(x => x.id !== 'teste'), lim = v => v == null ? 'ilimitado' : v;
-    janela('Planos do Task Flow', h('div', { class: 'em-planos' }, L.map(x => h('div', { class: 'em-pl' + (x.id === M.P.plano.id ? ' on' : '') }, h('b', null, x.nome), h('span', null, x.preco ? `R$ ${x.preco.toLocaleString('pt-BR')}/mês` : 'sob consulta'),
+    janela('Planos do Aprumo', h('div', { class: 'em-planos' }, L.map(x => h('div', { class: 'em-pl' + (x.id === M.P.plano.id ? ' on' : '') }, h('b', null, x.nome), h('span', null, x.preco ? `R$ ${x.preco.toLocaleString('pt-BR')}/mês` : 'sob consulta'),
       h('small', null, `Obras: ${lim(x.obras)}`), h('small', null, `Escritório: ${lim(x.escritorio)}`), h('small', null, 'Campo: ilimitado'), h('small', null, `Fotos: ${x.gb ? x.gb + ' GB' : 'sob medida'}`), h('small', null, x.gestao_vista ? '✓ Gestão à vista' : '— Gestão à vista'),
       x.id === M.P.plano.id ? selo('Seu plano', 'ok') : null))), null, null);
   }

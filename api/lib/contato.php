@@ -1,5 +1,5 @@
 <?php
-/* Task Flow · servidor · Fale conosco (funciona com ou sem login) e a caixa do dono da plataforma */
+/* Aprumo · servidor · Fale conosco (funciona com ou sem login) e a caixa do dono da plataforma */
 declare(strict_types=1);
 
 const ASSUNTOS_CONTATO = ['Dúvida', 'Problema no sistema', 'Sugestão', 'Comercial', 'Outro'];
@@ -22,14 +22,14 @@ function rota_fale_conosco(): array {
     // aviso aos donos da plataforma: só avisa e leva ao login; a mensagem é lida dentro do sistema
     foreach (donos_plataforma() as $para) {
         $dono = um('SELECT nome FROM usuarios WHERE email = ? AND excluido_em IS NULL LIMIT 1', [$para]);
-        enviar_email($para, email_aviso_contato($dono['nome'] ?? 'equipe Task Flow', $assunto, link_app('/painel.html')));
+        enviar_email($para, email_aviso_contato($dono['nome'] ?? 'equipe Aprumo', $assunto, link_app('/painel.html')));
     }
     return ['ok' => true, 'mensagem' => 'Mensagem enviada. Vamos responder no seu e-mail.'];
 }
 
 function exigir_dono(): array {
     $u = exigir_login();
-    if (empty($u['dono_plataforma'])) throw new ErroApi('Só a administração do Task Flow vê esta caixa', 403);
+    if (empty($u['dono_plataforma'])) throw new ErroApi('Só a administração do Aprumo vê esta caixa', 403);
     return $u;
 }
 /** GET /api/fale-conosco — caixa de mensagens (dono da plataforma) */

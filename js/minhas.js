@@ -1,4 +1,4 @@
-/* Task Flow · minhas.js — tela "Minhas atividades": o que cada pessoa tem para fazer, avanço com foto, "Travou",
+/* Aprumo · minhas.js — tela "Minhas atividades": o que cada pessoa tem para fazer, avanço com foto, "Travou",
    e funcionamento sem internet (fila guardada no aparelho, enviada quando a conexão volta). */
 (() => {
   'use strict';

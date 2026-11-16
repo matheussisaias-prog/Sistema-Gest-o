@@ -1,4 +1,4 @@
-/* Task Flow · recursos.js — tela "Recursos": equipamentos, veículos e ferramentas; reservas pelas atividades, conflitos,
+/* Aprumo · recursos.js — tela "Recursos": equipamentos, veículos e ferramentas; reservas pelas atividades, conflitos,
    mapa de reservas, locação (fornecedor, período, custo, devolução), calibração/manutenção/inspeção e paradas.
    Usa as peças visuais da Equipe (eq-*) e as próprias (rc-*). */
 (() => {

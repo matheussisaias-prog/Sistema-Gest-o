@@ -1,4 +1,4 @@
-/* Task Flow · assistente.js — Assistente Task Flow (balão flutuante e Ctrl+K), sem IA externa:
+/* Aprumo · assistente.js — Assistente Aprumo (balão flutuante e Ctrl+K), sem IA externa:
    Buscar (dados do sistema + dúvidas de uso) e Montar obra por perguntas (com prévia do Gantt). */
 (() => {
   'use strict';
@@ -37,6 +37,8 @@
 
   /* ── dúvidas de uso (base de perguntas e respostas do sistema) ── */
   const AJUDA = [
+    ['O que é a tela Início?', 'É a gestão à vista: ao entrar, o administrador e o gestor caem nela. Mostra o farol de cada obra (barra = real, traço = previsto, cor pelo desvio de prazo), os atrasos e Travou abertos, o que falta de RDO e documentos de NR, e a agenda dos próximos 7 dias. Clique em qualquer item para abrir.', 'inicio gestao a vista farol painel resumo semana atrasos travou agenda dashboard', { tipo: 'view', view: 'inicio', rotulo: 'Abrir Início' }],
+    ['Como deixo o painel numa TV da obra ou do escritório?', 'Na tela Início, clique em "Modo TV". Abre em tela cheia, com letras grandes, troca de página a cada 20 segundos e se atualiza sozinho a cada 2 minutos. Para sair, aperte Esc ou o X no canto.', 'modo tv televisao telao tela cheia escritorio monitor painel apresentar', { tipo: 'view', view: 'inicio', rotulo: 'Abrir Início' }],
     ['Como crio uma obra nova?', 'No topo da tela, clique em "Nova obra" e preencha código, nome, cliente e datas. Se preferir, use a aba "Montar obra" deste assistente: ele faz as perguntas e já cria a obra com o cronograma.', 'nova obra criar cadastrar obra projeto', { tipo: 'view', view: 'obras', rotulo: 'Ir para Obras' }],
     ['Como monto o cronograma sem digitar tudo?', 'Abra a obra e use o menu ⋯ › "Montar / importar cronograma". Dá para usar um modelo pronto, montar por perguntas, copiar de outra obra, importar MS Project ou Excel, ou colar linhas do Excel.', 'montar cronograma modelo pronto rapido eap', { tipo: 'montar', rotulo: 'Montar por perguntas' }],
     ['Como funciona a montagem por perguntas?', 'Você responde o tipo de serviço, o que está incluído, as quantidades, as datas e o tamanho da equipe. O assistente calcula as durações pelas quantidades, liga as atividades e mostra o Gantt antes de criar. Se o prazo não couber, ele avisa e sugere ajustes.', 'perguntas assistente montar obra gantt automatico', { tipo: 'montar', rotulo: 'Começar agora' }],
@@ -105,8 +107,8 @@
   let bt, jan;
   function criar() {
     if (bt) return;
-    bt = h('button', { id: 'tfa-bt', class: 'tfa-bt', 'aria-label': 'Abrir o Assistente Task Flow', 'aria-expanded': 'false', title: 'Assistente Task Flow (Ctrl+K)', onclick: () => S.aberto ? fechar() : abrir() }, ic('fa-magnifying-glass'));
-    jan = h('div', { id: 'tfa-jan', class: 'tfa-jan', role: 'dialog', 'aria-label': 'Assistente Task Flow', hidden: true });
+    bt = h('button', { id: 'tfa-bt', class: 'tfa-bt', 'aria-label': 'Abrir o Assistente Aprumo', 'aria-expanded': 'false', title: 'Assistente Aprumo (Ctrl+K)', onclick: () => S.aberto ? fechar() : abrir() }, ic('fa-magnifying-glass'));
+    jan = h('div', { id: 'tfa-jan', class: 'tfa-jan', role: 'dialog', 'aria-label': 'Assistente Aprumo', hidden: true });
     document.body.append(jan, bt);
     document.addEventListener('keydown', ev => {
       if ((ev.ctrlKey || ev.metaKey) && !ev.altKey && sem(ev.key) === 'k') { ev.preventDefault(); abrir('b'); }
@@ -125,7 +127,7 @@
     if (S.aba === 'm' && !M.tipos && !semIniciar) iniciarMontar();
   }
   function fechar() {
-    S.aberto = false; jan.hidden = true; bt.setAttribute('aria-expanded', 'false'); bt.setAttribute('aria-label', 'Abrir o Assistente Task Flow'); bt.innerHTML = ''; bt.append(ic('fa-magnifying-glass'));
+    S.aberto = false; jan.hidden = true; bt.setAttribute('aria-expanded', 'false'); bt.setAttribute('aria-label', 'Abrir o Assistente Aprumo'); bt.innerHTML = ''; bt.append(ic('fa-magnifying-glass'));
     document.body.classList.remove('tfa-aberto');
     const f = document.querySelector('.tfa-folha'); if (f) f.remove();
     bt.focus();
@@ -136,7 +138,7 @@
     jan.innerHTML = '';
     const cab = h('div', { class: 'tfa-cab' },
       h('span', { class: 'tfa-logo' }, ic('fa-magnifying-glass')),
-      h('div', { class: 'tfa-cab-t' }, h('h2', null, 'Assistente Task Flow'),
+      h('div', { class: 'tfa-cab-t' }, h('h2', null, 'Assistente Aprumo'),
         h('p', null, S.aba === 'b' ? 'Busca nas obras, pessoas, recursos, RDOs e na ajuda' : M.passos ? `Montar obra por perguntas · ${M.i < contaPerguntas() ? `pergunta ${M.i + 1} de ${contaPerguntas()}` : 'pronto para criar'}` : 'Montar obra por perguntas')),
       h('button', { class: 'tfa-x', 'aria-label': 'Fechar o assistente', onclick: fechar }, ic('fa-xmark')));
     const abas = podeTudo() ? h('div', { class: 'tfa-abas', role: 'tablist', 'aria-label': 'Assistente' },
@@ -186,6 +188,7 @@
     if (l.tipo === 'rdo' && window.tfRdo && eu().perfil !== 'funcionario') { fechar(); tfRdo.abrirRdo(l.id); return; }
     if (l.tipo === 'view') {
       if (l.view === 'equipe') l.view = 'pessoas';
+      if (l.view === 'inicio' && !document.getElementById('nav-inicio')) { avisar('A tela Início é da gestão (administrador e gestor). Para você, o começo é Minhas atividades.', 'info'); return; }
       if (!document.getElementById('view-' + l.view)) { avisar('Esta tela está sendo refeita e chega nas próximas entregas.', 'info'); return; }
       if (celular()) fechar();
       window.switchView(l.view, document.querySelector(`[onclick*="'${l.view}'"]`)); return;

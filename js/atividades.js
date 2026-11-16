@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════
-   TaskFlow PRO · atividades.js
+   Aprumo · atividades.js
    Lista de atividades com filtros e ordenação
    (separado do index.html na Fase 0 — a ordem de carregamento importa)
 ═══════════════════════════════════════════════════════════════ */

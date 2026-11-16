@@ -1,4 +1,4 @@
-"""Assistente Task Flow (servidor): busca por frases, perfis de acesso e montar obra por perguntas."""
+"""Assistente Aprumo (servidor): busca por frases, perfis de acesso e montar obra por perguntas."""
 import sys, requests
 sys.path.insert(0, "/home/claude/telas"); from dados_crono import criar
 A = "http://127.0.0.1:8900/api"; ok = f = 0
@@ -68,7 +68,7 @@ check("Sem login: 401", requests.get(A+"/assistente/buscar", params={"q": "obras
 # ── tipos e prévia ──
 check("Encarregado não monta obra (403)", enc.get(A+"/assistente/tipos").status_code == 403 and enc.post(A+"/assistente/previa", json={"tipo": "spda"}).status_code == 403)
 T = adm.get(A+"/assistente/tipos").json()["tipos"]
-check("6 tipos: 5 do Task Flow + genérica", [t["id"] for t in T] == ["subestacao", "iluminacao", "nr12", "spda", "qgbt", "generica"])
+check("6 tipos: 5 do Aprumo + genérica", [t["id"] for t in T] == ["subestacao", "iluminacao", "nr12", "spda", "qgbt", "generica"])
 check("Perguntas com escolha (fator) e com número", any(p["escolha"] for t in T if "perguntas" in t for p in t["perguntas"]) and T[0]["perguntas"][0]["opcoes"] == [1, 2, 3, 4])
 P = lambda d: adm.post(A+"/assistente/previa", json=d)
 base = {"tipo": "subestacao", "qtd": {"n_trafos": 2, "kva": 1000, "m_cabo_mt": 350, "m_malha": 200}, "equipe": 4, "inicio": "2027-01-11"}

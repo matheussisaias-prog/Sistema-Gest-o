@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════
-   TaskFlow PRO · interface.js
+   Aprumo · interface.js
    Navegação entre telas, modais, tema claro/escuro e avisos (toast)
    (separado do index.html na Fase 0 — a ordem de carregamento importa)
 ═══════════════════════════════════════════════════════════════ */

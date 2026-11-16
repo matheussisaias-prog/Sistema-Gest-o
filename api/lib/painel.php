@@ -1,5 +1,5 @@
 <?php
-/* Task Flow · servidor · painel da Mercurium (só para os donos da plataforma) */
+/* Aprumo · servidor · painel da Mercurium (só para os donos da plataforma) */
 declare(strict_types=1);
 
 /** GET /api/painel/empresas — todas as empresas com os números de uso */

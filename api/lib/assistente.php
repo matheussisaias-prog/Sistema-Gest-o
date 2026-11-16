@@ -1,5 +1,5 @@
 <?php
-/* Task Flow · servidor · Assistente Task Flow (sem IA externa):
+/* Aprumo · servidor · Assistente Aprumo (sem IA externa):
    1) buscador que entende frases do dia a dia ("atividades atrasadas da ELE-014", "o que o João tem essa semana");
    2) montar obra por perguntas: regras por tipo de serviço → etapas, durações pelas quantidades, ligações e prévia do Gantt. */
 declare(strict_types=1);
@@ -680,6 +680,6 @@ function rota_assistente_montar(int $pid): array {
     // a obra fica com as datas do cronograma (o prazo, se informado, vira o fim previsto)
     $fimObra = !empty($d['prazo']) ? max((string)$d['prazo'], $r['fim']) : $r['fim'];
     q('UPDATE projetos SET inicio = COALESCE(inicio, ?), fim = ?, tipo_servico = COALESCE(NULLIF(tipo_servico, \'\'), ?) WHERE id = ?', [$cal_ini, $fimObra, $r['tipo_servico'] ?: null, $pid]);
-    registrar($u, (int)$u['empresa_id'], 'projetos', $pid, 'alterou', null, ['origem' => 'Assistente Task Flow'] + ['tipo' => $d['tipo'] ?? null, 'atividades' => $res['atividades']]);
+    registrar($u, (int)$u['empresa_id'], 'projetos', $pid, 'alterou', null, ['origem' => 'Assistente Aprumo'] + ['tipo' => $d['tipo'] ?? null, 'atividades' => $res['atividades']]);
     return $res + ['fim' => $r['fim']];
 }

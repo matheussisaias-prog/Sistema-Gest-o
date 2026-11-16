@@ -1,5 +1,5 @@
 <?php
-/* TaskFlow PRO · servidor · obras, atividades e equipe (sempre filtrado pela empresa de quem está logado) */
+/* Aprumo · servidor · obras, atividades e equipe (sempre filtrado pela empresa de quem está logado) */
 declare(strict_types=1);
 
 const PODE_TUDO = ['administrador', 'gestor'];

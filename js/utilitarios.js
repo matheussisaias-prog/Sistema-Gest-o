@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════
-   TaskFlow PRO · utilitarios.js
+   Aprumo · utilitarios.js
    Funções de apoio: datas, escape de HTML, ids, cores, status automático
    (separado do index.html na Fase 0 — a ordem de carregamento importa)
 ═══════════════════════════════════════════════════════════════ */

@@ -19,7 +19,7 @@ p1, p2, p3, p4 = obra("M-1"), obra("M-2"), obra("M-3"), obra("M-4")
 
 # ── modelos ──
 ms = adm.get(B+"/modelos").json()["modelos"]
-check("5 modelos do Task Flow", len([m for m in ms if m["origem"] == "Modelo Task Flow"]) == 5)
+check("5 modelos do Aprumo", len([m for m in ms if m["origem"] == "Modelo Aprumo"]) == 5)
 r = adm.post(B+f"/obras/{p1}/aplicar-modelo", json={"modelo": "tf-subestacao", "previa": True}).json()
 check("Prévia do modelo (17 linhas, 4 etapas, ligações)", r["atividades"] == 17 and sum(1 for x in r["previa"] if x["etapa"]) == 4 and r["ligacoes"] >= 12, r.get("atividades"))
 r = adm.post(B+f"/obras/{p1}/aplicar-modelo", json={"modelo": "tf-subestacao", "inicio": "2027-03-01", "por_cargo": True}).json()

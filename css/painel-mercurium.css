@@ -1,4 +1,4 @@
-/* Task Flow · painel-mercurium.css — painel da Mercurium (Fale conosco e empresas) */
+/* Aprumo · painel-mercurium.css — painel da Mercurium (Fale conosco e empresas) */
 :root {
   --navy: #0b1220; --blue: #2563eb; --blue-dim: rgba(37,99,235,.09); --green: #059669; --green-dim: rgba(5,150,105,.1);
   --red: #dc2626; --red-dim: rgba(220,38,38,.08); --amber: #b45309; --amber-dim: rgba(217,119,6,.1);
@@ -175,3 +175,6 @@ button { cursor: pointer; }
   .tabela .num { text-align: right; }
 }
 .em-plano { display: block; margin-top: 6px; height: 30px; border: 1px solid #cbd5e1; border-radius: 8px; padding: 0 6px; font: 12.5px inherit; background: #fff; color: #0f172a; }
+
+.tf-lam { width: .74em; height: .8em; vertical-align: -.04em; margin-right: .1em; display: inline-block; }
+.logo-nome > span { letter-spacing: .12em; }

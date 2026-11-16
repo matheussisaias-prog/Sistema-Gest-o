@@ -1,5 +1,5 @@
 <?php
-/* Task Flow · servidor · Equipe: pessoas, situação (férias/afastamento), documentos de NR exigidos (cargo + obra + atividade),
+/* Aprumo · servidor · Equipe: pessoas, situação (férias/afastamento), documentos de NR exigidos (cargo + obra + atividade),
    certificados, carga dos próximos 14 dias e aviso ao alocar. Vencimentos aparecem só no painel (sem e-mail). */
 declare(strict_types=1);
 

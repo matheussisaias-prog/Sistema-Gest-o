@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════
-   TaskFlow PRO · dias-uteis.js
+   Aprumo · dias-uteis.js
    Configuração de jornada, feriados e cálculo de dias e horas úteis
    (separado do index.html na Fase 0 — a ordem de carregamento importa)
 ═══════════════════════════════════════════════════════════════ */

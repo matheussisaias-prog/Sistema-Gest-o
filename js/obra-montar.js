@@ -1,4 +1,4 @@
-/* Task Flow · obra-montar.js — montar o cronograma (modelo, copiar, importar arquivo, colar do Excel) e exportar (PDF, Excel, MS Project) */
+/* Aprumo · obra-montar.js — montar o cronograma (modelo, copiar, importar arquivo, colar do Excel) e exportar (PDF, Excel, MS Project) */
 (() => {
   'use strict';
   function h(tag, attrs, ...filhos) {
@@ -228,7 +228,7 @@
       <span><b>Gestor</b>${esc(o.gestor || '—')}</span><span><b>Responsável técnico</b>${esc(o.rt_nome || '—')}${o.art_numero ? ' · ART ' + esc(o.art_numero) : ''}</span><span><b>Calendário</b>${esc(O.d.calendario.nome)}</span></div>
     <table><colgroup><col style="width:4%"><col style="width:22%"><col style="width:10%"><col style="width:6%"><col style="width:6%"><col style="width:4%"><col style="width:7%"><col style="width:4%"><col></colgroup>
     <thead><tr><th>EAP</th><th>Atividade</th><th>Resp.</th><th>Início</th><th>Fim</th><th>Dur.</th><th>Pred.</th><th>%</th><th>${dBR(ini)} → ${dBR(fim)}</th></tr></thead><tbody>${linhas}</tbody></table>
-    <div class="rod"><span>Task Flow by mercurium · gerado em ${new Date().toLocaleString('pt-BR')}</span><span>Barra azul = feito · contorno vermelho = caminho crítico · linha azul = hoje</span></div>
+    <div class="rod"><span>Aprumo by mercurium · gerado em ${new Date().toLocaleString('pt-BR')}</span><span>Barra azul = feito · contorno vermelho = caminho crítico · linha azul = hoje</span></div>
     <script>setTimeout(function(){print()},400)<\/script></body></html>`);
     w.document.close();
   }

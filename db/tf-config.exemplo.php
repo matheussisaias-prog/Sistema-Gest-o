@@ -8,9 +8,9 @@ return [
     'db_name'  => 'u000000000_taskflow',   // nome do banco (Hostinger > Bancos de dados MySQL)
     'db_user'  => 'u000000000_taskflow',   // usuário do banco
     'db_pass'  => 'SENHA-DO-BANCO',        // senha que você definiu no painel
-    'app_url'  => 'https://gestao.mercurium.com.br',
+    'app_url'  => 'https://aprumo.mercurium.com.br',
     'email_remetente' => 'no-reply@mercurium.com.br',
-    // Quem administra o Task Flow e lê a caixa do Fale conosco (e recebe o aviso por e-mail).
+    // Quem administra o Aprumo e lê a caixa do Fale conosco (e recebe o aviso por e-mail).
     // Ex.: ['suporte@mercurium.com.br']. Use o e-mail de login de uma conta já cadastrada. Vazio = ninguém vê a caixa; as mensagens ficam guardadas.
     'donos_plataforma' => [],
     // Só para a primeira instalação; apague esta linha depois de instalar:

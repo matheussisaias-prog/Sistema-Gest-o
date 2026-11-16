@@ -1,4 +1,4 @@
-/* TaskFlow PRO · entrar.css — login, cadastro da empresa, convite e senha */
+/* Aprumo · entrar.css — login, cadastro da empresa, convite e senha */
 :root {
   --navy: #0f1629; --navy2: #1a2744; --blue: #2563eb; --blue-light: #3b82f6; --blue-dim: rgba(37,99,235,.08);
   --green: #059669; --green-dim: rgba(5,150,105,.1); --red: #dc2626; --red-dim: rgba(220,38,38,.08); --amber: #d97706;
@@ -149,3 +149,6 @@ input.erro, select.erro { border-color: var(--red); box-shadow: 0 0 0 3px var(--
 .logo-area img { max-width: 100%; max-height: 76px; object-fit: contain; }
 #c-logo { position: absolute; width: 1px; height: 1px; opacity: 0; }
 .logo-dica { margin: 0; font-size: 12.5px; color: #64748b; line-height: 1.45; } .logo-dica button { border: 0; background: none; color: #b91c1c; font-weight: 600; cursor: pointer; padding: 0 4px; }
+
+.tf-lam { width: .74em; height: .8em; vertical-align: -.04em; margin-right: .1em; display: inline-block; }
+.logo-nome > span { letter-spacing: .12em; }
