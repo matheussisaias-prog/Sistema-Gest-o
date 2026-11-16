@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════
-   TaskFlow PRO · importar-exportar.js
+   Mercronos · importar-exportar.js
    Importação CSV/JSON e exportação JSON/CSV
    (separado do index.html na Fase 0 — a ordem de carregamento importa)
 ═══════════════════════════════════════════════════════════════ */
@@ -85,7 +85,7 @@ function cancelImport() {
 
 function exportJSON() {
   const blob = new Blob([JSON.stringify({activities,projects},null,2)], {type:'application/json'});
-  dlBlob(blob, 'taskflow-backup.json');
+  dlBlob(blob, 'mercronos-backup.json');
   toast('✓ Backup exportado', 'success');
 }
 
@@ -93,7 +93,7 @@ function exportCSV() {
   const header = 'projeto,titulo,responsavel,inicio,termino,status,progresso';
   const rows = activities.map(a => [a.project,a.description,a.responsible,a.startDate,a.dueDate,a.status,a.progress].map(v=>`"${(v||'').toString().replace(/"/g,'""')}"`).join(','));
   const blob = new Blob([[header,...rows].join('\n')], {type:'text/csv'});
-  dlBlob(blob, 'taskflow-atividades.csv');
+  dlBlob(blob, 'mercronos-atividades.csv');
   toast('✓ CSV exportado', 'success');
 }
 

@@ -1,4 +1,4 @@
-/* Task Flow · obra-abas.js — abas Quadro, Equipe da obra e Linha de base e histórico; calendário de trabalho do gestor */
+/* Mercronos · obra-abas.js — abas Quadro, Equipe da obra e Linha de base e histórico; calendário de trabalho do gestor */
 (() => {
   'use strict';
   const COLS = [['Pendente', '#94a3b8'], ['Em andamento', '#2563eb'], ['Concluído', '#059669'], ['Reprogramado', '#d97706']];

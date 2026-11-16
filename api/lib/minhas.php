@@ -1,5 +1,5 @@
 <?php
-/* Task Flow · servidor · Minhas atividades: o que cada pessoa tem para fazer, avanço com foto, "Travou" (impedimento) e fotos. */
+/* Mercronos · servidor · Minhas atividades: o que cada pessoa tem para fazer, avanço com foto, "Travou" (impedimento) e fotos. */
 declare(strict_types=1);
 
 const MOTIVOS_TRAVOU = [

@@ -1,4 +1,4 @@
-/* Task Flow · empresa.css — tela "Empresa e usuários" (usa também as peças eq-* da Equipe) */
+/* Mercronos · empresa.css — tela "Empresa e usuários" (usa também as peças eq-* da Equipe) */
 .eq.em { width: 100%; }
 .em, .em *, .em-jan, .em-jan *, .em-folha, .em-folha *, .em-menu, .em-menu * { box-sizing: border-box; }
 .em-abas { display: flex; gap: 22px; border-bottom: 1px solid #e2e8f0; overflow-x: auto; scrollbar-width: none; }

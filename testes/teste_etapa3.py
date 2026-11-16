@@ -39,7 +39,7 @@ with sync_playwright() as p:
     txt = pg.inner_text(".tf-imp")
     check("Oferece importar (sem contar o exemplo)", "1 obra" in txt and "2 atividade" in txt, txt)
     with pg.expect_download() as dl: pg.click("#tf-imp-sim")
-    check("Baixa cópia antes de importar", dl.value.suggested_filename == "taskflow-copia-do-navegador.json")
+    check("Baixa cópia antes de importar", dl.value.suggested_filename == "mercronos-copia-do-navegador.json")
     pg.wait_for_selector(".tf-imp", state="detached", timeout=8000)
     projs = s.get(B+"/api/projetos").json()["projetos"]; acts = s.get(B+"/api/atividades").json()["atividades"]
     check("Importou a obra LECTRA 5 com status Planejamento", [(x["nome"],x["situacao"]) for x in projs] == [("LECTRA 5","Planejamento")], projs)

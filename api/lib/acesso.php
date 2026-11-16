@@ -1,5 +1,5 @@
 <?php
-/* TaskFlow PRO · servidor · cadastro da empresa, login, convites e senha */
+/* Mercronos · servidor · cadastro da empresa, login, convites e senha */
 declare(strict_types=1);
 
 /** POST /api/cadastro — "Cadastrar minha empresa". Quem cadastra vira administrador e já diz quem é quem. */
@@ -126,7 +126,7 @@ function rota_entrar(): array {
     if ($u['desativado_em']) throw new ErroApi('Seu acesso foi desativado pelo administrador da empresa.', 403);
     if (!$u['email_confirmado_em']) throw new ErroApi('Confirme seu e-mail antes de entrar (veja a caixa de entrada)', 403);
     if (um('SELECT e.id FROM usuarios u JOIN empresas e ON e.id = u.empresa_id WHERE u.id = ? AND (e.situacao = "suspenso" OR e.excluido_em IS NOT NULL)', [$u['id']]))
-        throw new ErroApi('O acesso desta empresa está suspenso. Use o Fale conosco para falar com a equipe Task Flow.', 403);
+        throw new ErroApi('O acesso desta empresa está suspenso. Use o Fale conosco para falar com a equipe Mercronos.', 403);
     if (password_needs_rehash($u['senha_hash'], PASSWORD_DEFAULT)) q('UPDATE usuarios SET senha_hash = ? WHERE id = ?', [password_hash($senha, PASSWORD_DEFAULT), $u['id']]);
     q('UPDATE usuarios SET tentativas_erradas = 0, bloqueado_ate = NULL, ultimo_acesso = UTC_TIMESTAMP() WHERE id = ?', [$u['id']]);
     abrir_sessao((int)$u['id']);

@@ -1,4 +1,4 @@
-/* Task Flow · painel-mercurium.js — painel da Mercurium: Fale conosco e empresas (só donos da plataforma) */
+/* Mercronos · painel-mercurium.js — painel da Mercurium: Fale conosco e empresas (só donos da plataforma) */
 (() => {
   'use strict';
   const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
@@ -97,9 +97,9 @@
     const box = $('#c-detalhe'), m = S.msgs.find(x => x.id === S.sel);
     box.innerHTML = '';
     if (!m) { $('#duas').classList.remove('lendo'); box.append(h('div', { class: 'vazio' }, ic('fa-regular fa-envelope-open'), h('p', null, 'Escolha uma mensagem para ler.'))); return; }
-    const assunto = 'Re: ' + m.assunto + ' (Task Flow)';
-    const corpo = `Olá, ${m.nome.split(' ')[0]}!\n\n\n\n— Equipe Task Flow · suporte\n\n> Sua mensagem de ${quando(m.criado_em, true)}:\n> ${m.mensagem.replace(/\n/g, '\n> ')}`;
-    const nota = h('textarea', { id: 'dt-nota', placeholder: 'Ex.: liguei, quer demonstração na terça. Só a equipe Task Flow vê esta anotação.', maxlength: 5000 });
+    const assunto = 'Re: ' + m.assunto + ' (Mercronos)';
+    const corpo = `Olá, ${m.nome.split(' ')[0]}!\n\n\n\n— Equipe Mercronos · suporte\n\n> Sua mensagem de ${quando(m.criado_em, true)}:\n> ${m.mensagem.replace(/\n/g, '\n> ')}`;
+    const nota = h('textarea', { id: 'dt-nota', placeholder: 'Ex.: liguei, quer demonstração na terça. Só a equipe Mercronos vê esta anotação.', maxlength: 5000 });
     nota.value = m.anotacao || '';
     const btNota = h('button', { class: 'bt bt-mini', disabled: true, onclick: async () => {
       btNota.disabled = true;

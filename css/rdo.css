@@ -1,4 +1,4 @@
-/* Task Flow · rdo.css — tela "RDO" (usa também as peças eq-* da Equipe) */
+/* Mercronos · rdo.css — tela "RDO" (usa também as peças eq-* da Equipe) */
 .eq.rd { width: 100%; }
 .eq-kpi.roxo { border-top-color: #7c3aed; } .eq-selo.rx { background: #ede9fe; color: #6d28d9; }
 .rd-obra { height: 40px; border: 1.5px solid #cbd5e1; border-radius: 10px; padding: 0 10px; font: 13.5px 'DM Sans', system-ui, sans-serif; background: #fff; color: #0f172a; min-width: 260px; max-width: 100%; }

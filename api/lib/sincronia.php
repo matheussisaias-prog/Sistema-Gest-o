@@ -1,5 +1,5 @@
 <?php
-/* TaskFlow PRO · servidor · equipe (alterar), recursos, ausências e importação dos dados do navegador */
+/* Mercronos · servidor · equipe (alterar), recursos, ausências e importação dos dados do navegador */
 declare(strict_types=1);
 
 /* ── Equipe: alterar e desligar ──────────────────────────────── */

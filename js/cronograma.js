@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════
-   TaskFlow PRO · cronograma.js
+   Mercronos · cronograma.js
    Apoio de Gantt, Portfólio e Recursos (a renderização está em extensoes.js)
    (separado do index.html na Fase 0 — a ordem de carregamento importa)
 ═══════════════════════════════════════════════════════════════ */

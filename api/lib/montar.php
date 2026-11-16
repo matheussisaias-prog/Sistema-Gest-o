@@ -1,8 +1,8 @@
 <?php
-/* Task Flow · servidor · montar o cronograma (modelos, copiar de outra obra, colar/importar Excel e MS Project) e exportar */
+/* Mercronos · servidor · montar o cronograma (modelos, copiar de outra obra, colar/importar Excel e MS Project) e exportar */
 declare(strict_types=1);
 
-/* ══ Modelos prontos do Task Flow (linhas: nível, descrição, duração em dias úteis, predecessoras pela linha, cargo) ══ */
+/* ══ Modelos prontos do Mercronos (linhas: nível, descrição, duração em dias úteis, predecessoras pela linha, cargo) ══ */
 const MODELOS_TASKFLOW = [
     'tf-subestacao' => ['nome' => 'Subestação abrigada 13,8 kV', 'tipo' => 'Elétrica', 'linhas' => [
         [0, 'Mobilização'], [1, 'Mobilização de equipe e canteiro', 3, '', 'encarregado'], [1, 'Integração e treinamentos (NR-10, NR-35)', 1, '2'],
@@ -137,13 +137,13 @@ function previa_estrutura(array $itens, array $deps): array {
 }
 
 /* ══ Rotas: modelos ══════════════════════════════════════════════ */
-/** GET /api/modelos — os do Task Flow e os da empresa. */
+/** GET /api/modelos — os do Mercronos e os da empresa. */
 function rota_modelos_listar(): array {
     $u = exigir_login(); exigir_perfil($u, PODE_TUDO);
     $l = [];
     foreach (MODELOS_TASKFLOW as $k => $m) {
         $folhas = array_filter($m['linhas'], fn($x) => $x[0] > 0);
-        $l[] = ['id' => $k, 'nome' => $m['nome'], 'tipo_servico' => $m['tipo'], 'origem' => 'Modelo Task Flow', 'atividades' => count($folhas),
+        $l[] = ['id' => $k, 'nome' => $m['nome'], 'tipo_servico' => $m['tipo'], 'origem' => 'Modelo Mercronos', 'atividades' => count($folhas),
                 'linhas' => array_map(fn($x) => ['nivel' => $x[0], 'descricao' => $x[1], 'duracao' => $x[2] ?? null, 'pred' => $x[3] ?? '', 'cargo' => $x[4] ?? null], $m['linhas'])];
     }
     foreach (todos('SELECT m.id, m.nome, m.tipo_servico, m.linhas, us.nome AS autor, p.codigo FROM modelos_cronograma m LEFT JOIN usuarios us ON us.id = m.criado_por LEFT JOIN projetos p ON p.id = m.projeto_origem

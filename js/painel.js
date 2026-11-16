@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════
-   TaskFlow PRO · painel.js
+   Mercronos · painel.js
    Dashboard: indicadores, próximas a vencer, recomendações, prioridades e gráficos
    (separado do index.html na Fase 0 — a ordem de carregamento importa)
 ═══════════════════════════════════════════════════════════════ */

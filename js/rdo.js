@@ -1,4 +1,4 @@
-/* Task Flow · rdo.js — tela "RDO": calendário da obra (dias úteis, situação de cada dia), pendências de todas as obras,
+/* Mercronos · rdo.js — tela "RDO": calendário da obra (dias úteis, situação de cada dia), pendências de todas as obras,
    RDO do dia (o sistema monta; encarregado completa; gestor fecha), documento A4 com a logo, entrega e folha assinada.
    Usa as peças visuais da Equipe (eq-*) e as próprias (rd-*). */
 (() => {
@@ -267,5 +267,5 @@
   };
   window.addEventListener('resize', (() => { let w = celular(); return () => { if (w !== celular()) { w = celular(); desenhar(); } }; })());
   const abrirMenu = () => window.switchView('rdo', document.getElementById('nav-rdo'));
-  window.tfRdo = { abrir: abrirMenu, abrirRdo: id => { M.vindo = true; abrirMenu(); abrirRdo(id); }, hoje: pid => { M.vindo = true; abrirMenu(); M.obra = pid; abrirDia(pid); }, estado: M };
+  window.tfRdo = { abrir: abrirMenu, abrirRdo: id => { M.vindo = true; abrirMenu(); abrirRdo(id); }, hoje: pid => { M.vindo = true; abrirMenu(); M.obra = pid; abrirDia(pid); }, dia: (pid, data) => { M.vindo = true; abrirMenu(); M.obra = pid; abrirDia(pid, data); }, estado: M };
 })();

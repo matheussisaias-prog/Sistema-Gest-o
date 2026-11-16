@@ -1,12 +1,12 @@
 /* ═══════════════════════════════════════════════════════════════
-   TaskFlow PRO · sincronizacao.js
+   Mercronos · sincronizacao.js
    Sincronização opcional com GitHub Gist e proteção dos dados do navegador entre versões
    (separado do index.html na Fase 0 — a ordem de carregamento importa)
 ═══════════════════════════════════════════════════════════════ */
 /* ══════════════════════════════════════════════════
    GITHUB GIST SYNC — configuração
 ══════════════════════════════════════════════════ */
-const APP_VERSION = '2026.11.16.10';
+const APP_VERSION = '2026.11.16.11';
 const STORAGE_VERSION_KEY = 'tf_app_version';
 const GIST_ID    = localStorage.getItem('tf_gist_id') || '';
 const GIST_TOKEN = localStorage.getItem('tf_gist_token') || '';

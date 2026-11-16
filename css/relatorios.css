@@ -1,4 +1,4 @@
-/* Task Flow · relatorios.css — tela "Relatórios" (usa também as peças eq-* da Equipe) */
+/* Mercronos · relatorios.css — tela "Relatórios" (usa também as peças eq-* da Equipe) */
 .eq.rl { width: 100%; }
 .rl-tipos { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
 .rl-tipo { background: #fff; border: 1px solid #e2e8f0; border-top: 4px solid #94a3b8; border-radius: 14px; padding: 16px; display: flex; flex-direction: column; gap: 8px; text-align: left; font: 13px 'DM Sans', system-ui, sans-serif; color: #0f172a; cursor: pointer; min-width: 0; }

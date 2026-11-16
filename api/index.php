@@ -1,6 +1,6 @@
 <?php
 /* ═══════════════════════════════════════════════════════════════
-   TaskFlow PRO · servidor · porta de entrada de todas as chamadas /api/...
+   Mercronos · servidor · porta de entrada de todas as chamadas /api/...
 ═══════════════════════════════════════════════════════════════ */
 declare(strict_types=1);
 require __DIR__ . '/lib/base.php';
@@ -23,6 +23,7 @@ require __DIR__ . '/lib/relatorios.php';
 require __DIR__ . '/lib/empresa.php';
 require __DIR__ . '/lib/historico.php';
 require __DIR__ . '/lib/importar.php';
+require __DIR__ . '/lib/inicio.php';
 
 $metodo = $_SERVER['REQUEST_METHOD'] ?? 'GET';
 $caminho = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';
@@ -115,6 +116,7 @@ $rotas = [
     'POST rdos/#/assinado'      => 'rota_rdo_assinado',
     'GET rdos/#/folha'          => 'rota_rdo_folha',
     'GET rdos/#/documento'      => 'rota_rdo_documento',
+    'GET inicio'                => 'rota_inicio',
     'GET historico'             => 'rota_historico',
     'GET historico/excel'       => 'rota_historico_excel',
     'POST importar/previa'      => 'rota_importar_previa',
@@ -183,6 +185,6 @@ try {
 } catch (ErroApi $e) {
     responder(['erro' => $e->getMessage()], $e->status);
 } catch (Throwable $e) {
-    error_log('[TaskFlow API] ' . $e->getMessage() . ' @ ' . $e->getFile() . ':' . $e->getLine());
+    error_log('[Mercronos API] ' . $e->getMessage() . ' @ ' . $e->getFile() . ':' . $e->getLine());
     responder(['erro' => 'Erro interno no servidor. Tente de novo; se continuar, avise o suporte.'], 500);
 }

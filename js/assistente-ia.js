@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════
-   Task Flow · assistente-ia.js
+   Mercronos · assistente-ia.js
    Assistente de IA: chat, anotações, duplicatas e prévia de atividades
    (separado do index.html na Fase 0 — a ordem de carregamento importa)
 ═══════════════════════════════════════════════════════════════ */
@@ -148,7 +148,7 @@ function iaRefreshPreview() {
 
 /**
  * iaDetectarDuplicatas(novas)
- * Compara lista de atividades novas com as existentes no TaskFlow.
+ * Compara lista de atividades novas com as existentes no Mercronos.
  * Retorna { exatas, parciais, conflitos, novas }
  */
 function iaDetectarDuplicatas(novas) {
@@ -244,7 +244,7 @@ function iaRenderDuplicatasBanner(resultado) {
       <ul class="ia-dup-banner-list">`;
 
   resultado.exatas.forEach(d =>
-    html += `<li>🔴 <b>Duplicata exata:</b> "${d.nova}" já existe no Task Flow</li>`
+    html += `<li>🔴 <b>Duplicata exata:</b> "${d.nova}" já existe no Mercronos</li>`
   );
   resultado.parciais.forEach(d =>
     html += `<li>🟡 <b>Muito similar (${d.similaridade}%):</b> "${d.nova}" ≈ "${d.existente}"</li>`
@@ -364,11 +364,11 @@ function iaPrepararMessagesParaEnvio() {
 /**
  * iaGerarSystemPrompt()
  * Gera o system prompt dinamicamente incluindo TODOS os dados
- * atuais do TaskFlow (projetos + atividades) para a IA ter
+ * atuais do Mercronos (projetos + atividades) para a IA ter
  * contexto completo desde a primeira mensagem.
  */
 function iaGerarSystemPrompt() {
-  // ── Coleta dados atuais do TaskFlow ──────────────
+  // ── Coleta dados atuais do Mercronos ──────────────
   const todasAtividades = (typeof activities !== 'undefined') ? activities : [];
   const todosProjetos   = (typeof projects   !== 'undefined') ? projects   : [];
 
@@ -410,13 +410,13 @@ function iaGerarSystemPrompt() {
     ? Math.round(todasAtividades.reduce((s,a) => s + (a.progress||0), 0) / totalAtiv)
     : 0;
 
-  return `Você é o assistente oficial do Task Flow — um sistema de gerenciamento de projetos. Você ajuda o usuário de DUAS formas: (1) tirando dúvidas sobre o próprio sistema (como usar, onde fica cada coisa) e (2) analisando/criando dados de projetos dele.
+  return `Você é o assistente oficial do Mercronos — um sistema de gerenciamento de projetos. Você ajuda o usuário de DUAS formas: (1) tirando dúvidas sobre o próprio sistema (como usar, onde fica cada coisa) e (2) analisando/criando dados de projetos dele.
 
 ════════════════════════════════════════
-SOBRE O TASKFLOW PRO (conheça o sistema)
+SOBRE O MERCRONOS (conheça o sistema)
 ════════════════════════════════════════
 
-O Task Flow tem as seguintes seções (abas no menu lateral):
+O Mercronos tem as seguintes seções (abas no menu lateral):
 
 • **Dashboard** — visão geral: KPIs, gráficos resumidos, atividades recentes
 • **Atividades** — lista completa de tarefas com filtros, status, datas, responsáveis, % de conclusão
@@ -448,7 +448,7 @@ COMO RESPONDER DÚVIDAS SOBRE O SISTEMA:
 - Seja direto e em português brasileiro
 
 ════════════════════════════════════════
-CONTEXTO ATUAL DO TASKFLOW (dados do usuário)
+CONTEXTO ATUAL DO MERCRONOS (dados do usuário)
 ════════════════════════════════════════
 
 PROJETOS CADASTRADOS:
@@ -501,7 +501,7 @@ Regras de datas:
 
 DETECÇÃO DE DUPLICATAS E CONFLITOS (OBRIGATÓRIO ao receber arquivos):
 Sempre que o usuário enviar um arquivo (PDF, CSV, imagem) ou uma lista de atividades, você DEVE:
-1. Comparar cada atividade nova com as existentes no CONTEXTO ATUAL DO TASKFLOW acima
+1. Comparar cada atividade nova com as existentes no CONTEXTO ATUAL DO MERCRONOS acima
 2. Identificar DUPLICATAS EXATAS: mesmo nome (ou nome muito similar, ex: "INSTALAÇÃO" e "Instalação")
 3. Identificar DUPLICATAS PARCIAIS: mesma atividade com datas/status diferentes
 4. Identificar CONFLITOS: atividades que se sobrepõem no mesmo período do mesmo projeto
@@ -550,7 +550,7 @@ function iaInitChat() {
     const pendentes  = todasAtiv.filter(a => a.status === 'Pendente').length;
     const nProj      = projetos.length;
 
-    let boasVindas = 'Olá! Sou seu assistente de projetos e já li todo o seu Task Flow. 👋\n\n';
+    let boasVindas = 'Olá! Sou seu assistente de projetos e já li todo o seu Mercronos. 👋\n\n';
 
     if (total > 0) {
       boasVindas += `**Contexto carregado:**\n`;
@@ -559,7 +559,7 @@ function iaInitChat() {
       if (pendentes)   boasVindas += `• ${pendentes} pendente(s)\n`;
       boasVindas += `\nPode me perguntar sobre qualquer atividade ou projeto — já sei tudo que está cadastrado.\n\n`;
     } else {
-      boasVindas += 'Seu Task Flow ainda está vazio. Posso ajudar a criar o primeiro projeto!\n\n';
+      boasVindas += 'Seu Mercronos ainda está vazio. Posso ajudar a criar o primeiro projeto!\n\n';
     }
 
     boasVindas += 'O que deseja fazer?\n\n• Pergunte sobre uma atividade específica\n• Peça análise de riscos ou atrasos\n• Crie novas atividades ou projetos\n• Annexe um PDF para eu interpretar';

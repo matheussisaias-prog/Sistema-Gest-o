@@ -1,5 +1,5 @@
 <?php
-/* Task Flow · servidor · Relatórios: da obra para o cliente (curva S, feito, atrasadas, Travou, fotos, próximos passos e resumo
+/* Mercronos · servidor · Relatórios: da obra para o cliente (curva S, feito, atrasadas, Travou, fotos, próximos passos e resumo
    do gestor), gerencial de todas as obras, Equipe e SST, Recursos e locação. Documento A4 com a logo da empresa + Excel.
    Cada relatório emitido fica guardado com número e conteúdo congelado. Só administrador e gestor. */
 declare(strict_types=1);
@@ -370,7 +370,7 @@ table{width:100%;border-collapse:collapse}td,th{border:1px solid #94a3b8;padding
 <div class="folha">' . ($previa ? '<div class="marca">PRÉVIA</div>' : '') . '
 <div class="cab"><div>' . $logo . '</div><div class="emp">' . $emp . '</div><div class="tit"><b>' . $tit . '</b><small>' . $sub . '</small></div></div>
 ' . rel_corpo($tipo, $D['conteudo'], $D['obra'] ?? null, $resumo, $cor, $fb) . $assin . '
-<div class="rod">' . $rod . ' · Task Flow</div></div>' . (!empty($_GET['imprimir']) ? '<script>window.addEventListener("load",()=>setTimeout(()=>window.print(),400))</script>' : '') . '</body></html>';
+<div class="rod">' . $rod . ' · Mercronos</div></div>' . (!empty($_GET['imprimir']) ? '<script>window.addEventListener("load",()=>setTimeout(()=>window.print(),400))</script>' : '') . '</body></html>';
 }
 function rel_cabecalhos_html(): void {
     header('Content-Type: text/html; charset=utf-8'); header('Cache-Control: private, no-store'); header('X-Content-Type-Options: nosniff');

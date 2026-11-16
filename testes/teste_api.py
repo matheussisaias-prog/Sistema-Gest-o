@@ -1,4 +1,4 @@
-"""Teste de ponta a ponta do servidor TaskFlow PRO (PHP + MariaDB local)."""
+"""Teste de ponta a ponta do servidor Mercronos (PHP + MariaDB local)."""
 import json, re, sys, requests
 
 B = "http://127.0.0.1:8900/api"

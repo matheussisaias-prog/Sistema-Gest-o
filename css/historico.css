@@ -1,4 +1,4 @@
-/* Task Flow · historico.css — telas "Histórico" e "Importar cronograma" (usa também eq-* e em-*) */
+/* Mercronos · historico.css — telas "Histórico" e "Importar cronograma" (usa também eq-* e em-*) */
 .eq.hi { width: 100%; }
 .hi, .hi * { box-sizing: border-box; }
 .hi-filtros { display: grid; grid-template-columns: minmax(0, 1fr) 190px 190px 180px; gap: 10px; }

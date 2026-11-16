@@ -1,4 +1,4 @@
-# TaskFlow PRO — Sistema de Gestão
+# Mercronos — Sistema de Gestão
 
 Sistema de planejamento e gestão de obras e serviços de engenharia.
 Publicado em https://gestao.mercurium.com.br (a Hostinger implanta sozinha a cada push no `main`).
