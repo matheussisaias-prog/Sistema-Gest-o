@@ -28,7 +28,7 @@ function email_modelo(array $c): array {
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f1f4f9"><tr><td align="center" style="padding:32px 16px">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;font-family:\'Segoe UI\',Helvetica,Arial,sans-serif">
   <tr><td style="background:#0b1220;border-radius:14px 14px 0 0;padding:20px 32px">
-    <img src="' . h(link_app('/img/logo-email.png?v=2026.11.16.13')) . '" width="200" height="40" alt="Aprumo by mercurium" style="display:block;border:0;outline:none;color:#ffffff;font-size:18px;font-weight:700">
+    <img src="' . h(link_app('/img/logo-email.png?v=2026.11.16.14')) . '" width="200" height="40" alt="Aprumo by mercurium" style="display:block;border:0;outline:none;color:#ffffff;font-size:18px;font-weight:700">
   </td></tr>
   <tr><td style="background:#ffffff;padding:36px 32px 30px;border-left:1px solid #e2e8f0;border-right:1px solid #e2e8f0">
     <h1 style="margin:0 0 18px;font-size:23px;line-height:30px;font-weight:700;color:#0f172a">' . h($c['titulo']) . '</h1>
