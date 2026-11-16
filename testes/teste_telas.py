@@ -15,7 +15,7 @@ with sync_playwright() as p:
     erros = []; pg.on("pageerror", lambda e: erros.append(str(e)))
     pg.goto(B + "/entrar.html"); pg.wait_for_selector("#v-entrar:not([hidden])")
     check("Abre na tela de login", pg.is_visible("#f-entrar"))
-    pg.click("#f-entrar button[type=submit]"); check("Valida e-mail vazio", "e-mail válido" in pg.inner_text("#aviso"))
+    pg.click("#f-entrar button[type=submit]"); check("Valida e-mail vazio", "e-mail ou o celular" in pg.inner_text("#aviso"))
     pg.click("text=Cadastrar minha empresa"); check("Vai para o cadastro (passo 1)", pg.is_visible("#f-empresa"))
     pg.click("#f-empresa button[type=submit]"); check("Exige nome da empresa", pg.is_visible("#aviso") and "nome da empresa" in pg.inner_text("#aviso"))
     pg.fill("#c-nome", "Rawtech Engenharia"); pg.type("#c-cnpj", "11222333000181"); check("Máscara de CNPJ", pg.input_value("#c-cnpj") == "11.222.333/0001-81", pg.input_value("#c-cnpj"))
@@ -43,7 +43,8 @@ with sync_playwright() as p:
     # convite
     ctx2 = nav.new_context(viewport={"width": 390, "height": 844}, device_scale_factor=2); pg2 = ctx2.new_page(); rotas(pg2)
     pg2.goto(B + "/entrar.html?convite=" + token("jp@rawtech.test", "convite")); pg2.wait_for_selector("#v-senha:not([hidden])")
-    check("Convite abre 'Criar sua senha' (celular)", pg2.inner_text("#senha-titulo") == "Criar sua senha")
+    pg2.wait_for_function("document.getElementById('senha-titulo').textContent.startsWith('Olá')")
+    check("Convite abre 'Olá, … Crie sua senha' com a empresa (celular)", pg2.inner_text("#senha-titulo").endswith("Crie sua senha") and "Rawtech" in pg2.inner_text("#senha-sub"))
     pg2.fill("#n-senha", "Senha-do-JP-1"); pg2.fill("#n-senha2", "outra"); pg2.click("#f-senha button[type=submit]")
     check("Senhas diferentes recusadas", "não são iguais" in pg2.inner_text("#aviso"))
     pg2.fill("#n-senha2", "Senha-do-JP-1"); pg2.click("#f-senha button[type=submit]"); pg2.wait_for_url("**/index.html", timeout=8000)
