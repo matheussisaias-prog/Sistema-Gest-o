@@ -45,7 +45,9 @@ with sync_playwright() as p:
     pg.fill("[name=inicio]", "2027-01-10"); pg.fill("[name=fim]", "2027-01-05"); pg.click(".ob-form [type=submit]")
     check("Recusa fim antes do início", "antes do início" in pg.inner_text(".ob-form-erro"))
     pg.fill("[name=fim]", "2027-03-30"); pg.click(".ob-form .ob-corbt >> nth=4"); pg.click(".ob-form [type=submit]")
-    pg.wait_for_selector(".ob-form", state="detached"); pg.wait_for_selector(".ob-card:has-text('ELE-017')")
+    pg.wait_for_selector(".ob-form", state="detached"); pg.wait_for_selector(".og-cab h1")
+    check("Depois de criar, abre a própria obra para montar o cronograma", "Retrofit de iluminação" in pg.inner_text(".og-cab h1"))
+    pg.click("#nav-obras"); pg.wait_for_selector(".ob-card:has-text('ELE-017')")
     check("Cria a obra e ela aparece", pg.locator(".ob-card").count() == 6)
     check("Também entra nas telas antigas (Gantt/Atividades)", pg.evaluate("projects.some(p => p.code === 'ELE-017')"))
     # editar pelo menu

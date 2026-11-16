@@ -5,7 +5,7 @@
   const dBR = s => s ? s.slice(8, 10) + '/' + s.slice(5, 7) : '';
   const dBRano = s => s ? dBR(s) + '/' + s.slice(0, 4) : '';
   const T = s => Date.parse(s + 'T00:00:00Z');
-  const iniciais = n => { const p = String(n || '').trim().split(/\s+/); return ((p[0] || '')[0] || '?') + (p.length > 1 ? p[p.length - 1][0] : ''); };
+  const iniciais = n => { const p = String(n || '').replace(/\([^)]*\)/g, ' ').trim().split(/\s+/).filter(w => /^\p{L}/u.test(w)); return (((p[0] || '')[0] || '?') + (p.length > 1 ? p[p.length - 1][0] : '')).toUpperCase(); };   // ignora "(teste)", "(exemplo)"
   const quando = s => new Date(String(s).replace(' ', 'T') + 'Z').toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' });
 
   /* ══ Quadro (Kanban) ═══════════════════════════════════════════ */
@@ -96,14 +96,14 @@
       const tab = h('div', { class: 'oe-tab' }, h('div', { class: 'oe-lin oe-th' }, h('span', null, 'Pessoa'), h('span', null, 'Atividades'), h('span', null, 'Atrasadas'), h('span', null, 'Carga 2 semanas'), h('span', null, 'NR')));
       d.pessoas.forEach(p => {
         const pct = Math.round(p.dias_proximas / cap * 100), cls = pct > 100 ? 'verm' : pct > 80 ? 'amar' : 'azul';
-        const nr = !p.nr.total ? h('span', { class: 'og-sub' }, 'sem documentos') : p.nr.vencidos ? h('b', { class: 'verm' }, `${p.nr.vencidos} vencido${p.nr.vencidos > 1 ? 's' : ''}`)
+        const nr = !p.nr.total ? h('span', { class: 'og-sub' }, 'sem documentos') : (p.nr.vencidos || p.nr.faltando) ? h('b', { class: 'verm' }, [p.nr.vencidos ? `${p.nr.vencidos} vencido${p.nr.vencidos > 1 ? 's' : ''}` : '', p.nr.faltando ? `${p.nr.faltando} faltando` : ''].filter(Boolean).join(' · '))
           : p.nr.vencendo ? h('b', { class: 'amar' }, `${p.nr.vencendo} vencendo`) : h('b', { class: 'verd' }, 'em dia');
         tab.append(h('div', { class: 'oe-lin' },
           h('span', { class: 'oe-nome' }, h('i', { class: 'oq-av' }, iniciais(p.nome).toUpperCase()), h('span', null, h('b', null, p.nome), h('small', null, p.cargo || ''))),
           h('span', null, `${p.abertas} em aberto de ${p.atividades}`),
           h('span', null, p.atrasadas ? h('b', { class: 'verm' }, p.atrasadas) : '0'),
           h('span', { class: 'oe-carga' }, h('div', { class: 'ob-bar-trilho' }, h('div', { class: 'ob-bar-ench ' + cls, style: `width:${Math.min(100, pct)}%` })), h('small', { class: pct > 100 ? 'verm' : '' }, `${String(p.dias_proximas).replace('.', ',')} d · ${pct}%`)),
-          h('span', { title: p.nr.pendentes.map(x => `${x.documento} (${x.situacao === 'vencido' ? 'vencido' : 'vence ' + dBRano(x.vence_em)})`).join('\n') }, nr)));
+          h('span', { title: p.nr.pendentes.map(x => `${x.documento} (${x.situacao === 'vencido' ? 'vencido' : x.situacao === 'falta' ? 'falta' : 'vence ' + dBRano(x.vence_em)})`).join('\n') }, nr)));
       });
       if (!d.pessoas.length) tab.append(h('p', { class: 'og-sub', style: 'padding:14px' }, 'Nenhuma atividade tem responsável ainda.'));
       trab.append(tab);

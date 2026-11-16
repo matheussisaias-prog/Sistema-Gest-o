@@ -510,6 +510,20 @@ function rota_obra_equipe(int $pid): array {
                     'pendentes' => array_values(array_filter($l, fn($x) => $x['situacao'] !== 'ok'))];
     }
     unset($p);
+    // Mesmo critério da tela Equipe: conta também o documento exigido pelo cargo/obra que ainda falta (antes só via os que existiam)
+    if ($pessoas && function_exists('eq_exigencias')) {
+        $P = todos('SELECT * FROM funcionarios WHERE empresa_id = ? AND id IN (' . implode(',', array_map('intval', array_keys($pessoas))) . ')', [$eid]);
+        $exig = eq_exigencias($eid, $P, $hoje); $eqDocs = eq_documentos($eid, array_map('intval', array_keys($pessoas))); $nomes = eq_nomes_tipos($eid);
+        foreach ($pessoas as $id => &$p) {
+            if (empty($exig[$id])) continue;
+            $r = eq_resumo_docs($exig[$id], $eqDocs[$id] ?? [], $hoje, $nomes); $it = $r['itens'];
+            $falta = array_map(fn($x) => ['documento' => $x['nome'], 'nr' => null, 'vence_em' => null, 'situacao' => 'falta'], $it['falta']);
+            $p['nr']['total'] = max($p['nr']['total'], count($exig[$id]));
+            $p['nr']['faltando'] = count($it['falta']);
+            $p['nr']['pendentes'] = array_merge($p['nr']['pendentes'], $falta);
+        }
+        unset($p);
+    }
     usort($pessoas, fn($a, $b) => strcmp($a['nome'], $b['nome']));
     return ['gestor' => $gestor && $gestor['id'] ? $gestor : null, 'membros' => $membros, 'pessoas' => array_values($pessoas), 'capacidade_14' => $cal->diasUteis($hoje, $em14)];
 }

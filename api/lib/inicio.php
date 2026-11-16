@@ -50,7 +50,7 @@ function rota_inicio(): array {
     }
     foreach ($sst['ausencias'] as $x) for ($d = max($hoje, $x['inicio']); $d <= min($fim7, $x['fim']); $d = Calendario::mais($d, 1)) $dias[$d][] = ['tipo' => 'ausencia', 'texto' => $x['pessoa'] . ' · ' . mb_strtolower($x['tipo'])];
     $res = rc_reservas($eid, $hoje, $fim7);
-    foreach (rc_conflitos($res) as $c) { $d = max($hoje, $c['de']); if ($d <= $fim7) $dias[$d][] = ['tipo' => 'conflito', 'texto' => (um('SELECT COALESCE(codigo, nome) AS n FROM recursos WHERE id = ?', [$c['recurso_id']])['n'] ?? 'Recurso') . ' em ' . count(array_unique(array_column($c['atividades'], 'obra'))) . ' obras', 'recurso_id' => (int)$c['recurso_id']]; }
+    foreach (rc_conflitos($res) as $c) { $d = max($hoje, $c['de']); if ($d <= $fim7) $dias[$d][] = ['tipo' => 'conflito', 'texto' => (um('SELECT COALESCE(codigo, nome) AS n FROM recursos WHERE id = ?', [$c['recurso_id']])['n'] ?? 'Recurso') . (($nob = array_values(array_unique(array_column($c['atividades'], 'obra')))) && count($nob) > 1 ? ' em ' . count($nob) . ' obras' : ' em ' . count($c['atividades']) . ' atividades' . ($nob ? ' · ' . $nob[0] : '')), 'recurso_id' => (int)$c['recurso_id']]; }
     foreach (todos('SELECT l.devolucao_prevista, r.id, COALESCE(r.codigo, r.nome) AS n FROM locacoes l JOIN recursos r ON r.id = l.recurso_id WHERE l.empresa_id = ? AND l.excluido_em IS NULL AND l.devolvido_em IS NULL AND l.devolucao_prevista BETWEEN ? AND ?', [$eid, $hoje, $fim7]) as $l)
         $dias[$l['devolucao_prevista']][] = ['tipo' => 'devolver', 'texto' => $l['n'] . ' · devolver', 'recurso_id' => (int)$l['id']];
     $agenda = []; foreach ($dias as $d => $L) $agenda[] = ['data' => $d, 'itens' => $L];

@@ -155,8 +155,7 @@
     if (pv) {
       const obras = (I.lista && I.lista.obras) || [];
       const campo = (k, t, extra) => h('label', { class: 'em-campo' }, h('span', null, t), h('input', { class: 'em-in', id: 'im-' + k, value: I.obra[k] || '', type: k === 'inicio' ? 'date' : 'text', maxlength: extra,
-        oninput: e => { I.obra[k] = e.target.value; if (k === 'nome') { const b = document.getElementById('im-importar'); if (b) b.disabled = !e.target.value.trim(); } },
-        onchange: () => { if (k === 'nome') desenharI(); } }));
+        oninput: e => { I.obra[k] = e.target.value; if (k === 'nome') { const ok = !!e.target.value.trim(), b = document.getElementById('im-importar'), t3 = document.querySelector('.im-t3 .eq-selo'); if (b) b.disabled = !ok || I.enviando; if (t3) t3.replaceWith(selo(ok ? 'Pronto para importar' : 'Falta o nome da obra', ok ? 'ok' : 'ven')); } } }));   // sem redesenhar ao sair do campo: redesenhar no meio da digitação jogava fora o que se digitava no campo seguinte
       const opc = (k, t, s) => h('button', { class: 'im-op' + (I.destino === k ? ' on' : ''), 'data-destino': k, onclick: () => { I.destino = k; desenharI(); } }, h('b', null, t), h('small', null, s));
       s2 = h('section', { class: 'im-sec' }, h('b', { class: 'im-t' }, '2 · Para onde'),
         h('div', { class: 'im-ops' }, opc('nova', 'Nova obra', 'Cria a obra com o cronograma do arquivo'), opc('existente', 'Obra que já existe', 'Acrescenta ou substitui o cronograma')),
@@ -212,6 +211,7 @@
     try {
       const corpo = { ...I.dados, destino: I.destino, ...(I.destino === 'nova' ? { obra: { ...I.obra } } : { projeto_id: +I.projeto_id, substituir: I.substituir }) };
       const r = await api('importar/obra', 'POST', corpo);
+      try { if (window.tfServidor && tfServidor.recarregar) tfServidor.recarregar(); } catch (_) {}   // telas antigas (Gantt geral, gráficos) passam a ver a obra nova sem recarregar a página
       avisar(`${r.atividades} atividades importadas${r.ligacoes ? ' com ' + r.ligacoes + ' ligações' : ''}`, 'success');
       Object.assign(I, { passo: 1, arq: null, pv: null, dados: null, enviando: false, obra: { codigo: '', nome: '', cliente: '', inicio: '' }, projeto_id: '', substituir: false, lista: null });
       if (window.tfObra) await tfObra.abrir(r.projeto_id);

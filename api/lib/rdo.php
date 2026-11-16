@@ -299,6 +299,7 @@ function rota_rdo_documento(int $id): array {
     $titulo = 'RDO nº ' . (int)$r['numero'] . ' · ' . ($O['codigo'] ?: $O['nome']) . ' · ' . rdo_br($r['data']);
     $logo = $E['logo'] ? '<img class="logo" src="' . rdo_e($E['logo']) . '" alt="' . rdo_e($E['nome']) . '">' : '<div class="logo-txt">' . rdo_e($E['nome']) . '</div>';
     $dadosEmp = '<b>' . rdo_e($E['razao_social'] ?: $E['nome']) . '</b><br>' . implode(' · ', array_filter([$E['cnpj'] ? 'CNPJ ' . rdo_e($E['cnpj']) : null, $E['cidade'] ? rdo_e($E['cidade'] . ($E['uf'] ? '/' . $E['uf'] : '')) : null])) . ($E['telefone'] ? '<br>' . rdo_e($E['telefone']) : '');
+    if (!$E['logo'] && !$E['cnpj'] && !$E['cidade'] && !$E['telefone'] && (!$E['razao_social'] || $E['razao_social'] === $E['nome'])) $dadosEmp = '';   // sem logo e sem dados: não repete o nome duas vezes no cabeçalho
     $html = '<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><title>' . rdo_e($titulo) . '</title><meta name="viewport" content="width=device-width,initial-scale=1"><style>
 @page{size:A4;margin:14mm 14mm 16mm;@bottom-right{content:"Página " counter(page) " de " counter(pages);font:9px Arial;color:#555}}
 *{box-sizing:border-box}body{margin:0;background:#e5e7eb;font:11.5px/1.4 Arial,Helvetica,sans-serif;color:#111}
@@ -332,7 +333,7 @@ td.n{white-space:nowrap}.k td:first-child{width:38mm;background:#f8fafc;font-wei
 <h2>Ocorrências</h2>' . ($oc ? '<div class="caixa"><ul>' . $oc . '</ul></div>' : '<div class="caixa">Nenhuma.</div>') . '
 <h2>Equipamentos</h2><div class="caixa">' . ($eq ?: 'Nenhum reservado para o dia.') . '</div>
 <h2>Observações</h2><div class="caixa">' . rdo_e($r['resumo'] ?: '—') . '</div>
-' . ($fh ? '<h2>Fotos (' . count($fotos) . ')</h2><div class="fotos">' . $fh . '</div>' : '') . '
+' . ($fh ? '<h2>Fotos (' . (count($fotos) > 12 ? '12 de ' . count($fotos) . ' · as demais ficam no sistema' : count($fotos)) . ')</h2><div class="fotos">' . $fh . '</div>' : '') . '
 <div class="ass"><div>' . rdo_e($E['nome']) . ($enc ? ' · ' . rdo_e($enc) : '') . '</div><div>Cliente · nome, data e assinatura</div></div>
 <div class="rod">' . ($rasc ? 'Rascunho gerado em ' . rdo_br(rdo_hoje()) : 'Fechado em ' . rdo_e(rdo_br(substr((string)$D['fechado_em'], 0, 10)) . ' ' . substr((string)$D['fechado_em'], 11, 5)) . ' por ' . rdo_e($D['fechado_por']) . ' · código de conferência ' . rdo_e($r['codigo'])) . ' · Aprumo</div>
 </div>' . (!empty($_GET['imprimir']) ? '<script>window.addEventListener("load",()=>setTimeout(()=>window.print(),400))</script>' : '') . '</body></html>';

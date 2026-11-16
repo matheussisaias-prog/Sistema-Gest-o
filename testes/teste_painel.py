@@ -29,7 +29,7 @@ with sync_playwright() as p:
     check("Lista com as 3 mensagens", pg.locator(".item").count() == 3)
     pg.click(".item >> text=Ana Lima"); pg.wait_for_selector(".dt-nome")
     check("Abre a mensagem com empresa e origem", "Ana Lima" in pg.inner_text(".dt-nome") and "Construtora Alfa" in pg.inner_text(".dt-de") and "Dentro do sistema" in pg.inner_text(".dt-cab"))
-    href = pg.get_attribute(".dt-acoes a", "href"); check("Responder abre o e-mail preenchido", href.startswith("mailto:ana%40alfa.test?subject=") and "Task%20Flow" in href, href[:80])
+    href = pg.get_attribute(".dt-acoes a", "href"); check("Responder abre o e-mail preenchido", href.startswith("mailto:ana%40alfa.test?subject=") and "Aprumo" in href, href[:80])
     pg.fill("#dt-nota", "Liguei para a Ana, era o navegador antigo."); pg.click(".dt-nota .bt"); pg.wait_for_selector("#toast:not([hidden])")
     check("Salva a anotação interna", "Anotação salva" in pg.inner_text("#toast") and pg.locator(".it-nota").count() == 1)
     pg.click(".dt-acoes .bt-ok"); pg.wait_for_function("document.querySelector('#k-resp').textContent === '1'")

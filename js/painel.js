@@ -248,7 +248,7 @@ function renderFullCharts() {
   }
 
   if (c2 && !chartTeamFull) {
-    const people = [...new Set(activities.map(a=>a.responsible))].slice(0,8);
+    const people = [...new Set(activities.map(a=>a.responsible).filter(Boolean))].sort((x,y)=>activities.filter(a=>a.responsible===y).length-activities.filter(a=>a.responsible===x).length).slice(0,10);   // sem nome vazio (etapas) e os mais carregados primeiro
     chartTeamFull = new Chart(c2, {
       type:'bar',
       data:{

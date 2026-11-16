@@ -36,13 +36,20 @@
   const ha = () => { const m = Math.round((Date.now() - M.quando) / 60000); return m < 1 ? 'agora' : `há ${m} min`; };
 
   /* ── peças ──────────────────────────────────── */
+  // Prazo: dias de desvio no término quando o fim mudou; senão, a distância entre o real e o previsto em pontos (antes mostrava "0 d" numa obra atrasada)
+  function desvioPts(o) { return o.real == null || o.previsto == null ? 0 : Math.round((o.real - o.previsto) * 10) / 10; }
+  function ddTexto(o) {
+    if (o.desvio_dias) return (o.desvio_dias > 0 ? '+' : '') + o.desvio_dias + ' d';
+    const p = desvioPts(o); if (Math.abs(p) < 1) return 'no prazo';
+    return (p > 0 ? '+' : '−') + String(Math.abs(Math.round(p))) + ' pts';
+  }
   function cartao(o, tv) {
     const [txt, c] = FAR[o.farol] || FAR.cinza;
     return h(tv ? 'div' : 'button', { class: 'gv-obra ' + c, 'data-obra': o.id, onclick: tv ? null : () => window.tfObra && tfObra.abrir(o.id), 'aria-label': tv ? null : `Abrir ${o.codigo || o.nome}` },
       h('div', { class: 'gv-obra-t' }, h('b', null, o.codigo || o.nome), o.situacao === 'Pausado' ? h('small', null, 'pausada') : null, h('span', { class: 'gv-far ' + c }, '● ', txt)),
       h('div', { class: 'gv-obra-n' }, o.nome), o.cliente ? h('small', { class: 'gv-obra-c' }, o.cliente) : null,
       h('div', { class: 'gv-barra', title: `real ${pct(o.real)} · previsto ${pct(o.previsto)}` }, h('i', { style: `width:${Math.min(100, o.real || 0)}%` }), o.previsto != null ? h('em', { style: `left:${Math.min(100, o.previsto)}%` }) : null),
-      h('div', { class: 'gv-obra-r' }, h('span', null, h('b', null, pct(o.real)), ' real · ', pct(o.previsto), ' previsto'), h('span', { class: 'gv-dd' + (o.desvio_dias > 0 ? ' mau' : '') }, o.desvio_dias == null ? '' : (o.desvio_dias > 0 ? '+' : '') + o.desvio_dias + ' d'),
+      h('div', { class: 'gv-obra-r' }, h('span', null, h('b', null, pct(o.real)), ' real · ', pct(o.previsto), ' previsto'), h('span', { class: 'gv-dd' + (o.desvio_dias > 0 || desvioPts(o) < 0 ? ' mau' : '') }, ddTexto(o)),
         h('span', { class: 'gv-fim' }, ' · fim ' + dBR(o.termino))));
   }
   function linhaAtraso(a, tv) {

@@ -319,9 +319,11 @@
       if (ed) { envio = {}; for (const [k, val] of Object.entries(dados)) if (String(val ?? '') !== String(o[k] ?? '') && !(k === 'valor_contrato' && Number(val) === Number(o[k]))) envio[k] = val; }
       const bt = form.querySelector('[type=submit]'); bt.disabled = true;
       try {
-        if (!ed) await api('projetos', 'POST', envio);
+        let nova = null;
+        if (!ed) nova = await api('projetos', 'POST', envio);
         else if (Object.keys(envio).length) await api('projetos/' + o.id, 'PATCH', envio);
         fechar(); avisar(ed ? 'Obra atualizada.' : `Obra ${dados.codigo} criada.`, 'success'); await atualizarTudo();
+        if (nova && nova.id && window.tfObra) tfObra.abrir(nova.id);   // como diz o rodapé: depois de criar, monta o cronograma na própria obra
       } catch (e) { bt.disabled = false; mostrarErro(e.message); }
     };
     function mostrarErro(t) { erro.textContent = t; erro.hidden = false; erro.scrollIntoView({ block: 'nearest' }); }

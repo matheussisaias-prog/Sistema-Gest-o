@@ -339,6 +339,7 @@ function rel_html(string $tipo, array $D, ?string $resumo, string $ini, string $
     $tit = ['obra' => 'RELATÓRIO DE ANDAMENTO DA OBRA', 'gerencial' => 'RELATÓRIO GERENCIAL DAS OBRAS', 'sst' => 'EQUIPE E SST', 'recursos' => 'RECURSOS E LOCAÇÃO'][$tipo];
     $logo = $E['logo'] ? '<img class="logo" src="' . rel_e($E['logo']) . '" alt="' . rel_e($E['nome']) . '">' : '<div class="logo-txt">' . rel_e($E['nome']) . '</div>';
     $emp = '<b>' . rel_e($E['razao_social'] ?: $E['nome']) . '</b><br>' . implode(' · ', array_filter([$E['cnpj'] ? 'CNPJ ' . rel_e($E['cnpj']) : null, $E['cidade'] ? rel_e($E['cidade'] . ($E['uf'] ? '/' . $E['uf'] : '')) : null])) . ($E['telefone'] ? '<br>' . rel_e($E['telefone']) : '');
+    if (!$E['logo'] && !$E['cnpj'] && !$E['cidade'] && !$E['telefone'] && (!$E['razao_social'] || $E['razao_social'] === $E['nome'])) $emp = '';   // sem logo e sem dados: não repete o nome
     $sub = ($ref ? rel_e($ref) . ' · ' : '') . rel_e(rel_periodo_txt($ini, $fim));
     $assin = $tipo === 'obra' ? '<div class="ass"><div>' . rel_e($E['nome']) . ($D['emitido_por'] ? ' · ' . rel_e($D['emitido_por']) : '') . '</div><div>Cliente · ciente</div></div>' : '';
     $rod = $previa ? 'Prévia gerada em ' . rel_br_ano(rel_hoje()) . ' · não emitida' : 'Emitido em ' . rel_e(rel_br_ano(substr($D['emitido_em'], 0, 10)) . ' ' . substr($D['emitido_em'], 11, 5)) . ' por ' . rel_e($D['emitido_por']) . ' · ' . rel_e($ref) . ' · código ' . rel_e($codigo) . ($tipo === 'obra' ? '' : ' · uso interno');
