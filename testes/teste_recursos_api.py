@@ -65,7 +65,8 @@ check("Encarregado não lança calibração", enc.post(A+f"/recursos/{R['MEG-03'
 nid = adm.post(A+f"/recursos/{R['MEG-03']}/controles", json={"tipo": "manutencao", "item": "Troca das pontas", "feito_em": D(-2)}).json()["id"]
 check("Manutenção sem vencimento e exclusão", adm.delete(A+f"/controles/{nid}").status_code == 200 and len(adm.get(A+f"/recursos/{R['MEG-03']}").json()["controles"]) == 1)
 # paradas
-r = adm.post(A+f"/recursos/{R['TER-01']}/paradas", json={"inicio": D(4), "fim": D(6), "motivo": "Conserto do display"})
+ri = adm.get(A+f"/recursos/{R['TER-01']}").json()["reservas"][0]["inicio"]          # datas reais da Malha (dependem do cronograma)
+r = adm.post(A+f"/recursos/{R['TER-01']}/paradas", json={"inicio": ri, "fim": (dt.date.fromisoformat(ri) + dt.timedelta(days=2)).isoformat(), "motivo": "Conserto do display"})
 check("Parada sobre uma reserva avisa as atividades afetadas", r.status_code == 200 and any("Malha de aterramento" in x for x in r.json()["reservas_afetadas"]), r.text)
 X3 = {x["codigo"]: x for x in adm.get(A+"/recursos").json()["recursos"]}
 check("Alerta 'reservado durante manutenção'", any(a["tipo"] == "parada" for a in X3["TER-01"]["alertas"]), X3["TER-01"]["alertas"])
@@ -73,7 +74,7 @@ check("Parada com fim antes do início recusada", adm.post(A+f"/recursos/{R['TER
 check("Excluir parada", adm.delete(A+f"/paradas/{r.json()['id']}").status_code == 200)
 # locação
 lid = fi["locacoes"][0]["id"]
-check("Estender a locação até depois da última reserva", adm.patch(A+f"/locacoes/{lid}", json={"devolucao_prevista": D(12)}).status_code == 200
+check("Estender a locação até depois da última reserva", adm.patch(A+f"/locacoes/{lid}", json={"devolucao_prevista": max(x["fim"] for x in adm.get(A+f"/recursos/{R['PLT-02']}").json()["reservas"])}).status_code == 200
       and not any(a["texto"] == "Reserva depois da devolução" for a in [x for x in adm.get(A+"/recursos").json()["recursos"] if x["codigo"] == "PLT-02"][0]["alertas"]))
 check("Devolução no futuro recusada", adm.patch(A+f"/locacoes/{lid}", json={"devolvido_em": D(2)}).status_code == 400)
 check("Segunda locação em aberto recusada", adm.post(A+f"/recursos/{R['PLT-02']}/locacoes", json={"retirada": D(0), "devolucao_prevista": D(4)}).status_code == 400)
@@ -94,7 +95,7 @@ check("Fornecedores: cadastrar, repetido recusado, editar, excluir", adm.post(A+
 ck = adm.get(A+f"/atividades/{ids['e2']}/checar-recurso?recurso={R['MUN-01']}").json()
 check("Checar munck 12 t na Montagem do trafo: já reservado na NR12-007", ck["pendencias"][0]["nivel"] == "grave" and "NR12-007 · Remoção do painel antigo" in ck["pendencias"][0]["texto"], ck)
 check("Sugere o munck 8 t (livre, mesmo nome-base) e não a caminhonete", [s["codigo"] for s in ck["sugestoes"]] == ["MUN-02"], ck["sugestoes"])
-ck = adm.get(A+f"/atividades/{ids['a23']}/checar-recurso?recurso={R['GER-01']}").json()
+ck = adm.get(A+f"/atividades/{ids['a21']}/checar-recurso?recurso={R['GER-01']}").json()      # a21 está em andamento durante a parada do gerador
 check("Gerador em manutenção no período: pendência grave", any(p["tipo"] == "parada" and p["nivel"] == "grave" for p in ck["pendencias"]))
 check("Encarregado não checa nem reserva", enc.get(A+f"/atividades/{ids['e2']}/checar-recurso?recurso={R['MUN-01']}").status_code == 403 and enc.put(A+f"/atividades/{ids['e2']}/recursos", json={"recursos": [R["MUN-01"]]}).status_code == 403)
 r = adm.put(A+f"/atividades/{ids['e2']}/recursos", json={"recursos": [R["MUN-01"]], "pendencias": {str(R["MUN-01"]): "Já reservado em NR12-007 · Remoção do painel antigo"}})

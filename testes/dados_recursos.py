@@ -9,7 +9,7 @@ def montar():
     hoje = (dt.datetime.now(dt.timezone.utc) - dt.timedelta(hours=3)).date(); D = lambda n: (hoje + dt.timedelta(days=n)).isoformat()
     p2 = s.post(A+"/projetos", json={"codigo": "NR12-007", "nome": "Adequação NR-12 · Linha de prensas", "cliente": "Metalúrgica Boa Vista", "situacao": "Em andamento", "inicio": D(-5), "fim": D(40)}).json()["id"]
     at = lambda pid_, desc, ini, dur: s.post(A+"/atividades", json={"projeto_id": pid_, "descricao": desc, "inicio": D(ini), "duracao_dias": dur}).json()["id"]
-    ids["n1"] = at(p2, "Içamento do QGBT", 2, 2)
+    ids["n1"] = at(p2, "Içamento do QGBT", 8, 1)        # depois da Base dos transformadores (a21), que também usa o munck 12 t
     ids["n2"] = at(p2, "Remoção do painel antigo", 12, 1)
     ids["n3"] = at(p2, "Aterramento das prensas", 6, 3)
     ids["e1"] = at(pid, "Lançamento de cabos MT", 6, 10)

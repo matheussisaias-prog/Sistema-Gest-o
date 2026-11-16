@@ -11,9 +11,9 @@
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@600;700&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
-<link rel="stylesheet" href="css/base.css?v=2026.11.16.6"/>
-<link rel="stylesheet" href="css/obras.css?v=2026.11.16.6"/>
-<link rel="stylesheet" href="css/obra.css?v=2026.11.16.6"/>
+<link rel="stylesheet" href="css/base.css?v=2026.11.16.7"/>
+<link rel="stylesheet" href="css/obras.css?v=2026.11.16.7"/>
+<link rel="stylesheet" href="css/obra.css?v=2026.11.16.7"/>
 </head>
 <body>
 
@@ -110,9 +110,9 @@
       <span class="nav-icon"><i class="fa-solid fa-clock-rotate-left"></i></span>
       <span>Histórico</span>
     </a>
-    <a class="nav-item" onclick="switchView('relatorio', this)" data-tooltip="Relatório PDF">
-      <span class="nav-icon"><i class="fa-solid fa-file-pdf"></i></span>
-      <span>Relatório PDF</span>
+    <a class="nav-item" onclick="switchView('relatorio', this)" data-tooltip="Relatórios" id="nav-relatorios">
+      <span class="nav-icon"><i class="fa-solid fa-file-lines"></i></span>
+      <span>Relatórios</span>
     </a>
   </div>
 
@@ -685,134 +685,8 @@
       </div>
     </div>
 
-    <!-- ══════════════════ RELATÓRIO PDF ══════════════════ -->
-    <div class="view" id="view-relatorio">
-      <div class="card">
-        <div class="card-header">
-          <i class="fa-solid fa-file-pdf" style="color:var(--red);font-size:.95rem"></i>
-          <span class="card-title">Relatório PDF para Cliente</span>
-          <span class="card-subtitle">Gere um relatório profissional com cronograma Gantt</span>
-        </div>
-        <div class="card-body" style="padding:24px">
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;max-width:900px">
-
-            <!-- Coluna esquerda: dados do cabeçalho -->
-            <div>
-              <h3 style="font-size:.85rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-3);margin-bottom:14px;border-bottom:1px solid var(--border);padding-bottom:8px">
-                <i class="fa-solid fa-id-card" style="color:var(--blue);margin-right:6px"></i>Dados do Relatório
-              </h3>
-
-              <div class="form-group">
-                <label class="form-label">Título do Relatório</label>
-                <input class="form-control" id="rel-titulo" value="Cronograma de Projetos" placeholder="Ex: Cronograma Mensal de Obras"/>
-              </div>
-
-              <div class="form-group">
-                <label class="form-label">Subtítulo / Descrição <span style="color:var(--text-4);font-weight:400">(opcional)</span></label>
-                <input class="form-control" id="rel-subtitulo" placeholder="Ex: Status de execução — Abril 2026"/>
-              </div>
-
-              <div class="form-group">
-                <label class="form-label">Cliente</label>
-                <input class="form-control" id="rel-cliente" placeholder="Nome do cliente / empresa"/>
-              </div>
-
-              <div class="form-group">
-                <label class="form-label">Preparado por</label>
-                <input class="form-control" id="rel-preparado" placeholder="Seu nome ou empresa"/>
-              </div>
-
-              <div class="form-group">
-                <label class="form-label">Data do Relatório</label>
-                <input class="form-control" type="date" id="rel-data"/>
-              </div>
-
-              <div class="form-group">
-                <label class="form-label">Cor de destaque</label>
-                <input class="form-control" type="color" id="rel-cor" value="#2563eb" style="width:80px;height:38px;padding:4px;cursor:pointer"/>
-              </div>
-
-              <div class="form-group">
-                <label class="form-label">Logo da empresa <span style="color:var(--text-4);font-weight:400">(opcional)</span></label>
-                <div style="display:flex;gap:8px;align-items:center">
-                  <input class="form-control" type="file" id="rel-logo" accept="image/png,image/jpeg,image/svg+xml,image/webp" onchange="loadRelLogo(event)" style="flex:1;font-size:.72rem"/>
-                  <button type="button" class="btn-secondary" onclick="clearRelLogo()" style="font-size:.7rem;padding:6px 10px" title="Remover logo">
-                    <i class="fa-solid fa-xmark"></i>
-                  </button>
-                </div>
-                <div id="rel-logo-preview" style="margin-top:8px;display:none;padding:10px;background:#0f172a;border-radius:6px;text-align:center">
-                  <img id="rel-logo-img" style="max-width:120px;max-height:60px;object-fit:contain"/>
-                </div>
-                <small style="color:var(--text-4);font-size:.7rem">PNG/SVG transparente recomendado. Aparece na capa do PDF.</small>
-              </div>
-
-              <div class="form-group">
-                <label class="form-label">Assinatura <span style="color:var(--text-4);font-weight:400">(opcional)</span></label>
-                <input class="form-control" id="rel-assinatura-nome" placeholder="Nome do responsável"/>
-                <input class="form-control" id="rel-assinatura-cargo" placeholder="Cargo / função" style="margin-top:6px"/>
-              </div>
-            </div>
-
-            <!-- Coluna direita: opções de conteúdo -->
-            <div>
-              <h3 style="font-size:.85rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-3);margin-bottom:14px;border-bottom:1px solid var(--border);padding-bottom:8px">
-                <i class="fa-solid fa-list-check" style="color:var(--blue);margin-right:6px"></i>Conteúdo do Relatório
-              </h3>
-
-              <div class="form-group">
-                <label class="form-label">Projetos a incluir</label>
-                <select class="form-control" id="rel-projetos" multiple style="height:140px">
-                </select>
-                <small style="color:var(--text-4);font-size:.7rem">Segure Ctrl/Cmd para selecionar vários. Vazio = todos.</small>
-              </div>
-
-              <div class="form-group">
-                <label class="form-label">Seções incluídas</label>
-                <div style="display:flex;flex-direction:column;gap:8px;background:var(--surface2);padding:12px;border-radius:8px;border:1px solid var(--border)">
-                  <label style="display:flex;align-items:center;gap:8px;font-size:.78rem;cursor:pointer">
-                    <input type="checkbox" id="rel-sec-capa" checked/> Capa profissional
-                  </label>
-                  <label style="display:flex;align-items:center;gap:8px;font-size:.78rem;cursor:pointer">
-                    <input type="checkbox" id="rel-sec-toc" checked/> Sumário (índice)
-                  </label>
-                  <label style="display:flex;align-items:center;gap:8px;font-size:.78rem;cursor:pointer">
-                    <input type="checkbox" id="rel-sec-resumo" checked/> Resumo executivo (KPIs)
-                  </label>
-                  <label style="display:flex;align-items:center;gap:8px;font-size:.78rem;cursor:pointer">
-                    <input type="checkbox" id="rel-sec-gantt" checked/> Cronograma Gantt visual
-                  </label>
-                  <label style="display:flex;align-items:center;gap:8px;font-size:.78rem;cursor:pointer">
-                    <input type="checkbox" id="rel-sec-tabela" checked/> Tabela de atividades
-                  </label>
-                  <label style="display:flex;align-items:center;gap:8px;font-size:.78rem;cursor:pointer">
-                    <input type="checkbox" id="rel-sec-rodape" checked/> Rodapé com paginação
-                  </label>
-                </div>
-              </div>
-
-              <div class="form-group">
-                <label class="form-label">Orientação</label>
-                <select class="form-control" id="rel-orient">
-                  <option value="landscape" selected>Paisagem (recomendado p/ Gantt)</option>
-                  <option value="portrait">Retrato</option>
-                </select>
-              </div>
-            </div>
-          </div>
-
-          <!-- Botão gerar -->
-          <div style="margin-top:24px;padding-top:20px;border-top:1px solid var(--border);display:flex;gap:10px;align-items:center">
-            <button class="btn-primary" onclick="generatePrintReport()" style="font-size:.85rem;padding:12px 24px">
-              <i class="fa-solid fa-file-pdf"></i> Gerar Relatório PDF
-            </button>
-            <span style="font-size:.72rem;color:var(--text-4)">
-              <i class="fa-solid fa-info-circle"></i>
-              Abre a janela de impressão. Em "Destino" escolha "Salvar como PDF".
-            </span>
-          </div>
-        </div>
-      </div>
-    </div>
+    <!-- ══════════════════ RELATÓRIOS ══════════════════ -->
+    <div class="view" id="view-relatorio"></div>
 
   </div><!-- /page-content -->
 </div><!-- /main-wrap -->
@@ -1123,25 +997,25 @@
 <!-- TOAST -->
 <div class="toast-wrap" id="toast-wrap"></div>
 
-<script src="js/sincronizacao.js?v=2026.11.16.6"></script>
-<script src="js/dados.js?v=2026.11.16.6"></script>
-<script src="js/inicio.js?v=2026.11.16.6"></script>
-<script src="js/utilitarios.js?v=2026.11.16.6"></script>
-<script src="js/painel.js?v=2026.11.16.6"></script>
-<script src="js/atividades.js?v=2026.11.16.6"></script>
-<script src="js/projetos-equipe.js?v=2026.11.16.6"></script>
-<script src="js/cadastros.js?v=2026.11.16.6"></script>
-<script src="js/interface.js?v=2026.11.16.6"></script>
-<script src="js/cronograma.js?v=2026.11.16.6"></script>
-<script src="js/calendarios.js?v=2026.11.16.6"></script>
-<script src="js/importar-pdf-ia.js?v=2026.11.16.6"></script>
-<script src="js/assistente-ia.js?v=2026.11.16.6"></script>
-<script src="js/importar-exportar.js?v=2026.11.16.6"></script>
-<script src="js/historico.js?v=2026.11.16.6"></script>
-<script src="js/dias-uteis.js?v=2026.11.16.6"></script>
+<script src="js/sincronizacao.js?v=2026.11.16.7"></script>
+<script src="js/dados.js?v=2026.11.16.7"></script>
+<script src="js/inicio.js?v=2026.11.16.7"></script>
+<script src="js/utilitarios.js?v=2026.11.16.7"></script>
+<script src="js/painel.js?v=2026.11.16.7"></script>
+<script src="js/atividades.js?v=2026.11.16.7"></script>
+<script src="js/projetos-equipe.js?v=2026.11.16.7"></script>
+<script src="js/cadastros.js?v=2026.11.16.7"></script>
+<script src="js/interface.js?v=2026.11.16.7"></script>
+<script src="js/cronograma.js?v=2026.11.16.7"></script>
+<script src="js/calendarios.js?v=2026.11.16.7"></script>
+<script src="js/importar-pdf-ia.js?v=2026.11.16.7"></script>
+<script src="js/assistente-ia.js?v=2026.11.16.7"></script>
+<script src="js/importar-exportar.js?v=2026.11.16.7"></script>
+<script src="js/historico.js?v=2026.11.16.7"></script>
+<script src="js/dias-uteis.js?v=2026.11.16.7"></script>
 
-<link rel="stylesheet" href="css/extensoes.css?v=2026.11.16.6"/>
-<script src="js/extensoes.js?v=2026.11.16.6"></script>
+<link rel="stylesheet" href="css/extensoes.css?v=2026.11.16.7"/>
+<script src="js/extensoes.js?v=2026.11.16.7"></script>
 
 
   <!-- MODAL: ANOTAÇÃO NA ATIVIDADE -->
@@ -1164,21 +1038,23 @@
   </div>
 
   <!-- Assistente Task Flow (balão do canto + Ctrl+K): busca e montar obra por perguntas -->
-  <link rel="stylesheet" href="css/assistente.css?v=2026.11.16.6"/>
-  <script src="js/assistente.js?v=2026.11.16.6"></script>
-<script src="js/obras.js?v=2026.11.16.6"></script>
-<script src="js/obra.js?v=2026.11.16.6"></script>
-<script src="js/obra-abas.js?v=2026.11.16.6"></script>
-<script src="js/obra-montar.js?v=2026.11.16.6"></script>
-<link rel="stylesheet" href="css/minhas.css?v=2026.11.16.6"/>
-<link rel="stylesheet" href="css/equipe.css?v=2026.11.16.6"/>
-<script src="js/equipe.js?v=2026.11.16.6"></script>
-<link rel="stylesheet" href="css/recursos.css?v=2026.11.16.6"/>
-<script src="js/recursos.js?v=2026.11.16.6"></script>
-<link rel="stylesheet" href="css/rdo.css?v=2026.11.16.6"/>
-<script src="js/rdo.js?v=2026.11.16.6"></script>
-<script src="js/minhas.js?v=2026.11.16.6"></script>
-<script src="js/servidor.js?v=2026.11.16.6"></script>
+  <link rel="stylesheet" href="css/assistente.css?v=2026.11.16.7"/>
+  <script src="js/assistente.js?v=2026.11.16.7"></script>
+<script src="js/obras.js?v=2026.11.16.7"></script>
+<script src="js/obra.js?v=2026.11.16.7"></script>
+<script src="js/obra-abas.js?v=2026.11.16.7"></script>
+<script src="js/obra-montar.js?v=2026.11.16.7"></script>
+<link rel="stylesheet" href="css/minhas.css?v=2026.11.16.7"/>
+<link rel="stylesheet" href="css/equipe.css?v=2026.11.16.7"/>
+<script src="js/equipe.js?v=2026.11.16.7"></script>
+<link rel="stylesheet" href="css/recursos.css?v=2026.11.16.7"/>
+<script src="js/recursos.js?v=2026.11.16.7"></script>
+<link rel="stylesheet" href="css/rdo.css?v=2026.11.16.7"/>
+<script src="js/rdo.js?v=2026.11.16.7"></script>
+<link rel="stylesheet" href="css/relatorios.css?v=2026.11.16.7"/>
+<script src="js/relatorios.js?v=2026.11.16.7"></script>
+<script src="js/minhas.js?v=2026.11.16.7"></script>
+<script src="js/servidor.js?v=2026.11.16.7"></script>
 <script>if ('serviceWorker' in navigator && (location.protocol === 'https:' || localStorage.getItem('tf-sw') === '1')) navigator.serviceWorker.register('sw.js').catch(() => {});</script>
 
 </body>

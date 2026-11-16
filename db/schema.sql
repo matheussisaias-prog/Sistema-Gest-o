@@ -530,6 +530,27 @@ CREATE TABLE rdo_presencas (
   CONSTRAINT fk_rdop_func FOREIGN KEY (funcionario_id) REFERENCES funcionarios(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+CREATE TABLE relatorios (
+  id          INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  empresa_id  INT UNSIGNED NOT NULL,
+  tipo        ENUM('obra','gerencial','sst','recursos') NOT NULL,
+  numero      INT UNSIGNED NOT NULL,
+  referencia  VARCHAR(40) NOT NULL,
+  projeto_id  INT UNSIGNED NULL,
+  inicio      DATE NOT NULL,
+  fim         DATE NOT NULL,
+  secoes      VARCHAR(120) NULL,
+  resumo      TEXT NULL,
+  dados       MEDIUMTEXT NOT NULL,
+  codigo      VARCHAR(12) NOT NULL,
+  emitido_por INT UNSIGNED NULL,
+  emitido_em  DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  excluido_em DATETIME NULL,
+  KEY ix_rel_empresa (empresa_id, tipo, emitido_em),
+  CONSTRAINT fk_rel_empresa FOREIGN KEY (empresa_id) REFERENCES empresas(id),
+  CONSTRAINT fk_rel_projeto FOREIGN KEY (projeto_id) REFERENCES projetos(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 CREATE TABLE avancos (
   id            INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   empresa_id    INT UNSIGNED NOT NULL,

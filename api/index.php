@@ -19,6 +19,7 @@ require __DIR__ . '/lib/minhas.php';
 require __DIR__ . '/lib/equipe.php';
 require __DIR__ . '/lib/recursos.php';
 require __DIR__ . '/lib/rdo.php';
+require __DIR__ . '/lib/relatorios.php';
 
 $metodo = $_SERVER['REQUEST_METHOD'] ?? 'GET';
 $caminho = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';
@@ -111,6 +112,13 @@ $rotas = [
     'POST rdos/#/assinado'      => 'rota_rdo_assinado',
     'GET rdos/#/folha'          => 'rota_rdo_folha',
     'GET rdos/#/documento'      => 'rota_rdo_documento',
+    'GET relatorios'            => 'rota_relatorios',
+    'POST relatorios'           => 'rota_relatorios',
+    'POST relatorios/previa'    => 'rota_relatorio_previa',
+    'POST relatorios/previa/documento' => 'rota_relatorio_previa_documento',
+    'GET relatorios/#/documento' => 'rota_relatorio_documento',
+    'GET relatorios/#/excel'    => 'rota_relatorio_excel',
+    'DELETE relatorios/#'       => 'rota_relatorio_excluir',
     'GET empresa/logo'          => 'rota_empresa_logo',
     'POST empresa/logo'         => 'rota_empresa_logo',
     'DELETE empresa/logo'       => 'rota_empresa_logo',

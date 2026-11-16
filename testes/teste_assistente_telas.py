@@ -107,7 +107,7 @@ with sync_playwright() as p:
     m.fill(".tfa-busca input", "o que a Carla tem essa semana"); m.wait_for_selector(".tfa-card-cab")
     check("Celular: busca responde", "Carla" in m.inner_text(".tfa-card-cab"))
     m.click(".tfa-abas button >> text=Montar obra"); m.wait_for_selector(".tfa-tipo"); responder_subestacao(m); m.wait_for_selector(".tfa-cel-bt")
-    check("Celular: botão da prévia mostra o atraso", "depois do prazo" in m.inner_text(".tfa-cel-bt"))
+    m.wait_for_timeout(1500); check("Celular: botão da prévia mostra o atraso", "depois do prazo" in m.inner_text(".tfa-cel-bt"), m.inner_text(".tfa-cel-bt"))
     m.click(".tfa-cel-bt"); m.wait_for_selector(".tfa-folha .tfa-g-lin")
     check("Celular: prévia com Gantt e ajustes em folha própria", m.locator(".tfa-folha .tfa-sug button").count() == 3 and m.locator(".tfa-folha .tfa-g-b").count() >= 12)
     check("Celular: sem rolagem lateral", m.evaluate("document.documentElement.scrollWidth") <= 390)
