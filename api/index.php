@@ -24,6 +24,7 @@ require __DIR__ . '/lib/empresa.php';
 require __DIR__ . '/lib/historico.php';
 require __DIR__ . '/lib/importar.php';
 require __DIR__ . '/lib/inicio.php';
+require __DIR__ . '/lib/indicadores.php';
 
 $metodo = $_SERVER['REQUEST_METHOD'] ?? 'GET';
 $caminho = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';
@@ -117,6 +118,7 @@ $rotas = [
     'GET rdos/#/folha'          => 'rota_rdo_folha',
     'GET rdos/#/documento'      => 'rota_rdo_documento',
     'GET inicio'                => 'rota_inicio',
+    'GET indicadores'           => 'rota_indicadores',
     'GET historico'             => 'rota_historico',
     'GET historico/excel'       => 'rota_historico_excel',
     'POST importar/previa'      => 'rota_importar_previa',
