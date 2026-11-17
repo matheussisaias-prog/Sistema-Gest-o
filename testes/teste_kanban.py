@@ -36,8 +36,10 @@ with sync_playwright() as p:
         pg.locator(".kanban-col").first.locator(".kb-bt").first.click(); pg.wait_for_timeout(300)
         check(f"[{nome}] Voltar retorna à página 1 e o botão de voltar fica desligado", pg.locator(".kanban-col").first.locator(".kb-bt").first.is_disabled())
         pg.locator(".kanban-col").first.locator(".kb-bt").nth(1).click(); pg.wait_for_timeout(300)
+        pg.locator(".kanban-col").first.locator(".kb-bt").nth(1).click(); pg.wait_for_timeout(300)
+        antes = pg.locator(".kanban-col").first.locator(".kb-pag span").inner_text()
         pg.reload(); pg.wait_for_selector(".kb-pag"); pg.wait_for_timeout(800)
-        check(f"[{nome}] Atualizar a página (F5) volta no Kanban, na mesma página da coluna", pg.inner_text("#page-title") == "Kanban" and pg.locator("#view-kanban.active").count() == 1 and pg.locator(".kanban-col").first.locator(".kb-pag span").inner_text().startswith("2/"), pg.inner_text("#page-title"))
+        check(f"[{nome}] Atualizar a página (F5) volta no Kanban, na mesma página da coluna", pg.inner_text("#page-title") == "Kanban" and pg.locator("#view-kanban.active").count() == 1 and pg.locator(".kanban-col").first.locator(".kb-pag span").inner_text() == antes, antes + " → " + pg.locator(".kanban-col").first.locator(".kb-pag span").inner_text())
         if not mob:
             pg.evaluate("tfObra.abrir(%d)" % pid); pg.wait_for_selector(".og-cab h1"); pg.reload(); pg.wait_for_selector(".og-cab h1"); pg.wait_for_timeout(500)
             check("Atualizar com a obra aberta volta na mesma obra", "Subestação 13,8 kV" in pg.inner_text(".og-cab h1"))

@@ -275,6 +275,7 @@
   // calcula quantos cartões cabem (no abrir da tela e ao mudar o tamanho da janela); a paginação usa sempre esse número
   window.renderKanban = function(){
     const board = document.getElementById('kanban-board'); if (!board) return;
+    if (!board.offsetParent) { desenharKB(KB.por || 6); return; }   // tela escondida: não dá para medir; desenha sem mexer na conta nem nas páginas
     const passo = () => KB.alt + 8;
     let por = KB.por || kbLim(Math.floor((window.innerHeight - Math.max(board.getBoundingClientRect().top, 0) - 130) / passo()));
     desenharKB(por);
@@ -302,7 +303,7 @@
     board.innerHTML = cols.map(col => {
       const todos = activities.filter(a => a.status === col.key).sort((a,b) => (a.dueDate||'').localeCompare(b.dueDate||''));
       const paginas = Math.max(1, Math.ceil(todos.length / por));
-      const pg = KB.pag[col.key] = Math.min(Math.max(KB.pag[col.key] || 0, 0), paginas - 1);
+      const pg = Math.min(Math.max(KB.pag[col.key] || 0, 0), paginas - 1); if (board.offsetParent) KB.pag[col.key] = pg;
       const cards = todos.slice(pg * por, pg * por + por);
       const k = esc(col.key).replace(/'/g, '&#39;');
       return `<div class="kanban-col">
