@@ -22,7 +22,18 @@ def nova(nav, vp, mob=False):
 def entrar(pg, email, senha):
     pg.goto(B+"/entrar.html"); pg.fill("#e-email", email); pg.fill("#e-senha", senha); pg.click("#f-entrar button[type=submit]")
     pg.wait_for_url("**/index.html"); pg.wait_for_selector(".tf-user")
-card = lambda pg, nome: pg.locator(".mi-card", has_text=nome).first
+def card(pg, nome):
+    """A tela pagina cada grupo (‹ 1/N ›): procura o cartão passando as páginas e, se preciso, em Próximas/Concluídas."""
+    loc = pg.locator(".mi-card", has_text=nome)
+    for volta in range(2):
+        if loc.count(): return loc.first
+        for gi in range(pg.locator(".mi-grupo").count()):
+            gr = pg.locator(".mi-grupo").nth(gi)
+            while not loc.count() and gr.locator(".mi-pbt").count() and gr.locator(".mi-pbt").nth(1).is_enabled():
+                gr.locator(".mi-pbt").nth(1).click(); pg.wait_for_timeout(150)
+            if loc.count(): return loc.first
+        if pg.locator(".mi-mais").count(): pg.click(".mi-mais"); pg.wait_for_timeout(300)
+    return loc.first
 with sync_playwright() as p:
     nav = p.chromium.launch(executable_path="/usr/bin/google-chrome", args=["--lang=pt-BR"])
     # ── funcionária no celular ──
@@ -46,9 +57,10 @@ with sync_playwright() as p:
     m.set_input_files(".mi-folha input[type=file]", "/tmp/obra.jpg"); m.wait_for_selector(".mi-mini")
     check("Concluir pede 100% com foto", "Concluir com 1 foto" in m.inner_text(".mi-folha .mi-bt-pri"))
     m.click(".mi-folha .mi-bt-pri"); m.wait_for_selector(".mi-folha", state="detached"); m.wait_for_timeout(1200)
-    check("Concluída sai das abertas", ativ(ids["a22"])["situacao"] == "Concluído" and card(m, "Eletrodutos").count() == 0)
+    check("Concluída sai das abertas", ativ(ids["a22"])["situacao"] == "Concluído" and m.locator(".mi-card", has_text="Eletrodutos").count() == 0)
     m.click(".mi-mais"); m.wait_for_selector("#mi-g-concluidas .mi-card")
-    check("Aparece em 'Concluídas nos últimos 7 dias'", "Eletrodutos" in m.inner_text("#mi-g-concluidas"))
+    check("Aparece em 'Concluídas nos últimos 7 dias'", card(m, "Eletrodutos").evaluate("c => !!c.closest('#mi-g-concluidas')"))
+    m.click(".mi-mais"); m.wait_for_timeout(300)
     # travou
     n_antes = sum(1 for _ in open("/home/claude/teste-api/emails.jsonl", encoding="utf-8"))
     card(m, "Malha").locator(".mi-travou").click(); m.wait_for_selector(".mi-motivos")
@@ -74,15 +86,14 @@ with sync_playwright() as p:
     m.evaluate("localStorage.setItem('tf-sw', '1')"); m.reload(); m.wait_for_selector(".mi-ola")
     m.evaluate("navigator.serviceWorker.ready"); m.wait_for_timeout(1500); m.reload(); m.wait_for_selector(".mi-ola"); m.wait_for_timeout(1500)
     c.set_offline(True); m.reload(); m.wait_for_selector(".mi-ola", timeout=15000)
-    if "Malha" not in m.inner_text("#view-minhas") and m.locator(".mi-mais").count(): m.click(".mi-mais"); m.wait_for_timeout(300)
+    card(m, "Malha")
     check("Abre sem internet: última lista guardada e o aviso", "Malha" in m.inner_text("#view-minhas") and "Sem internet" in m.inner_text(".mi-aviso"))
     c.set_offline(False); c.close()
     # ── encarregado no computador ──
     c, e = nova(nav, {"width": 1440, "height": 1000}); entrar(e, "bruno@rawtech.com.br", "Bruno-Costa-2026"); e.wait_for_selector(".mi-ind")
     check("Encarregado entra em Minhas atividades com a chave Minhas/Equipe", e.locator(".mi-seg button").count() == 2 and "encarregado na ELE-014" in e.inner_text(".mi-ola"))
     e.click(".mi-seg button >> text=Da minha equipe"); e.wait_for_selector(".mi-grupos")
-    if not e.locator(".mi-card", has_text="Malha de aterramento").count() and e.locator(".mi-mais").count(): e.click(".mi-mais")   # conforme o dia, a Malha está em "Próximas"
-    e.wait_for_selector(".mi-card >> text=Malha de aterramento")
+    card(e, "Malha de aterramento"); e.wait_for_selector(".mi-card >> text=Malha de aterramento")   # conforme o dia, a Malha está em "Próximas" ou noutra página
     check("Da minha equipe: vê as da Carla, em 3 colunas", "Carla Mendes" in e.inner_text("#view-minhas") and e.evaluate("getComputedStyle(document.querySelector('.mi-grupos')).display") == "grid", (e.evaluate("getComputedStyle(document.querySelector('.mi-grupos')).display"), "Carla Mendes" in e.inner_text("#view-minhas")))
     check("Indicador de travadas", e.locator(".mi-ind.lar b").inner_text() == "1")
     antes = ativ(ids["a21"])["avanco"]

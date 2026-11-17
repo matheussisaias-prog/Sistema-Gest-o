@@ -85,6 +85,11 @@
 
   /* ── estado e carga ─────────────────────────── */
   const M = { d: null, ver: '', obra: '', carregando: false, erro: null, mais: false };
+  // Como o Kanban: cada grupo mostra só os cartões que cabem na tela e pagina ("‹ 1/N ›"); a página continua depois de atualizar (F5)
+  const MP = { pag: {}, por: 0, alt: 170 };
+  try { const g = JSON.parse(sessionStorage.getItem('tf-minhas-pag') || 'null'); if (g) { MP.pag = g.pag || {}; M.mais = !!g.mais; } } catch (_) {}
+  const mpGuardar = () => { try { sessionStorage.setItem('tf-minhas-pag', JSON.stringify({ pag: MP.pag, mais: M.mais })); } catch (_) {} };
+  const mpLim = n => Math.max(1, Math.min(10, n));
   const chaveCache = () => `tf-minhas-${eu().id}-${M.ver || 'auto'}-${M.obra || ''}`;
   async function abrir() {
     const nav = document.getElementById('nav-minhas');
@@ -117,8 +122,26 @@
       h('span', null, F.enviando ? `Enviando ${plural(n, 'atualização', 'atualizações')}…` : `${plural(n, 'atualização aguardando', 'atualizações aguardando')} envio${F.erro ? ' (' + F.erro + ')' : ''}.`),
       F.enviando ? null : h('button', { onclick: enviarFila }, 'Enviar agora')));
   }
-  function desenhar() {
+  function desenhar(fixo) {
     const R = raiz(); if (!R || !R.classList.contains('active')) return;
+    let por = MP.por || (largo() ? 3 : 2);
+    pintar(por);
+    if (fixo || !M.d || !R.offsetParent) return;
+    const sobra = () => { const box = R.querySelector('.mi'); return box ? Math.max(0, ...[...box.children].map(c => c.getBoundingClientRect().bottom)) - (window.innerHeight - 12) : 0; };   // pintar() refaz a tela: procura de novo
+    const medir = () => { const cs = [...R.querySelectorAll('.mi-grupo .mi-card')]; if (cs.length) MP.alt = Math.max(...cs.map(c => c.getBoundingClientRect().height)); };
+    medir();
+    for (let i = 0; i < 4; i++) {
+      const s = sobra(), passo = MP.alt + 10;
+      const novo = s > 0 ? mpLim(por - Math.ceil(s / passo)) : s < -passo ? mpLim(por + Math.floor(-s / passo)) : por;
+      if (novo === por) break;
+      pintar(novo); medir();
+      if (novo > por && sobra() > 0) { pintar(por); break; }
+      por = novo;
+    }
+    MP.por = por;
+  }
+  function pintar(por) {
+    const R = raiz(); if (!R) return;
     const y = window.scrollY;
     R.innerHTML = '';
     const box = h('div', { class: 'mi' + (largo() ? ' largo' : '') });
@@ -146,7 +169,7 @@
     if (ctr.childNodes.length) cab.append(ctr);
     box.append(cab);
     const r = d.resumo;
-    const ind = (n, t, cls, alvo) => h('button', { class: 'mi-ind ' + cls, onclick: () => { const g = document.getElementById('mi-g-' + alvo); if (g) g.scrollIntoView({ behavior: 'smooth', block: 'start' }); } }, h('b', null, n), h('span', null, t));
+    const ind = (n, t, cls, alvo) => h('button', { class: 'mi-ind ' + cls, onclick: () => { if (M.mais) { M.mais = false; mpGuardar(); desenhar(true); } const g = document.getElementById('mi-g-' + alvo); if (g) g.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'start' }); } }, h('b', null, n), h('span', null, t));
     const inds = h('div', { class: 'mi-inds' }, ind(r.atrasadas, r.atrasadas === 1 ? 'atrasada' : 'atrasadas', 'verm', 'atrasadas'));
     if (r.travadas || !celular()) inds.append(ind(r.travadas, r.travadas === 1 ? 'travada' : 'travadas', 'lar', 'atrasadas'));
     inds.append(ind(r.hoje, 'para hoje', 'azul', 'hoje'), ind(r.semana, 'esta semana', 'cinza', 'semana'));
@@ -156,21 +179,27 @@
     const grupo = (k, titulo, cls, lista) => {
       const s = h('section', { class: 'mi-grupo', id: 'mi-g-' + k, 'aria-label': titulo }, h('h2', { class: cls }, h('span', null, titulo), h('span', null, lista.length)));
       if (!lista.length) s.append(h('p', { class: 'mi-nada' }, k === 'atrasadas' ? 'Nada atrasado.' : k === 'hoje' ? 'Nada para hoje.' : 'Nada começando esta semana.'));
-      lista.forEach(a => s.append(cartao(a, k, pend)));
+      const paginas = Math.max(1, Math.ceil(lista.length / por));
+      const pg = Math.min(Math.max(MP.pag[k] || 0, 0), paginas - 1); if (R.offsetParent) MP.pag[k] = pg;
+      lista.slice(pg * por, pg * por + por).forEach(a => s.append(cartao(a, k, pend)));
+      if (paginas > 1) {
+        const ir = passo => () => { MP.pag[k] = pg + passo; mpGuardar(); desenhar(true); };
+        s.append(h('div', { class: 'mi-pag' },
+          h('button', { type: 'button', class: 'mi-pbt', 'aria-label': 'Página anterior', disabled: pg === 0, onclick: ir(-1) }, ic('fa-chevron-left')),
+          h('span', null, `${pg + 1}/${paginas}`),
+          h('button', { type: 'button', class: 'mi-pbt', 'aria-label': 'Próxima página', disabled: pg >= paginas - 1, onclick: ir(1) }, ic('fa-chevron-right'))));
+      }
       return s;
     };
-    g.append(grupo('atrasadas', 'Atrasadas', 'verm', d.grupos.atrasadas), grupo('hoje', 'Hoje', 'azul', d.grupos.hoje), grupo('semana', 'Esta semana', 'cinza', d.grupos.semana));
-    box.append(g);
     const extra = d.grupos.proximas.length + d.grupos.concluidas.length;
+    if (!extra && M.mais) M.mais = false;
+    if (M.mais) { g.classList.add('dois'); g.append(grupo('proximas', 'Próximas', 'cinza', d.grupos.proximas), grupo('concluidas', 'Concluídas nos últimos 7 dias', 'verd', d.grupos.concluidas)); }
+    else g.append(grupo('atrasadas', 'Atrasadas', 'verm', d.grupos.atrasadas), grupo('hoje', 'Hoje', 'azul', d.grupos.hoje), grupo('semana', 'Esta semana', 'cinza', d.grupos.semana));
     if (extra) {
-      box.append(h('button', { class: 'mi-mais', 'aria-expanded': M.mais ? 'true' : 'false', onclick: () => { M.mais = !M.mais; desenhar(); } },
-        M.mais ? 'Esconder próximas e concluídas' : `Próximas (${d.grupos.proximas.length}) · Concluídas nos últimos 7 dias (${d.grupos.concluidas.length})`));
-      if (M.mais) {
-        const g2 = h('div', { class: 'mi-grupos dois' });
-        g2.append(grupo('proximas', 'Próximas', 'cinza', d.grupos.proximas), grupo('concluidas', 'Concluídas nos últimos 7 dias', 'verd', d.grupos.concluidas));
-        box.append(g2);
-      }
+      box.append(h('button', { class: 'mi-mais', 'aria-expanded': M.mais ? 'true' : 'false', onclick: () => { M.mais = !M.mais; mpGuardar(); desenhar(); } },
+        M.mais ? 'Voltar para atrasadas, hoje e esta semana' : `Próximas (${d.grupos.proximas.length}) · Concluídas nos últimos 7 dias (${d.grupos.concluidas.length})`));
     }
+    box.append(g);
     if (d._cache && navigator.onLine && M.carregando) box.append(h('p', { class: 'mi-nota' }, 'Atualizando…'));
     if (M.erro) box.append(h('p', { class: 'mi-erro' }, M.erro));
     desenharAviso();
@@ -358,7 +387,7 @@
   };
   window.addEventListener('online', () => { desenharAviso(); setTimeout(enviarFila, 800); });
   window.addEventListener('offline', desenharAviso);
-  window.addEventListener('resize', (() => { let w = largo(); return () => { if (w !== largo()) { w = largo(); desenhar(); } }; })());
+  window.addEventListener('resize', (() => { let t; return () => { clearTimeout(t); t = setTimeout(() => { const R = raiz(); if (R && R.classList.contains('active')) { MP.por = 0; desenhar(); } }, 150); }; })());
   setInterval(() => { if (navigator.onLine && F.itens.length && !F.enviando) enviarFila(); }, 30000);
   window.tfMinhas = { abrir, recarregar: () => carregar(true), estado: M, fila: F, enviarFila };
   lerFila().then(() => { if (navigator.onLine && F.itens.length) enviarFila(); });

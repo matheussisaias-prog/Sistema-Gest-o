@@ -90,3 +90,13 @@
 
 .mi-rdo { height: 40px; padding: 0 14px; border: 1.5px solid #2563eb; border-radius: 10px; background: #eff6ff; color: #1d4ed8; font: 700 13.5px 'DM Sans', system-ui, sans-serif; cursor: pointer; white-space: nowrap; }
 .mi-rdo.lembrete { border-color: #d97706; background: #fffbeb; color: #92400e; white-space: normal; height: auto; min-height: 40px; padding: 8px 14px; text-align: left; }
+/* Paginação por grupo (como o Kanban): a tela cabe sem rolar para baixo */
+.mi { padding-bottom: 8px; }
+.mi-pag { display: flex; align-items: center; justify-content: center; gap: 10px; padding-top: 2px; font: 700 12.5px 'DM Mono', ui-monospace, monospace; color: #475569; }
+.mi-pbt { width: 34px; height: 34px; border: 1.5px solid #cbd5e1; border-radius: 9px; background: #fff; color: #334155; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; font-size: 12px; }
+.mi-pbt:hover:not(:disabled) { border-color: #2563eb; color: #2563eb; }
+.mi-pbt:disabled { opacity: .35; cursor: default; }
+.mi-mais { height: 38px; }
+.mi:not(.largo) .mi-grupos { flex-direction: row; overflow-x: auto; scroll-snap-type: x mandatory; gap: 12px; padding-bottom: 4px; }
+.mi:not(.largo) .mi-grupo { flex: 0 0 88%; scroll-snap-align: start; scroll-margin-top: 0; }
+.mi { min-width: 0; width: 100%; } .mi-grupos { min-width: 0; max-width: 100%; }
