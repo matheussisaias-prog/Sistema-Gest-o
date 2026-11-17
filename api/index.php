@@ -25,6 +25,7 @@ require __DIR__ . '/lib/historico.php';
 require __DIR__ . '/lib/importar.php';
 require __DIR__ . '/lib/inicio.php';
 require __DIR__ . '/lib/indicadores.php';
+require __DIR__ . '/lib/planejamento.php';
 
 $metodo = $_SERVER['REQUEST_METHOD'] ?? 'GET';
 $caminho = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';
@@ -119,6 +120,16 @@ $rotas = [
     'GET rdos/#/documento'      => 'rota_rdo_documento',
     'GET inicio'                => 'rota_inicio',
     'GET indicadores'           => 'rota_indicadores',
+    'GET obras/#/plano'         => 'rota_obra_plano',
+    'POST obras/#/plano'        => 'rota_obra_plano_salvar',
+    'PATCH plano/#'             => 'rota_plano_alterar',
+    'DELETE plano/#'            => 'rota_plano_excluir',
+    'GET obras/#/custos'        => 'rota_obra_custos',
+    'POST obras/#/custos'       => 'rota_obra_custos_criar',
+    'DELETE custos/#'           => 'rota_custos_excluir',
+    'POST obras/#/ocorrencias'  => 'rota_obra_ocorrencia',
+    'GET avisos'                => 'rota_avisos',
+    'POST avisos/lidos'         => 'rota_avisos_lidos',
     'GET historico'             => 'rota_historico',
     'GET historico/excel'       => 'rota_historico_excel',
     'POST importar/previa'      => 'rota_importar_previa',

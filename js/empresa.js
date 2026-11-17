@@ -315,7 +315,16 @@
       h('div', { class: 'em-regra' }, h('div', null, h('b', null, 'Prazo para fazer o RDO'), h('small', null, 'Depois disso o dia sem RDO aparece como pendente em vermelho.'),
         sel('rdo_prazo', [[1, 'Até o dia útil seguinte'], [2, 'Até 2 dias úteis'], [3, 'Até 3 dias úteis'], [5, 'Até 5 dias úteis']])), h('i')),
       regra('rdo_lembrete', 'Lembrete ao encarregado', 'A partir das 16h, Minhas atividades avisa se o RDO do dia ainda não foi enviado.'),
-      regra('rdo_assinatura', 'Assinatura do cliente obrigatória', 'O RDO só sai das pendências com a foto da folha assinada.'));
+      regra('rdo_assinatura', 'Assinatura do cliente obrigatória', 'O RDO só sai das pendências com a foto da folha assinada.'),
+      h('div', { class: 'em-grupo' }, 'METAS DOS INDICADORES'),
+      ...[['meta_ppc', 'PPC · plano semanal cumprido', 'Percentual mínimo dos compromissos da semana cumpridos (Last Planner costuma usar 80%).', '%', 1],
+          ['meta_idp', 'IDP · desempenho de prazo', 'Abaixo disso a obra é marcada fora do prazo (1,00 = exatamente no plano).', '', 0.01],
+          ['meta_idc', 'IDC · desempenho de custo', 'Abaixo disso o custo fica em atenção (1,00 = gastando o orçado).', '', 0.01],
+          ['meta_destravar', 'Tempo para destravar', 'Máximo de dias para a gestão liberar um Travou.', 'dias', 0.5],
+          ['meta_conformidade', 'Conformidade SST', 'Percentual mínimo das pessoas em campo com a documentação em dia.', '%', 1],
+          ['meta_retrabalho', 'Atividades sem retrabalho', 'Percentual mínimo das atividades trabalhadas sem refazer serviço.', '%', 1]].map(([k, t, d, un, passo]) =>
+        h('div', { class: 'em-regra' }, h('div', null, h('b', null, t), h('small', null, d)),
+          h('span', { class: 'em-meta' }, h('input', { type: 'number', class: 'em-in', step: passo, value: R[k], disabled: !P, 'aria-label': 'Meta de ' + t, onchange: e => salvar(k, e.target.value) }), un ? h('small', null, un) : null))));
   }
 
   /* ══ Plano ═══════════════════════════════════ */

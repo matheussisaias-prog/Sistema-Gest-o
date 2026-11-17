@@ -173,7 +173,10 @@
   }
   function abas() {
     const ab = (id, txt) => h('button', { role: 'tab', class: 'og-aba' + (O.aba === id ? ' on' : ''), 'aria-selected': O.aba === id ? 'true' : 'false', onclick: () => { O.aba = id; desenhar(); } }, txt);
-    return h('div', { class: 'og-abas', role: 'tablist' }, ab('crono', 'Cronograma'), ab('quadro', 'Quadro'), ab('equipe', celular() ? 'Equipe' : 'Equipe da obra'), ab('base', celular() ? 'Linha de base' : 'Linha de base e histórico'));
+    const planeja = podeTudo() || eu().perfil === 'encarregado';
+    setTimeout(() => { const on = document.querySelector('.og-aba.on'); if (on && on.parentElement.scrollWidth > on.parentElement.clientWidth) on.parentElement.scrollLeft = on.offsetLeft - 40; }, 0);   // no celular a aba escolhida fica à vista
+    return h('div', { class: 'og-abas', role: 'tablist' }, ab('crono', 'Cronograma'), ab('quadro', 'Quadro'), planeja ? ab('plano', celular() ? 'Plano' : 'Plano da semana') : null,
+      ab('equipe', celular() ? 'Equipe' : 'Equipe da obra'), ab('base', celular() ? 'Linha de base' : 'Linha de base e histórico'), podeTudo() ? ab('custos', 'Custos') : null);
   }
 
   /* ── linha de base ──────────────────────────── */

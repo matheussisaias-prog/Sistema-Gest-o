@@ -105,7 +105,8 @@ check("Salvar dados da empresa (CNPJ formatado, UF maiúscula)", r.status_code =
 check("Cabeçalho dos documentos já usa os dados novos", adm.get(A+"/empresa/cabecalho").json().get("razao_social") == "Rawtech Instalações Ltda")
 check("Gestora não altera os dados", ana.patch(A+"/empresa", json={"nome": "Outra"}).status_code == 403)
 # ── regras do campo ──
-check("Regras padrão: foto do funcionário, Travou por e-mail, prazo 1 dia, assinatura", adm.get(A+"/empresa").json()["regras"] == {"foto": "funcionario", "comentario_concluir": False, "travou_email": True, "rdo_prazo": 1, "rdo_lembrete": True, "rdo_assinatura": True})
+_rg = adm.get(A+"/empresa").json()["regras"]
+check("Regras padrão: foto do funcionário, Travou por e-mail, prazo 1 dia, assinatura e metas dos indicadores", {k: _rg[k] for k in ("foto", "comentario_concluir", "travou_email", "rdo_prazo", "rdo_lembrete", "rdo_assinatura")} == {"foto": "funcionario", "comentario_concluir": False, "travou_email": True, "rdo_prazo": 1, "rdo_lembrete": True, "rdo_assinatura": True} and _rg["meta_ppc"] == 80 and _rg["meta_idp"] == 0.95, _rg)
 check("Opção inválida recusada", adm.put(A+"/empresa/regras", json={"foto": "chefe"}).status_code == 400 and adm.put(A+"/empresa/regras", json={"rdo_prazo": 9}).status_code == 400)
 car = sessao("carla@rawtech.com.br", "Carla-Mendes-2026")
 adm.put(A+"/empresa/regras", json={"foto": "campo"})
@@ -122,7 +123,9 @@ P1 = adm.get(A+"/rdos").json()["pendencias"]; adm.put(A+"/empresa/regras", json=
 check("Prazo de 3 dias: dias recentes sem RDO deixam de ser pendência", len([p for p in P3 if p["tipo"] == "sem"]) < len([p for p in P1 if p["tipo"] == "sem"]), (len(P1), len(P3)))
 check("Sem assinatura obrigatória: entregue sai das pendências", any(p["tipo"] == "entr" for p in P1) and not any(p["tipo"] == "entr" for p in P3))
 dias = adm.get(A+f"/rdos?obra={pid}").json()["dias"]
-check("Calendário do RDO: dia recente aparece 'no prazo'", any(x["estado"] == "prazo" for x in dias) or hoje.weekday() == 0)
+import datetime as _dt
+_rec = [x for x in dias if x.get("util") and not x.get("rdo") and str(hoje - _dt.timedelta(days=5)) <= x["data"] < str(hoje)]   # dia útil recente sem RDO (depende do dia da semana)
+check("Calendário do RDO: dia recente aparece 'no prazo'", any(x["estado"] == "prazo" for x in dias) or not _rec, [(x["data"], x["estado"]) for x in dias[-8:]])
 adm.put(A+"/empresa/regras", json={"rdo_prazo": 1, "rdo_assinatura": True, "travou_email": True})
 check("Encarregado recebe o RDO de hoje e o lembrete", enc.get(A+"/minhas-atividades").json()["rdo_lembrete"] is True and car.get(A+"/minhas-atividades").json()["rdo_lembrete"] is False)
 # ── calendário padrão ──

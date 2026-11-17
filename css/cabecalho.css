@@ -1,0 +1,32 @@
+/* Aprumo · cabecalho.css — busca do topo, sininho com contador e janelinhas (tf-pop) */
+.notif-dot { width: auto; height: auto; min-width: 17px; height: 17px; top: 2px; right: 0; padding: 0 4px; border-radius: 99px; color: #fff; font: 700 10px/14px 'DM Sans', sans-serif; text-align: center; }
+.notif-dot:empty { min-width: 0; width: 7px; height: 7px; padding: 0; top: 6px; right: 6px; }
+.notif-dot[hidden] { display: none; }
+.header { position: relative; }
+.header-search { position: relative; }
+.tf-pop { position: absolute; z-index: 300; background: var(--surface); color: var(--text-1); border: 1px solid var(--border); border-radius: 14px; box-shadow: 0 18px 48px rgba(15,23,42,.18); font-family: 'DM Sans', system-ui, sans-serif; }
+.tf-busca { top: calc(100% + 6px); left: 0; width: min(460px, calc(100vw - 24px)); max-height: 420px; overflow-y: auto; padding: 6px; }
+.tf-sino { position: fixed; max-height: min(560px, calc(100vh - 90px)); display: flex; flex-direction: column; overflow: hidden; }
+#notif-btn { position: relative; }
+.tf-pop-cab { display: flex; align-items: baseline; gap: 8px; padding: 12px 14px 8px; border-bottom: 1px solid var(--border); }
+.tf-pop-cab b { font-size: 14px; } .tf-pop-cab small { color: var(--text-3); font-size: 12px; flex: 1; }
+.tf-pop-x { border: 0; background: var(--surface2); color: var(--text-2); width: 30px; height: 30px; border-radius: 8px; cursor: pointer; }
+.tf-pop-lista { overflow-y: auto; padding: 6px; }
+.tf-pop-item { display: flex; align-items: center; gap: 10px; width: 100%; text-align: left; border: 0; background: none; padding: 8px 8px; border-radius: 10px; cursor: pointer; font: inherit; color: inherit; }
+.tf-pop-item:hover, .tf-pop-item.sel { background: var(--surface2); }
+.tf-pop-i { width: 30px; height: 30px; border-radius: 9px; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; font-size: 13px; background: #f1f5f9; color: #475569; }
+.tf-pop-i.vm { background: #fee2e2; color: #b91c1c; } .tf-pop-i.am { background: #fef3c7; color: #b45309; } .tf-pop-i.az { background: #dbeafe; color: #1d4ed8; } .tf-pop-i.rx { background: #ede9fe; color: #6d28d9; }
+.tf-pop-t { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.tf-pop-t b { font-size: 13px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } .tf-pop-t small { font-size: 11.5px; color: var(--text-3); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tf-pop-q { font-size: 11.5px; font-weight: 700; color: #b91c1c; white-space: nowrap; }
+.tf-pop-vazio { margin: 0; padding: 14px; color: var(--text-3); font-size: 13px; } .tf-pop-vazio.ok { color: #15803d; }
+.tf-pop-pe { border: 0; border-top: 1px solid var(--border); background: none; padding: 11px; color: var(--blue, #2563eb); font: 600 13px 'DM Sans', sans-serif; cursor: pointer; }
+.tf-pop-pe:hover { background: var(--surface2); }
+#notif-btn[aria-expanded="true"]::after, #notif-btn[aria-expanded="true"]::before { display: none; }
+
+.nav-badge:empty { display: none !important; }
+.tf-pop-sec { margin: 6px 8px 2px; font: 700 10.5px 'DM Sans', sans-serif; text-transform: uppercase; letter-spacing: .05em; color: var(--text-4); }
+.tf-pop-item.novo { background: rgba(37,99,235,.07); } .tf-pop-item.novo .tf-pop-q { color: #2563eb; }
+/* o botão de tema do topo some no celular; lá ele fica na barra lateral */
+.sidebar .tf-tema-cel { display: none; }
+@media (max-width: 768px) { .sidebar .tf-tema-cel { display: flex; } }

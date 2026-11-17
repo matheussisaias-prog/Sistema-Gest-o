@@ -21,9 +21,8 @@ function renderKPIs() {
 function updateBadge() {
   const n = activities.filter(a => a.status === 'Vencido').length;
   const b = document.getElementById('badge-overdue');
-  b.textContent = n;
+  b.textContent = n > 0 ? n : '';
   b.style.display = n > 0 ? '' : 'none';
-  document.getElementById('notif-dot').style.display = n > 0 ? '' : 'none';
 }
 
 /* ══════════════════════════════════════════════════
@@ -161,6 +160,7 @@ function renderPriority() {
    CHARTS
 ══════════════════════════════════════════════════ */
 function renderCharts() {
+  if (typeof Chart === 'undefined') return;
   renderChartProj();
   renderChartDonut();
   if (document.getElementById('view-graficos').classList.contains('active')) {
@@ -230,6 +230,7 @@ function renderChartDonut() {
 }
 
 function renderFullCharts() {
+  if (typeof Chart === 'undefined') return;   // sem a biblioteca (internet ruim) a tela continua funcionando
   // Recria os gráficos a cada exibição para refletir os dados atuais (antes eram montados uma vez só)
   [chartStatusFull, chartTeamFull, chartProjFull].forEach(c => { if (c) c.destroy(); });
   chartStatusFull = null; chartTeamFull = null; chartProjFull = null;

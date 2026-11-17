@@ -64,7 +64,7 @@ with sync_playwright() as p:
     # travou
     n_antes = sum(1 for _ in open("/home/claude/teste-api/emails.jsonl", encoding="utf-8"))
     card(m, "Malha").locator(".mi-travou").click(); m.wait_for_selector(".mi-motivos")
-    check("Travou: 5 motivos e o Avisar desligado até escolher", m.locator(".mi-motivos button").count() == 5 and m.locator(".mi-folha .mi-bt-pri").is_disabled())
+    check("Travou: 8 motivos e o Avisar desligado até escolher", m.locator(".mi-motivos button").count() == 8 and m.locator(".mi-folha .mi-bt-pri").is_disabled())
     m.click(".mi-motivos button >> text=Falta material"); m.fill(".mi-folha textarea", "Faltam 40 caixas 4x4"); m.click(".mi-folha .mi-bt-pri"); m.wait_for_selector(".mi-folha", state="detached")
     m.wait_for_function("[...document.querySelectorAll('.mi-card .mi-trav')].some(t => t.innerText.includes('avisado às'))")
     check("Cartão mostra 'Travou' com o motivo e a hora do aviso", "Falta material: Faltam 40 caixas 4x4" in card(m, "Malha").inner_text() and "avisado às" in card(m, "Malha").inner_text())

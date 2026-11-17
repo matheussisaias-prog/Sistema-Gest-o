@@ -27,7 +27,7 @@ check("Funcionária: foto obrigatória e sem 'Da minha equipe'", m["foto_obrigat
 check("Funcionária não vê a equipe mesmo pedindo", car.get(A+"/minhas-atividades?ver=equipe").json()["ver"] == "minhas")
 check("Grupos: atrasadas, hoje, semana, próximas, concluídas", set(m["grupos"]) == {"atrasadas", "hoje", "semana", "proximas", "concluidas"})
 check("Resumo bate com os grupos", m["resumo"]["hoje"] == len(m["grupos"]["hoje"]) and m["resumo"]["atrasadas"] == len(m["grupos"]["atrasadas"]))
-check("Motivos do Travou", [x["id"] for x in m["motivos"]] == ["material", "liberacao", "clima", "equipamento", "outro"])
+check("Motivos do Travou", [x["id"] for x in m["motivos"]] == ["material", "liberacao", "clima", "equipamento", "equipe", "projeto", "retrabalho", "outro"])
 e = enc.get(A+"/minhas-atividades?ver=equipe").json()
 ee = [a for g in e["grupos"].values() for a in g]
 check("Encarregado: 'Da minha equipe' traz as de todos da obra", {a["responsavel_nome"] for a in ee} >= {"Carla Mendes", "Bruno Costa"} and e["obras_encarregado"] == ["ELE-014"])

@@ -1,5 +1,7 @@
-"""Tela Gráficos: indicadores SQDCP, PPC, avanço por obra e Ishikawa (6M). API e tela (computador e celular)."""
-import sys, requests
+"""Tela Gráficos e indicadores (gestão de planejamento): resumo, SQDCP com tendência e detalhe, prazo das obras,
+Curva S, causas (Ishikawa em dias perdidos + Pareto), pendências de controle, carga e equipamentos; API, tela,
+celular, permissões, F5 e PDF."""
+import sys, requests, datetime as dt
 sys.path.insert(0, "/home/claude/telas"); from comum import rotas
 from dados_ind import montar
 from playwright.sync_api import sync_playwright
@@ -13,22 +15,31 @@ pid, p2, ids, R, rd = montar()
 def sessao(e, s): x = requests.Session(); x.post(A+"/entrar", json={"email": e, "senha": s}); return x
 adm = sessao("wendell@rawtech.com.br", "Obra-Segura-2026")
 # ── API ──
-d = adm.get(A+"/indicadores").json()
-check("API: 5 indicadores S, Q, D, C, P", [k["chave"] for k in d["kpis"]] == list("SQDCP"))
-K = {k["chave"]: k for k in d["kpis"]}
-check("Segurança: dias desde o último acidente (45) e farol de atenção", K["S"]["valor"] == 45 and K["S"]["farol"] == "amarelo", K["S"])
-check("Pessoas: tempo médio para destravar dos Travou resolvidos (2,1 dias)", K["P"]["valor"] == 2.1 and "2 abertos" in K["P"]["detalhe"], K["P"])
-check("Entrega: PPC das últimas 4 semanas com 6 semanas no gráfico", len(d["ppc_semanas"]) == 6 and K["D"]["formato"] == "%")
-check("Custo: IDP com valor do contrato", K["C"]["valor"] is not None and "Agregado R$" in K["C"]["detalhe"])
-ram = {r["chave"]: r for r in d["ishikawa"]["ramos"]}
-check("Ishikawa com os 6M", list(ram) == ["mao", "maquina", "material", "metodo", "meio", "medida"])
-check("Material: 2 Travou por falta de material", ram["material"]["qtd"] == 2 and "Cabo 25" in str(ram["material"]["grupos"]))
-check("Meio ambiente: clima e pendência do cliente", {g["titulo"] for g in ram["meio"]["grupos"]} == {"Clima", "Pendência do cliente"})
-check("Mão de obra: acidente aparece", any(g["titulo"] == "Acidentes" for g in ram["mao"]["grupos"]))
+d = adm.get(A+"/indicadores").json(); K = {k["chave"]: k for k in d["kpis"]}
+check("5 indicadores S, Q, D, C, P com série de 8 semanas e tendência", [k["chave"] for k in d["kpis"]] == list("SQDCP") and all(len(k["serie"]) == 8 and "delta" in k["tendencia"] for k in d["kpis"]))
+check("Resumo em uma frase com obras no prazo e principal causa", "obras no prazo" in d["resumo"] and "principal causa: falta de material" in d["resumo"], d["resumo"])
+check("Segurança: 45 dias sem acidente, atenção, conformidade SST embaixo", K["S"]["valor"] == 45 and K["S"]["farol"] == "amarelo" and K["S"]["secundario"]["rotulo"] == "Conformidade SST")
+check("Entrega: IDP e obras fora do prazo", K["D"]["formato"] == "indice" and K["D"]["valor"] is not None and "de 2" in K["D"]["secundario"]["valor"])
+check("Custo sem lançamento: pede para lançar (não inventa IDC)", K["C"]["valor"] is None and "Lance os custos" in K["C"]["detalhe"])
+check("Planejamento sem plano: pede para montar o plano da semana", K["P"]["valor"] is None and "Plano da semana" in K["P"]["detalhe"] and K["P"]["secundario"]["rotulo"] == "Tempo médio para destravar")
+check("Prazo das obras com término previsto e do contrato", d["prazo_obras"] and {"termino_previsto", "termino_contrato", "desvio_dias", "idp"} <= set(d["prazo_obras"][0]))
+check("Curva S com previsto, real e projeção", d["curva"] and any(p["real"] is not None for p in d["curva"]["pontos"]) and any(p.get("projetado") for p in d["curva"]["pontos"]))
+ram = {r["chave"]: r for r in d["causas"]["ramos"]}
+check("Ishikawa 6M em dias perdidos", list(ram) == ["mao", "maquina", "material", "metodo", "meio", "medida"] and ram["material"]["dias"] >= 2)
+check("Pareto ordenado com % acumulado chegando a 100", d["causas"]["pareto"][0]["causa"] == "Falta de material" and d["causas"]["pareto"][-1]["acum"] == 100)
+check("Acidente sem parar serviço não vira causa de atraso", ram["mao"]["qtd"] == 0)
+check("Dias sem RDO ficam nas pendências, não no Ishikawa", any(g["chave"] == "rdo" for g in d["pendencias"]) and not any(g["titulo"] == "Dias sem RDO" for r in d["causas"]["ramos"] for g in r["grupos"]))
+check("Carga da equipe e ocupação de equipamentos", d["equipe"] and d["equipamentos"] and "carga" in d["equipe"][0])
+d7 = adm.get(A+"/indicadores?periodo=7").json(); d90 = adm.get(A+"/indicadores?periodo=90").json()
+check("Período muda a janela (7 e 90 dias)", d7["periodo"] == 7 and d90["periodo"] == 90 and d90["causas"]["total_dias"] >= d7["causas"]["total_dias"])
 d2 = adm.get(A+f"/indicadores?obra={p2}").json()
-check("Filtro por obra: outra obra não traz os Travou da primeira", d2["obra"] == p2 and sum(r["qtd"] for r in d2["ishikawa"]["ramos"] if r["chave"] in ("material", "meio")) == 0)
+check("Filtro por obra", d2["obra"] == p2 and all(r["qtd"] == 0 for r in d2["causas"]["ramos"] if r["chave"] in ("material", "meio")))
 check("Encarregado e funcionário não acessam", sessao("bruno@rawtech.com.br", "Bruno-Costa-2026").get(A+"/indicadores").status_code == 403 and sessao("carla@rawtech.com.br", "Carla-Mendes-2026").get(A+"/indicadores").status_code == 403)
 check("Obra de outra empresa não abre", adm.get(A+"/indicadores?obra=99999").status_code == 404)
+r = adm.put(A+"/empresa/regras", json={"meta_idp": 0.9}); d3 = adm.get(A+"/indicadores").json()
+check("Meta ajustável em Empresa vale no indicador", r.status_code == 200 and d3["metas"]["meta_idp"] == 0.9 and "0,90" in {k["chave"]: k for k in d3["kpis"]}["D"]["meta"])
+check("Meta fora da faixa é recusada", adm.put(A+"/empresa/regras", json={"meta_ppc": 150}).status_code == 400)
+adm.put(A+"/empresa/regras", json={"meta_idp": 0.95})
 # ── tela ──
 with sync_playwright() as p:
     nav = p.chromium.launch(executable_path="/usr/bin/google-chrome")
@@ -38,27 +49,33 @@ with sync_playwright() as p:
         pg.goto(B+"/entrar.html"); pg.fill("#e-email", "wendell@rawtech.com.br"); pg.fill("#e-senha", "Obra-Segura-2026"); pg.click("#f-entrar button[type=submit]")
         pg.wait_for_url("**/index.html"); pg.wait_for_selector(".tf-user"); pg.wait_for_timeout(800)
         pg.evaluate("tfIndicadores.abrir()"); pg.wait_for_selector(".ind-kpi")
-        check(f"[{nome}] 5 cartões com letra, valor e meta", pg.locator(".ind-kpi").count() == 5 and pg.locator(".ind-kpi .ind-letra").all_inner_texts() == list("SQDCP") and "Meta:" in pg.inner_text(".ind-kpi >> nth=0"))
-        pg.locator(".ind-kpi >> nth=2").locator(".ind-info").click()
-        check(f"[{nome}] (i) explica o indicador", "Last Planner" in pg.inner_text(".ind-kpi >> nth=2"))
-        check(f"[{nome}] PPC e avanço por obra desenhados", pg.locator(".ind-svg rect.ind-barra").count() >= 1 and pg.locator(".ind-av-l").count() == 2)
-        check(f"[{nome}] Ishikawa com 6 ramos e o efeito", pg.locator(".ind-ramo").count() == 6 and "Atrasos" in pg.text_content(".ind-ish"))
-        pg.locator(".ind-ramo[data-ramo='material'] .ind-ramo-cx").click(); pg.wait_for_timeout(300)
-        check(f"[{nome}] Clicar no ramo lista as causas", "Cabo 25 mm²" in pg.inner_text(".ind-det-ramo") and pg.locator(".ind-ramo.on").count() == 1)
-        pg.reload(); pg.wait_for_selector(".ind-kpi"); pg.wait_for_timeout(800)
-        check(f"[{nome}] F5 volta na tela com o mesmo ramo aberto", pg.locator(".ind-det-ramo").count() == 1 and "Material" in pg.inner_text(".ind-det-t"))
-        pg.locator(".ind-det-ramo button.ind-item >> nth=0").click(); pg.wait_for_selector(".og-cab h1", timeout=10000)
-        check(f"[{nome}] Clicar numa causa abre a obra", "Subestação" in pg.inner_text(".og-cab h1"))
-        pg.evaluate("tfIndicadores.abrir()"); pg.wait_for_selector(".ind-kpi"); pg.select_option(".ind-sel-obra", str(p2)); pg.wait_for_timeout(1200)
-        check(f"[{nome}] Escolher a obra filtra", pg.locator(".ind-av-l").count() <= 1)
-        pg.select_option(".ind-sel-obra", ""); pg.wait_for_timeout(800)
-        if mob: check("[celular] Sem rolagem lateral da página", pg.evaluate("document.documentElement.scrollWidth") <= 392, pg.evaluate("document.documentElement.scrollWidth"))
+        check(f"[{nome}] Resumo, 5 cartões com letra, tendência e meta", pg.locator(".ind-resumo").count() == 1 and pg.locator(".ind-kpi .ind-letra").all_inner_texts() == list("SQDCP") and pg.locator(".ind-kpi .ind-tend").count() == 5)
+        check(f"[{nome}] Gráficos antigos escondidos para a gestão", not pg.is_visible(".ind-antigos"))
+        pg.locator(".ind-kpi >> nth=2").click(); pg.wait_for_selector(".ind-gaveta")
+        check(f"[{nome}] Clicar no cartão abre a explicação, a conta e a lista", "IDP" in pg.inner_text(".ind-gaveta") and pg.locator(".ind-gav-form").count() == 1 and pg.locator(".ind-gaveta .ind-item").count() >= 1)
+        pg.keyboard.press("Escape"); pg.wait_for_timeout(200)
+        check(f"[{nome}] Prazo das obras, Curva S, Pareto e pendências", pg.locator(".ind-tab tbody tr").count() == 2 and pg.locator(".ind-c-real").count() == 1 and pg.locator(".ind-par-l").count() >= 3 and pg.locator(".ind-pend-g").count() >= 2)
+        if not mob:
+            pg.locator(".ind-ramo[data-ramo='material'] .ind-ramo-cx").click(); pg.wait_for_timeout(300)
+            check("[computador] Ramo do Ishikawa lista os registros em dias", "Cabo 25 mm²" in pg.inner_text(".ind-det-ramo") and "dias perdidos" in pg.inner_text(".ind-det-t"))
+            pg.reload(); pg.wait_for_selector(".ind-kpi"); pg.wait_for_timeout(800)
+            check("[computador] F5 mantém o ramo aberto", pg.locator(".ind-det-ramo").count() == 1)
+            pg.click(".ind-seg button >> text=90 dias"); pg.wait_for_timeout(1200)
+            check("[computador] Período escolhido aparece no cabeçalho", "período de" in pg.inner_text(".ind-cab-tela") and pg.locator(".ind-seg button.on").inner_text() == "90 dias")
+            pg.emulate_media(media="print"); pg.wait_for_timeout(200)
+            check("[computador] PDF (impressão) mostra só os indicadores", not pg.is_visible(".sidebar") and pg.is_visible("#ind-raiz") and not pg.is_visible(".ind-ctr"), [pg.is_visible(".sidebar"), pg.is_visible("#ind-raiz"), pg.is_visible(".ind-ctr")])
+            pg.emulate_media(media="screen")
+            pg.locator(".ind-tab tbody tr >> nth=0").click(); pg.wait_for_selector(".og-cab h1")
+            check("[computador] Clicar na obra da tabela abre a obra", pg.inner_text("#page-title") == "Obra")
+        else:
+            check("[celular] Ishikawa vira Pareto e cartões deslizam", not pg.is_visible(".ind-ish-box") and pg.evaluate("getComputedStyle(document.querySelector('.ind-kpis')).display") == "flex")
+            check("[celular] Sem rolagem lateral da página", pg.evaluate("document.documentElement.scrollWidth") <= 392, pg.evaluate("document.documentElement.scrollWidth"))
         check(f"[{nome}] Sem erro de tela", not erros, erros)
         c.close()
     c = nav.new_context(viewport={"width": 1440, "height": 900}); rotas(c); c.route("**/chart.umd.min.js", lambda r: r.fulfill(body=STUB, content_type="application/javascript")); pg = c.new_page()
     pg.goto(B+"/entrar.html"); pg.fill("#e-email", "bruno@rawtech.com.br"); pg.fill("#e-senha", "Bruno-Costa-2026"); pg.click("#f-entrar button[type=submit]")
     pg.wait_for_url("**/index.html"); pg.wait_for_selector(".tf-user"); pg.wait_for_timeout(800)
     pg.evaluate("switchView('graficos', null)"); pg.wait_for_timeout(1000)
-    check("Encarregado na tela Gráficos vê só os gráficos antigos", pg.locator(".ind-kpi").count() == 0 and pg.locator("#chart-status-full").count() == 1)
+    check("Encarregado vê só os gráficos antigos", pg.locator(".ind-kpi").count() == 0 and pg.is_visible("#chart-status-full"))
     nav.close()
 print(f"RESULTADO: {ok} ok, {f} falhas")

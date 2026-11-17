@@ -184,8 +184,29 @@
         : h('p', { class: 'eq-vazio' }, 'Nenhum avanço lançado no dia.'));
   }
   function painelOcorrencias(C) {
-    return painel('Ocorrências', 'Travou e ocorrências do dia.', C.ocorrencias.length ? C.ocorrencias.map(o => h('div', { class: 'rd-oc' }, selo(o.tipo, 'ven'),
+    const pode = M.r && M.r.pode && M.r.pode.editar;
+    const p = painel('Ocorrências', 'Travou, acidentes, clima, retrabalho e o que mais aconteceu no dia.', C.ocorrencias.length ? C.ocorrencias.map(o => h('div', { class: 'rd-oc' }, selo(o.tipo, o.tipo === 'Acidente' ? 'vc' : 'ven'),
       h('span', null, (o.atividade ? o.atividade + ' — ' : '') + o.descricao + ` (${o.por || ''}, ${o.hora})`), o.liberada ? selo('Liberada ' + o.liberada, 'ok') : null)) : h('p', { class: 'eq-vazio' }, 'Nenhuma.'));
+    if (pode) p.querySelector('.eq-painel-cab').append(h('button', { class: 'eq-bt', onclick: novaOcorrencia }, ic('fa-plus'), ' Registrar'));
+    return p;
+  }
+  /* ocorrência avulsa: acidente/incidente, clima, retrabalho… "Parou o serviço" deixa a atividade travada (vira Travou) */
+  async function novaOcorrencia() {
+    const T = ['Acidente', 'Clima', 'Retrabalho', 'Falta de material', 'Falta de equipe', 'Equipamento', 'Projeto', 'Pendência do cliente', 'Outro'];
+    let ativ = [];
+    try { ativ = (await api(`obras/${M.r.obra.id}/cronograma`)).atividades.filter(a => !a.etapa && (a.avanco || 0) < 100).map(a => ({ id: a.id, nome: (a.eap ? a.eap + ' · ' : '') + a.descricao })); }
+    catch (_) { ativ = ((M.r.conteudo || {}).servicos || []).map(s => ({ id: s.atividade_id, nome: s.descricao })); }
+    const fT = h('select', { class: 'eq-in' }, T.map(t => h('option', null, t))), fG = h('select', { class: 'eq-in' }, ['Baixa', 'Média', 'Alta'].map(g => h('option', { selected: g === 'Média' }, g)));
+    const fA = h('select', { class: 'eq-in' }, h('option', { value: '' }, 'Nenhuma (geral da obra)'), ativ.map(a => h('option', { value: a.id }, a.nome)));
+    const fD = h('textarea', { class: 'eq-in', rows: 3, maxlength: 2000, placeholder: 'O que aconteceu? Ex.: corte leve na mão do ajudante, sem afastamento.' });
+    const fP = h('input', { type: 'checkbox' });
+    janela('Registrar ocorrência', h('div', { class: 'eq-form' },
+      h('label', { class: 'eq-campo' }, h('span', null, 'Tipo'), fT), h('label', { class: 'eq-campo' }, h('span', null, 'Gravidade'), fG),
+      h('label', { class: 'eq-campo larga' }, h('span', null, 'Atividade'), fA), h('label', { class: 'eq-campo larga' }, h('span', null, 'Descrição'), fD),
+      h('label', { class: 'eq-campo larga rd-ck' }, fP, h('span', null, 'Parou o serviço da atividade (fica travada até a gestão liberar)'))), 'Registrar', async () => {
+      await api(`obras/${M.r.obra.id}/ocorrencias`, 'POST', { data: M.r.rdo.data, tipo: fT.value, gravidade: fG.value, descricao: fD.value, atividade_id: fA.value ? +fA.value : null, parou: fP.checked });
+      avisar(fT.value === 'Acidente' ? 'Acidente registrado. A gestão foi avisada.' : 'Ocorrência registrada.', 'success'); abrirRdo(M.id);
+    });
   }
   function painelEquip(C) {
     const I = { equipamento: 'fa-gears', veiculo: 'fa-truck', ferramenta: 'fa-screwdriver-wrench', outro: 'fa-box' };

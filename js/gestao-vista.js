@@ -27,7 +27,7 @@
   const PEND = { sem: d => [`${d.obra} · dia útil sem RDO`, `${SEMX[new Date(d.data + 'T12:00:00Z').getUTCDay()]}, ${dBR(d.data)}`, 'abrir'],
     rasc: d => [`RDO de ${dBR(d.data)} da ${d.obra} ${d.enviado ? 'enviado, para fechar' : 'em rascunho'}`, d.enviado ? 'o encarregado já enviou' : 'ainda com o encarregado', d.enviado ? 'fechar' : 'rascunho'],
     fech: d => [`RDO de ${dBR(d.data)} da ${d.obra} fechado`, 'falta entregar ao cliente', 'entregar'], entr: d => [`RDO de ${dBR(d.data)} da ${d.obra} sem a folha assinada`, 'entregue ao cliente', 'anexar'] };
-  const M = { d: null, erro: null, quando: 0, tv: null };
+  const M = { d: null, erro: null, quando: 0, tv: null, ind: null };
   const raiz = () => document.getElementById('view-inicio');
   async function carregar() {
     try { M.d = await api('inicio'); M.erro = null; M.quando = Date.now(); } catch (e) { M.erro = e.message; }
@@ -116,7 +116,9 @@
     if (M.tv) return;
     const el = h('div', { class: 'gv-tv', role: 'dialog', 'aria-label': 'Modo TV' });
     document.body.append(el); document.body.classList.add('gv-tv-on');
-    M.tv = { el, pag: 0, giro: setInterval(() => { M.tv.pag = (M.tv.pag + 1) % 3; desenharTV(); }, 20000), atual: setInterval(carregar, 120000) };
+    const ind = () => api('indicadores').then(r => { M.ind = r; if (M.tv) desenharTV(); }).catch(() => {});   // página dos indicadores SQDCP
+    M.tv = { el, pag: 0, giro: setInterval(() => { M.tv.pag = (M.tv.pag + 1) % paginasTV(); desenharTV(); }, 20000), atual: setInterval(() => { carregar(); ind(); }, 120000) };
+    ind();
     try { el.requestFullscreen && el.requestFullscreen().catch(() => {}); } catch (_) {}
     document.addEventListener('keydown', escTV); document.addEventListener('fullscreenchange', saiuTela);
     desenharTV();
@@ -127,7 +129,8 @@
     if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
     desenhar();
   }
-  const escTV = e => { if (e.key === 'Escape') fecharTV(); else if (e.key === 'ArrowRight' && M.tv) { M.tv.pag = (M.tv.pag + 1) % 3; desenharTV(); } };
+  const paginasTV = () => M.ind ? 4 : 3;
+  const escTV = e => { if (e.key === 'Escape') fecharTV(); else if (e.key === 'ArrowRight' && M.tv) { M.tv.pag = (M.tv.pag + 1) % paginasTV(); desenharTV(); } };
   const saiuTela = () => { if (!document.fullscreenElement && M.tv && M.tv.cheia) fecharTV(); else if (document.fullscreenElement && M.tv) M.tv.cheia = true; };
   function desenharTV() {
     const T = M.tv, d = M.d; if (!T || !d) return; const k = d.indicadores, el = T.el; el.innerHTML = '';
@@ -142,8 +145,14 @@
         h('section', { class: 'gv-tv-sec' }, h('b', null, 'Esta semana'), agenda(true))));
     else if (T.pag === 1) corpo.append(h('div', { class: 'gv-duas tv alto' }, h('section', { class: 'gv-tv-sec' }, h('b', null, 'Atrasos e Travou abertos'), d.atrasos.length ? d.atrasos.slice(0, 8).map(a => linhaAtraso(a, true)) : h('p', { class: 'gv-ok' }, ic('fa-circle-check'), ' Nada atrasado nem travado.')),
       h('section', { class: 'gv-tv-sec' }, h('b', null, 'RDO e documentos'), [...d.pendencias.slice(0, 8).map(p => linhaPend(p, true)), ...d.documentos.slice(0, 3).map(v => linhaDoc(v, true))].slice(0, 8), !d.pendencias.length && !d.documentos.length ? h('p', { class: 'gv-ok' }, ic('fa-circle-check'), ' RDOs em dia e documentos em ordem.') : null)));
-    else corpo.append(h('section', { class: 'gv-tv-sec alto' }, h('b', null, 'Agenda da semana'), agenda(true)));
-    el.append(corpo, h('div', { class: 'gv-tv-pe' }, [0, 1, 2].map(i => h('i', { class: i === T.pag ? 'on' : '' })), h('small', null, `página ${T.pag + 1} de 3 · troca a cada 20 s · Esc para sair`)));
+    else if (T.pag === 2) corpo.append(h('section', { class: 'gv-tv-sec alto' }, h('b', null, 'Agenda da semana'), agenda(true)));
+    else { const I = M.ind, F = { verde: 'vd', amarelo: 'am', vermelho: 'vm', cinza: 'cz' };
+      const val = k => k.valor == null ? '—' : k.formato === '%' ? k.valor + '%' : k.formato === 'indice' ? String(k.valor.toFixed(2)).replace('.', ',') : k.valor + ' dias';
+      corpo.append(h('div', { class: 'gv-tv-res' }, ic('fa-lightbulb'), ' ', I.resumo),
+        h('div', { class: 'gv-tv-ind' }, I.kpis.map(k => h('div', { class: 'gv-tv-kpi ' + F[k.farol] }, h('span', { class: 'gv-tv-l' }, k.chave), h('small', null, k.nome), h('b', null, val(k)), h('span', null, k.titulo), h('em', null, 'Meta: ' + k.meta), h('small', null, k.secundario.rotulo + ': ' + k.secundario.valor)))));
+    }
+    const np = paginasTV(); if (T.pag >= np) T.pag = 0;
+    el.append(corpo, h('div', { class: 'gv-tv-pe' }, Array.from({ length: np }, (_, i) => h('i', { class: i === T.pag ? 'on' : '' })), h('small', null, `página ${T.pag + 1} de ${np} · troca a cada 20 s · Esc para sair`)));
   }
 
   /* ── ligação com o menu ─────────────────────── */

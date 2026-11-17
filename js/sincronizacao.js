@@ -6,7 +6,7 @@
 /* ══════════════════════════════════════════════════
    GITHUB GIST SYNC — configuração
 ══════════════════════════════════════════════════ */
-const APP_VERSION = '2026.11.16.23';
+const APP_VERSION = '2026.11.16.26';
 const STORAGE_VERSION_KEY = 'tf_app_version';
 const GIST_ID    = localStorage.getItem('tf_gist_id') || '';
 const GIST_TOKEN = localStorage.getItem('tf_gist_token') || '';

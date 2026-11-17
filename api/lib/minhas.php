@@ -7,6 +7,9 @@ const MOTIVOS_TRAVOU = [
     'liberacao'  => ['Pendência do cliente', 'Aguardando liberação do cliente'],
     'clima'      => ['Clima', 'Chuva / tempo'],
     'equipamento'=> ['Equipamento', 'Equipamento ou ferramenta'],
+    'equipe'     => ['Falta de equipe', 'Falta gente na equipe'],
+    'projeto'    => ['Projeto', 'Projeto ou definição técnica'],
+    'retrabalho' => ['Retrabalho', 'Retrabalho / refazer serviço'],
     'outro'      => ['Outro', 'Outro'],
 ];
 const FOTO_MAX_BYTES = 8 * 1024 * 1024;

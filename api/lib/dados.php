@@ -51,7 +51,7 @@ const REGRAS_PROJETO = [
     'codigo' => ['texto', 30], 'nome' => ['texto', 160], 'descricao' => ['texto', 5000], 'cliente' => ['texto', 160],
     'local_obra' => ['texto', 200], 'gestor_id' => ['id'], 'gestor_nome' => ['texto', 160],
     'situacao' => ['lista', ['Planejamento', 'Em andamento', 'Pausado', 'Concluído', 'Arquivado']],
-    'inicio' => ['data'], 'fim' => ['data'], 'cor' => ['texto', 7], 'valor_contrato' => ['num', 0, 1e12],
+    'inicio' => ['data'], 'fim' => ['data'], 'cor' => ['texto', 7], 'valor_contrato' => ['num', 0, 1e12], 'orcamento' => ['num', 0, 1e12],
     'tipo_servico' => ['texto', 40], 'numero_contrato' => ['texto', 60], 'rt_funcionario_id' => ['id'], 'art_numero' => ['texto', 40], 'calendario_id' => ['id'],
 ];
 /** Confere gestor e responsável técnico (mesma empresa) e guarda o nome do gestor para as telas antigas. */

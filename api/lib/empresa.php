@@ -31,7 +31,11 @@ function exigir_vaga_escritorio(int $eid, string $perfil, ?int $semUsuario = nul
 }
 
 /* ── Regras do campo ───────────────────────────────────────────── */
-const TF_REGRAS_PADRAO = ['foto' => 'funcionario', 'comentario_concluir' => false, 'travou_email' => true, 'rdo_prazo' => 1, 'rdo_lembrete' => true, 'rdo_assinatura' => true];
+const TF_REGRAS_PADRAO = ['foto' => 'funcionario', 'comentario_concluir' => false, 'travou_email' => true, 'rdo_prazo' => 1, 'rdo_lembrete' => true, 'rdo_assinatura' => true,
+    // metas dos indicadores (tela Gráficos e indicadores)
+    'meta_ppc' => 80, 'meta_idp' => 0.95, 'meta_idc' => 0.95, 'meta_destravar' => 2, 'meta_conformidade' => 100, 'meta_retrabalho' => 95];
+const TF_METAS = ['meta_ppc' => ['PPC', 10, 100], 'meta_idp' => ['IDP', 0.5, 1.2], 'meta_idc' => ['IDC', 0.5, 1.2], 'meta_destravar' => ['Tempo para destravar', 0.5, 30],
+                  'meta_conformidade' => ['Conformidade SST', 50, 100], 'meta_retrabalho' => ['Atividades sem retrabalho', 50, 100]];
 const TF_FOTO_OPCOES = ['ninguem' => [], 'funcionario' => ['funcionario'], 'campo' => ['funcionario', 'encarregado'], 'todos' => ['funcionario', 'encarregado', 'gestor', 'administrador']];
 function empresa_regras(int $eid): array {
     static $cache = [];
@@ -256,6 +260,9 @@ function rota_empresa_regras(): array {
     if (array_key_exists('foto', $d)) { if (!isset(TF_FOTO_OPCOES[$d['foto']])) throw new ErroApi('Opção de foto inválida'); $r['foto'] = $d['foto']; }
     foreach (['comentario_concluir', 'travou_email', 'rdo_lembrete', 'rdo_assinatura'] as $k) if (array_key_exists($k, $d)) $r[$k] = (bool)$d[$k];
     if (array_key_exists('rdo_prazo', $d)) { $n = (int)$d['rdo_prazo']; if ($n < 1 || $n > 5) throw new ErroApi('Prazo do RDO: de 1 a 5 dias úteis'); $r['rdo_prazo'] = $n; }
+    foreach (TF_METAS as $k => [$nome, $min, $max]) if (array_key_exists($k, $d)) {
+        $v = (float)str_replace(',', '.', (string)$d[$k]); if ($v < $min || $v > $max) throw new ErroApi("Meta de $nome: entre " . str_replace('.', ',', (string)$min) . ' e ' . str_replace('.', ',', (string)$max));
+        $r[$k] = round($v, 2); }
     q('UPDATE empresas SET regras = ? WHERE id = ?', [json_encode($r), $eid]);
     registrar($u, $eid, 'empresas', $eid, 'alterou', ['regras' => array_diff_assoc($antes, $r)], ['regras' => array_diff_assoc($r, $antes)]);
     return ['ok' => true, 'regras' => $r];

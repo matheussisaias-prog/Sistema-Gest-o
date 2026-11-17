@@ -1848,3 +1848,13 @@ select.form-control { cursor: pointer; }
 .tf-lam { width: .74em; height: .8em; vertical-align: -.04em; margin-right: .1em; display: inline-block; }
 .logo-name { letter-spacing: .12em; }
 .loader-logo { letter-spacing: .14em; }
+
+/* ── barra lateral (revisão): sem dica sobreposta (o nome já aparece ao abrir), rolagem quando a tela é baixa,
+   quem está logado sempre visível embaixo ── */
+.sidebar [data-tooltip]::after { display: none; }
+.sidebar { overflow-y: auto; overflow-x: hidden; scrollbar-width: thin; scrollbar-color: rgba(255,255,255,.15) transparent; }
+.sidebar::-webkit-scrollbar { width: 4px; } .sidebar::-webkit-scrollbar-thumb { background: rgba(255,255,255,.15); border-radius: 4px; }
+.sidebar-section { padding: 6px 10px 2px; }
+.sidebar .nav-item { padding: 7px 10px; }
+.sidebar-bottom { position: sticky; bottom: 0; background: var(--navy); }
+.sidebar .user-card { cursor: default; }

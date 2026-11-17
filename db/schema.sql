@@ -197,6 +197,7 @@ CREATE TABLE projetos (
   fim            DATE NULL,
   cor            CHAR(7) NULL,
   valor_contrato DECIMAL(14,2) NULL,
+  orcamento      DECIMAL(14,2) NULL,               -- custo orçado (base do valor agregado e do IDC)
   id_antigo      VARCHAR(40) NULL,                -- id do navegador (importação)
   criado_em      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   atualizado_em  DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -635,7 +636,7 @@ CREATE TABLE ocorrencias (
   projeto_id     INT UNSIGNED NOT NULL,
   atividade_id   INT UNSIGNED NULL,
   data           DATE NOT NULL,
-  tipo           ENUM('Clima','Falta de material','Acidente','Pendência do cliente','Equipamento','Outro') NOT NULL,
+  tipo           ENUM('Clima','Falta de material','Acidente','Pendência do cliente','Equipamento','Falta de equipe','Projeto','Retrabalho','Outro') NOT NULL,
   gravidade      ENUM('Baixa','Média','Alta') NOT NULL DEFAULT 'Baixa',
   descricao      TEXT NOT NULL,
   registrada_por INT UNSIGNED NOT NULL,
@@ -751,5 +752,33 @@ SELECT d.id, d.empresa_id, d.funcionario_id, d.tipo_documento_id, t.nr, t.nome A
 FROM documentos_funcionario d
 JOIN tipos_documento t ON t.id = d.tipo_documento_id
 WHERE d.excluido_em IS NULL;
+
+CREATE TABLE plano_semanal (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  empresa_id INT UNSIGNED NOT NULL, projeto_id INT UNSIGNED NOT NULL, atividade_id INT UNSIGNED NOT NULL,
+  semana DATE NOT NULL,                              -- segunda-feira da semana do compromisso
+  meta_avanco TINYINT UNSIGNED NOT NULL DEFAULT 100, -- avanço que a equipe se compromete a atingir até o fim da semana
+  avanco_inicio TINYINT UNSIGNED NOT NULL DEFAULT 0,
+  motivo VARCHAR(20) NULL, obs VARCHAR(255) NULL,    -- por que não cumpriu (mesmos motivos do Travou)
+  criado_por INT UNSIGNED NOT NULL, criado_em DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  avaliado_por INT UNSIGNED NULL, avaliado_em DATETIME NULL,
+  UNIQUE KEY uq_plano (atividade_id, semana), KEY ix_plano_obra (projeto_id, semana),
+  CONSTRAINT fk_plano_empresa FOREIGN KEY (empresa_id) REFERENCES empresas(id),
+  CONSTRAINT fk_plano_obra FOREIGN KEY (projeto_id) REFERENCES projetos(id),
+  CONSTRAINT fk_plano_ativ FOREIGN KEY (atividade_id) REFERENCES atividades(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE custos (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  empresa_id INT UNSIGNED NOT NULL, projeto_id INT UNSIGNED NOT NULL,
+  data DATE NOT NULL,
+  categoria ENUM('Mão de obra','Material','Equipamento','Terceiros','Outros') NOT NULL,
+  descricao VARCHAR(200) NOT NULL,
+  valor DECIMAL(14,2) NOT NULL,
+  criado_por INT UNSIGNED NOT NULL, criado_em DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, excluido_em DATETIME NULL,
+  KEY ix_custo_obra (projeto_id, data),
+  CONSTRAINT fk_custo_empresa FOREIGN KEY (empresa_id) REFERENCES empresas(id),
+  CONSTRAINT fk_custo_obra FOREIGN KEY (projeto_id) REFERENCES projetos(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 SET FOREIGN_KEY_CHECKS = 1;

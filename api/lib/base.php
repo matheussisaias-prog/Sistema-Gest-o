@@ -254,6 +254,34 @@ const TF_MIGRACOES = [
            ['coluna', 'empresas', 'site', "ALTER TABLE empresas ADD COLUMN site VARCHAR(120) NULL AFTER email_contato"],
            ['coluna', 'empresas', 'regras', "ALTER TABLE empresas ADD COLUMN regras TEXT NULL AFTER dias_uteis"],
            ['coluna', 'empresas', 'calendario_id', "ALTER TABLE empresas ADD COLUMN calendario_id INT UNSIGNED NULL AFTER regras"]],
+    12 => ["ALTER TABLE ocorrencias MODIFY tipo ENUM('Clima','Falta de material','Acidente','Pendência do cliente','Equipamento','Falta de equipe','Projeto','Retrabalho','Outro') NOT NULL",
+           ['coluna', 'projetos', 'orcamento', "ALTER TABLE projetos ADD COLUMN orcamento DECIMAL(14,2) NULL AFTER valor_contrato"],
+           "CREATE TABLE IF NOT EXISTS plano_semanal (
+              id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+              empresa_id INT UNSIGNED NOT NULL, projeto_id INT UNSIGNED NOT NULL, atividade_id INT UNSIGNED NOT NULL,
+              semana DATE NOT NULL,                              -- segunda-feira da semana do compromisso
+              meta_avanco TINYINT UNSIGNED NOT NULL DEFAULT 100, -- avanço que a equipe se compromete a atingir até o fim da semana
+              avanco_inicio TINYINT UNSIGNED NOT NULL DEFAULT 0,
+              motivo VARCHAR(20) NULL, obs VARCHAR(255) NULL,    -- por que não cumpriu (mesmos motivos do Travou)
+              criado_por INT UNSIGNED NOT NULL, criado_em DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+              avaliado_por INT UNSIGNED NULL, avaliado_em DATETIME NULL,
+              UNIQUE KEY uq_plano (atividade_id, semana), KEY ix_plano_obra (projeto_id, semana),
+              CONSTRAINT fk_plano_empresa FOREIGN KEY (empresa_id) REFERENCES empresas(id),
+              CONSTRAINT fk_plano_obra FOREIGN KEY (projeto_id) REFERENCES projetos(id),
+              CONSTRAINT fk_plano_ativ FOREIGN KEY (atividade_id) REFERENCES atividades(id)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci",
+           "CREATE TABLE IF NOT EXISTS custos (
+              id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+              empresa_id INT UNSIGNED NOT NULL, projeto_id INT UNSIGNED NOT NULL,
+              data DATE NOT NULL,
+              categoria ENUM('Mão de obra','Material','Equipamento','Terceiros','Outros') NOT NULL,
+              descricao VARCHAR(200) NOT NULL,
+              valor DECIMAL(14,2) NOT NULL,
+              criado_por INT UNSIGNED NOT NULL, criado_em DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, excluido_em DATETIME NULL,
+              KEY ix_custo_obra (projeto_id, data),
+              CONSTRAINT fk_custo_empresa FOREIGN KEY (empresa_id) REFERENCES empresas(id),
+              CONSTRAINT fk_custo_obra FOREIGN KEY (projeto_id) REFERENCES projetos(id)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"],
 ];
 function migrar(PDO $pdo): void {
     $alvo = max(array_keys(TF_MIGRACOES));

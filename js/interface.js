@@ -39,7 +39,7 @@ function switchView(name, el) {
     dashboard:'Dashboard', atividades:'Atividades', kanban:'Kanban',
     projetos:'Projetos', equipe:'Equipe', graficos:'Gráficos',
     gantt:'Gantt', portfolio:'Portfólio', recursos:'Recursos',
-    'cal-atividades':'Calendário de Atividades', 'cal-equipe':'Calendário da Equipe',
+    'cal-atividades':'Calendário de atividades', 'cal-equipe':'Calendário da equipe',
     importar:'Importar / Exportar', historico:'Histórico', 'ia-chat':'Assistente IA',
     relatorio:'Relatório PDF'
   };
@@ -66,11 +66,20 @@ function closeModalOutside(e, id) {
   if (e.target.id === id) closeModal(id);
 }
 
+function tfIconeTema() {
+  const escuro = document.documentElement.dataset.theme === 'dark', i = document.getElementById('theme-icon'), b = i && i.closest('button');
+  if (i) i.className = escuro ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
+  if (b) { const t = escuro ? 'Usar tema claro' : 'Usar tema escuro'; b.setAttribute('data-tooltip', t); b.setAttribute('aria-label', t); }
+  const ni = document.getElementById('nav-tema-i'), nt = document.getElementById('nav-tema-t');   // no celular o tema fica na barra lateral
+  if (ni) ni.className = escuro ? 'fa-solid fa-sun' : 'fa-solid fa-moon'; if (nt) nt.textContent = escuro ? 'Tema claro' : 'Tema escuro';
+}
+document.addEventListener('DOMContentLoaded', tfIconeTema);
 function toggleTheme() {
   const html = document.documentElement;
   const dark = html.dataset.theme === 'dark';
   html.dataset.theme = dark ? 'light' : 'dark';
-  document.getElementById('theme-icon').className = dark ? 'fa-solid fa-moon' : 'fa-solid fa-sun';
+  try { localStorage.setItem('tf-tema', html.dataset.theme); } catch (_) {}   // o tema escolhido continua depois de sair e entrar
+  tfIconeTema();
   // Redraw charts
   if (chartProj) { chartProj.destroy(); chartProj=null; }
   if (chartDonut){ chartDonut.destroy(); chartDonut=null; }

@@ -326,6 +326,7 @@
       if (E.salvando || E.timer && !E.erro) { await new Promise(r => setTimeout(r, 600)); }
       try { await api('sair', 'POST', {}); } catch (_) {}
       try { Object.keys(localStorage).filter(k => k === 'tf-usuario' || k.startsWith('tf-minhas-')).forEach(k => localStorage.removeItem(k)); } catch (_) {}
+      try { Object.keys(sessionStorage).filter(k => k.startsWith('tf-')).forEach(k => sessionStorage.removeItem(k)); } catch (_) {}   // telas, filtros e páginas guardados para o F5
       window.location.href = 'entrar.html';
     };
     box.querySelector('#tf-sync').onclick = () => { if (E.erro) gravar(); };
