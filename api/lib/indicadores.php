@@ -99,7 +99,7 @@ function rota_indicadores(): array {
          'farol' => ind_farol($idp, 0.95, 0.85), 'meta' => '0,95 ou mais',
          'detalhe' => $comValor ? 'Agregado ' . rel_reais($va) . ' de ' . rel_reais($vp) . ' previstos · ' . ($va - $vp >= 0 ? '+' : '−') . rel_reais(abs($va - $vp)) : 'Sem valor de contrato: calculado pelo avanço físico',
          'explica' => 'Índice de desempenho de prazo (SPI): valor agregado ÷ valor planejado até hoje, usando o valor do contrato. 1,00 = no plano.'],
-        ['chave' => 'P', 'nome' => 'Pessoas', 'titulo' => 'Tempo médio para destravar', 'valor' => $mediaDias, 'formato' => 'dias_dec',
+        ['chave' => 'P', 'nome' => 'Pessoas', 'titulo' => 'Tempo médio para destravar', 'valor' => $mediaDias, 'formato' => 'dias_dec', 'horas' => $horas ? round(array_sum($horas) / count($horas), 1) : null,
          'farol' => $mediaDias === null ? ($abertos ? 'amarelo' : 'cinza') : ind_farol($mediaDias, 2, 5, false), 'meta' => 'Até 2 dias',
          'detalhe' => count($res) . ' Travou resolvido' . (count($res) === 1 ? '' : 's') . " em 90 dias · $abertos aberto" . ($abertos === 1 ? '' : 's'),
          'explica' => 'Tempo entre o aviso de Travou e a liberação. Mede a rapidez da gestão para tirar a equipe do impedimento.'],

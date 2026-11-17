@@ -61,7 +61,7 @@
     if (k.formato === '%') return num(v) + '%';
     if (k.formato === 'indice') return num(v, 2);
     if (k.formato === 'dias') return num(v) + (v === 1 ? ' dia' : ' dias');
-    if (k.formato === 'dias_dec') return num(v, 1) + (v <= 1 ? ' dia' : ' dias');
+    if (k.formato === 'dias_dec') { if (k.horas != null && k.horas < 24) return k.horas < 1 ? 'menos de 1 h' : num(Math.round(k.horas)) + ' h'; return num(v, 1) + (v <= 1 ? ' dia' : ' dias'); }
     return String(v);
   }
   function cartao(k) {
