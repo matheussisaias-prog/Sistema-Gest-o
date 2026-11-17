@@ -6,7 +6,7 @@ declare(strict_types=1);
 
 /* ── Planos (limites; o plano da empresa é definido pela Mercurium no painel) ── */
 const TF_PLANOS = [
-    'teste'        => ['nome' => 'Teste grátis', 'preco' => null, 'obras' => 10, 'escritorio' => 5, 'gb' => 5, 'gestao_vista' => true],
+    'teste'        => ['nome' => 'Teste grátis', 'preco' => null, 'obras' => null, 'escritorio' => 5, 'gb' => 5, 'gestao_vista' => true],
     'essencial'    => ['nome' => 'Essencial', 'preco' => 297, 'obras' => 3, 'escritorio' => 2, 'gb' => 10, 'gestao_vista' => true],
     'profissional' => ['nome' => 'Profissional', 'preco' => 697, 'obras' => 10, 'escritorio' => 5, 'gb' => 50, 'gestao_vista' => true],
     'empresa'      => ['nome' => 'Empresa', 'preco' => 1497, 'obras' => 30, 'escritorio' => 15, 'gb' => 200, 'gestao_vista' => true],
