@@ -6,6 +6,30 @@
 /* ══════════════════════════════════════════════════
    UI HELPERS
 ══════════════════════════════════════════════════ */
+/* F5 em todo o site: cada tela guarda na aba do navegador (sessionStorage) o que estava aberto e filtrado,
+   e volta assim depois de atualizar. "voltando" fica ligado só durante a volta automática do F5. */
+window.tfEstado = {
+  voltando: false,
+  ler(k) { try { return JSON.parse(sessionStorage.getItem('tf-e-' + k) || 'null'); } catch (_) { return null; } },
+  gravar(k, v) { try { sessionStorage.setItem('tf-e-' + k, JSON.stringify(v)); } catch (_) {} },
+  // devolve o que estava guardado só na primeira vez que a tela abre depois de carregar a página
+  primeira(k) { this._ja = this._ja || {}; if (this._ja[k]) return null; this._ja[k] = 1; return this.ler(k); },
+  // filtros das telas antigas (Atividades, Gantt, Calendário da equipe): guardados quando mudam, repostos no F5
+  CAMPOS: ['f-projeto', 'f-status', 'gantt-f-search', 'gantt-f-project', 'gantt-f-status', 'gantt-f-resp', 'cal-eq-pessoa'],
+  restaurarCampos() {
+    const v = this.ler('campos'); if (!v) return false; let mudou = false;
+    for (const [id, val] of Object.entries(v)) {
+      const el = document.getElementById(id); if (!el || el.value === val) continue;
+      if (el.tagName === 'SELECT' && ![...el.options].some(o => o.value === val)) continue;
+      el.value = val; mudou = true;
+    }
+    return mudou;
+  }
+};
+['change', 'input'].forEach(ev => document.addEventListener(ev, e => {
+  if (!e.target || !tfEstado.CAMPOS.includes(e.target.id)) return;
+  const v = tfEstado.ler('campos') || {}; v[e.target.id] = e.target.value; tfEstado.gravar('campos', v);
+}, true));
 function switchView(name, el) {
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
   document.getElementById('view-'+name)?.classList.add('active');

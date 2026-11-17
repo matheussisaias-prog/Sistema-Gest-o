@@ -58,6 +58,7 @@
   /* ── desenho ────────────────────────────────── */
   function desenhar() {
     const R = raiz(); if (!R || !R.classList.contains('active')) return;
+    tfEstado.gravar('equipe', { filtro: M.filtro, ficha: M.ficha, aba: M.aba });
     R.innerHTML = '';
     const box = h('div', { class: 'eq' }); R.append(box);
     if (M.ficha) { box.append(...ficha()); return; }
@@ -298,7 +299,7 @@
   const trocar = window.switchView;
   window.switchView = function (nome, el) {
     trocar(nome, el);
-    if (nome === 'pessoas') { const t = document.getElementById('page-title'); if (t) t.textContent = 'Equipe'; M.ficha = null; M.f = null; desenhar(); carregar(); }
+    if (nome === 'pessoas') { const t = document.getElementById('page-title'); if (t) t.textContent = 'Equipe'; M.ficha = null; M.f = null; const v = tfEstado.primeira('equipe'); if (v) { if (v.filtro) Object.assign(M.filtro, v.filtro); if (v.ficha && tfEstado.voltando) { abrirFicha(v.ficha, v.aba); carregar(); return; } } desenhar(); carregar(); }
   };
   window.addEventListener('resize', (() => { let w = celular(); return () => { if (w !== celular()) { w = celular(); desenhar(); } }; })());
   window.tfEquipe = { abrir: () => window.switchView('pessoas', document.getElementById('nav-pessoas')), abrirFicha: (id, aba) => { window.switchView('pessoas', document.getElementById('nav-pessoas')); abrirFicha(id, aba); }, estado: M };

@@ -53,6 +53,7 @@
   let tmrBusca;
   function desenharH() {
     const R = raizH(); if (!R || !R.classList.contains('active')) return;
+    tfEstado.gravar('historico', { f: H.f });
     const y = window.scrollY, foco = document.activeElement && document.activeElement.id, sel = foco === 'hi-busca' ? document.activeElement.selectionStart : null;
     R.innerHTML = ''; const box = h('div', { class: 'eq hi' }); R.append(box);
     const d = H.d, mob = celular();
@@ -108,6 +109,7 @@
   }
   window.renderHistorico = function () {
     const t = document.getElementById('page-title'); if (t) t.textContent = 'Histórico';
+    { const v = tfEstado.primeira('historico'); if (v && v.f) Object.assign(H.f, v.f); }
     if (!H.d) desenharH(); carregarH();   // chamado de novo (sincronização): atualiza sem apagar a tela
   };
 

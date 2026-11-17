@@ -59,6 +59,7 @@
   /* ── carregar ───────────────────────────────── */
   async function abrir(id) {
     O.id = +id; O.d = null; O.gx = null; O.sel.clear(); O.aba = 'crono'; O.f = { busca: '', resp: '', mostrar: 'todas', chip: 'todas' }; O.equipe = null;
+    { const v = tfEstado.ler('obra'); if (v && v.id === O.id && tfEstado.voltando) { O.aba = v.aba || 'crono'; if (v.escala) O.escala = v.escala; if (v.f) O.f = Object.assign(O.f, v.f); } }   // F5: mesma aba e filtros
     const nav = document.getElementById('nav-obras');
     window.switchView('obra', nav);
     await carregar();
@@ -96,6 +97,7 @@
 
   /* ── desenho geral ──────────────────────────── */
   function desenhar() {
+    if (O.id) tfEstado.gravar('obra', { id: O.id, aba: O.aba, escala: O.escala, f: O.f });
     const R = raiz(); if (!R) return;
     const y = window.scrollY, gx = R.querySelector('.og-dir');
     if (gx) O.gx = gx.scrollLeft;

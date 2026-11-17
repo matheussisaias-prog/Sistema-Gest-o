@@ -383,6 +383,10 @@
 
   /* ── Mesma tela depois de atualizar a página ── guarda na aba do navegador (sessionStorage) a tela aberta e a obra */
   function lembrarTela() {
+    for (const nome of ['renderCalAtiv', 'renderCalEquipe']) {
+      const orig = window[nome]; if (typeof orig !== 'function') continue;
+      window[nome] = function () { const r = orig.apply(this, arguments); try { tfEstado.gravar('cal', { y: calYear, m: calMonth }); } catch (_) {} return r; };
+    }
     const trocar = window.switchView;
     window.switchView = function (nome, el) {
       trocar(nome, el);
@@ -392,10 +396,18 @@
   function voltarTela() {
     let t = null; try { t = JSON.parse(sessionStorage.getItem('tf-tela') || 'null'); } catch (_) {}
     if (!t || !t.nome || t.u !== E.usuario.id || !document.getElementById('view-' + t.nome)) return false;
-    if (t.nome === 'obra') { if (!t.obra || !window.tfObra || !(typeof projects !== 'undefined' ? projects : []).some(p => +p._sid === +t.obra)) return false; setTimeout(() => tfObra.abrir(t.obra), 0); return true; }
+    if (t.nome === 'obra') { if (!t.obra || !window.tfObra || !(typeof projects !== 'undefined' ? projects : []).some(p => +p._sid === +t.obra)) return false; setTimeout(() => { tfEstado.voltando = true; try { tfObra.abrir(t.obra); } finally { tfEstado.voltando = false; } }, 0); return true; }
     const el = (t.nav && document.getElementById(t.nav)) || document.querySelector(`.sidebar .nav-item[onclick*="'${t.nome}'"]`);
     if (!el || !document.body.contains(el)) return false;           // tela que este perfil não tem → começa pela tela padrão
-    setTimeout(() => window.switchView(t.nome, el), 0); return true;
+    if (['cal-atividades', 'cal-equipe'].includes(t.nome)) { const c = tfEstado.ler('cal'); if (c) { try { calYear = c.y; calMonth = c.m; } catch (_) {} } }   // mesmo mês
+    setTimeout(() => {
+      tfEstado.voltando = true;
+      try {
+        window.switchView(t.nome, el);
+        if (tfEstado.restaurarCampos()) { const r = { atividades: 'renderAtividades', gantt: 'renderGantt', 'cal-equipe': 'renderCalEquipe' }[t.nome]; if (r && typeof window[r] === 'function') window[r](); }
+      } finally { tfEstado.voltando = false; }
+    }, 0);
+    return true;
   }
 
   /* ── Início (chamado pelo inicio.js) ─────────── */

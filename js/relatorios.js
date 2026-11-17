@@ -62,6 +62,7 @@
   /* ── desenho ────────────────────────────────── */
   function desenhar() {
     const R = raiz(); if (!R || !R.classList.contains('active')) return;
+    tfEstado.gravar('relatorios', { filtro: M.filtro });
     R.innerHTML = '';
     const box = h('div', { class: 'eq rl' }); R.append(box);
     if (!M.d) { box.append(h('p', { class: 'eq-vazio' }, M.erro || 'Carregando…')); return; }
@@ -204,7 +205,7 @@
   window.renderRelatorio = function () {
     const t = document.getElementById('page-title'); if (t) t.textContent = 'Relatórios';
     if (M.vindo) { M.vindo = false; return; }
-    M.f = null; desenhar(); carregar();
+    M.f = null; { const v = tfEstado.primeira('relatorios'); if (v && v.filtro != null) M.filtro = v.filtro; } desenhar(); carregar();
   };
   window.addEventListener('resize', (() => { let w = celular(); return () => { if (w !== celular()) { w = celular(); desenhar(); if (M.f && !w) atualizar(false); } }; })());
   const abrirMenu = () => window.switchView('relatorio', document.getElementById('nav-relatorios'));

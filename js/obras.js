@@ -108,6 +108,7 @@
     S.carregando = false; desenhar();
   }
   function desenhar() {
+    tfEstado.gravar('obras', { f: S.f });
     const R = raiz(); if (!R) return;
     R.innerHTML = '';
     const ob = h('div', { class: 'ob' + (S.filtrosAbertos ? ' filtros-abertos' : '') });
@@ -336,7 +337,7 @@
   window.switchView = function (nome, el) {
     if (nome === 'projetos' || nome === 'portfolio') { nome = 'obras'; el = document.querySelector('.nav-item[onclick*="\'obras\'"]'); }
     trocarOriginal(nome, el);
-    if (nome === 'obras') { const t = document.getElementById('page-title'); if (t) t.textContent = 'Obras'; S.f.busca = ''; desenhar(); carregar(); }
+    if (nome === 'obras') { const t = document.getElementById('page-title'); if (t) t.textContent = 'Obras'; S.f.busca = ''; const v = tfEstado.primeira('obras'); if (v && v.f) Object.assign(S.f, v.f); desenhar(); carregar(); }
   };
   window.addEventListener('resize', (() => { let w = window.innerWidth; return () => { if ((w > 760) !== (window.innerWidth > 760)) { w = window.innerWidth; if (raiz()?.classList.contains('active')) desenhar(); } }; })());
   window.tfObras = { recarregar: carregar, editar: o => abrirFormulario(o), mudar: (o, sit, palavra) => mudar(o, sit, palavra), avisar,

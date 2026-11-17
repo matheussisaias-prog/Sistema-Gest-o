@@ -59,6 +59,7 @@
   /* ── desenho ────────────────────────────────── */
   function desenhar() {
     const R = raiz(); if (!R || !R.classList.contains('active')) return;
+    tfEstado.gravar('empresa', { aba: M.aba, busca: M.busca, perfil: M.perfil, sit: M.sit });
     const y = window.scrollY; R.innerHTML = '';
     const box = h('div', { class: 'eq em' }); R.append(box);
     const E = M.E && M.E.empresa, mob = celular();
@@ -360,7 +361,7 @@
   const trocar = window.switchView;
   window.switchView = function (nome, el) {
     trocar(nome, el);
-    if (nome === 'empresa') { const t = document.getElementById('page-title'); if (t) t.textContent = 'Empresa e usuários'; desenhar(); carregar(); }
+    if (nome === 'empresa') { const t = document.getElementById('page-title'); if (t) t.textContent = 'Empresa e usuários'; const v = tfEstado.primeira('empresa'); if (v && tfEstado.voltando) { for (const k of ['busca', 'perfil', 'sit']) if (v[k] != null) M[k] = v[k]; if (['usuarios', 'empresa', 'calendario', 'regras', 'plano'].includes(v.aba)) M.aba = v.aba; } desenhar(); carregar(); }
   };
   window.addEventListener('resize', (() => { let w = celular(); return () => { if (w !== celular()) { w = celular(); desenhar(); } }; })());
   const abrirMenu = aba => { if (aba) M.aba = aba; window.switchView('empresa', document.getElementById('nav-empresa')); };

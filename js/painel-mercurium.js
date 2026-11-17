@@ -204,6 +204,13 @@
     try { await carregar(); } catch (e) { $('#carregando').textContent = e.message; return; }
     $('#carregando').hidden = true; $('#conteudo').hidden = false;
     if (location.hash === '#empresas') trocarAba('empresas');
+    // F5: volta com os mesmos filtros e a mesma mensagem aberta
+    try {
+      const v = JSON.parse(sessionStorage.getItem('tf-e-painel') || 'null');
+      if (v) { for (const [s, val] of Object.entries(v.campos || {})) { const el = $(s); if (el && val != null) el.value = val; } desenharContato(); desenharEmpresas(); if (v.sel && S.msgs.some(m => m.id === v.sel)) abrir(v.sel); }
+    } catch (_) {}
+    const guardarPainel = () => { try { const campos = {}; ['#c-busca', '#c-situacao', '#c-assunto', '#c-origem', '#e-busca', '#e-situacao'].forEach(s => { const el = $(s); if (el) campos[s] = el.value; }); sessionStorage.setItem('tf-e-painel', JSON.stringify({ sel: S.sel, campos })); } catch (_) {} };
+    document.addEventListener('input', guardarPainel, true); document.addEventListener('click', () => setTimeout(guardarPainel, 0), true);
     // novidades: a cada minuto e quando a aba volta a ficar visível
     const atualizar = () => { if (!document.hidden && !S.notaSuja) carregar().catch(() => {}); };
     setInterval(atualizar, 60000); document.addEventListener('visibilitychange', atualizar);

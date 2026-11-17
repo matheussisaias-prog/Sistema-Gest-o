@@ -60,6 +60,7 @@
   /* ── desenho ────────────────────────────────── */
   function desenhar() {
     const R = raiz(); if (!R || !R.classList.contains('active')) return;
+    tfEstado.gravar('rdo', { obra: M.obra, mes: M.mes, id: M.id });
     R.innerHTML = '';
     const box = h('div', { class: 'eq rd' }); R.append(box);
     if (M.id) { box.append(...dia().filter(Boolean)); return; }
@@ -263,7 +264,7 @@
   const trocar = window.switchView;
   window.switchView = function (nome, el) {
     trocar(nome, el);
-    if (nome === 'rdo') { const t = document.getElementById('page-title'); if (t) t.textContent = 'RDO'; if (!M.vindo) { M.id = null; M.r = null; desenhar(); carregar(); } M.vindo = false; }
+    if (nome === 'rdo') { const t = document.getElementById('page-title'); if (t) t.textContent = 'RDO'; if (!M.vindo) { M.id = null; M.r = null; const v = tfEstado.voltando && tfEstado.primeira('rdo'); if (v) { M.obra = v.obra || null; M.mes = v.mes || null; if (v.id) { abrirRdo(v.id); carregar(); M.vindo = false; return; } } desenhar(); carregar(); } M.vindo = false; }
   };
   window.addEventListener('resize', (() => { let w = celular(); return () => { if (w !== celular()) { w = celular(); desenhar(); } }; })());
   const abrirMenu = () => window.switchView('rdo', document.getElementById('nav-rdo'));

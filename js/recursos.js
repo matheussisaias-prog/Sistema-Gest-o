@@ -69,6 +69,7 @@
   /* ── desenho ────────────────────────────────── */
   function desenhar() {
     const R = raiz(); if (!R || !R.classList.contains('active')) return;
+    tfEstado.gravar('recursos', { filtro: M.filtro, modo: M.modo, semanas: M.semanas, inicio: M.inicio, ficha: M.ficha, aba: M.aba });
     R.innerHTML = '';
     const box = h('div', { class: 'eq rc' }); R.append(box);
     if (M.ficha) { box.append(...ficha().filter(Boolean)); return; }
@@ -413,7 +414,7 @@
   const trocar = window.switchView;
   window.switchView = function (nome, el) {
     trocar(nome, el);
-    if (nome === 'recursos') { const t = document.getElementById('page-title'); if (t) t.textContent = 'Recursos'; M.ficha = null; M.f = null; desenhar(); carregar(); }
+    if (nome === 'recursos') { const t = document.getElementById('page-title'); if (t) t.textContent = 'Recursos'; M.ficha = null; M.f = null; const v = tfEstado.primeira('recursos'); if (v) { if (v.filtro) Object.assign(M.filtro, v.filtro); if (v.modo) M.modo = v.modo; if (v.semanas) M.semanas = v.semanas; if (v.inicio) M.inicio = v.inicio; if (v.ficha && tfEstado.voltando) { abrirFicha(v.ficha, v.aba); carregar(); return; } } desenhar(); carregar(); }
   };
   window.addEventListener('resize', (() => { let w = celular(); return () => { if (w !== celular()) { w = celular(); if (w && M.aba === 'geral') M.aba = 'reservas'; desenhar(); } }; })());
   window.tfRecursos = { abrir: () => window.switchView('recursos', document.getElementById('nav-recursos')), abrirFicha: id => { window.switchView('recursos', document.getElementById('nav-recursos')); abrirFicha(id); }, estado: M };
