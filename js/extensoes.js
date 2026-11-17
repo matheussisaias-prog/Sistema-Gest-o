@@ -265,12 +265,13 @@
     save(); closeModal('modal-project'); renderAll();
   };
   // Kanban compacto: cada coluna mostra só os cartões que cabem na tela e pagina ("‹ 1/4 ›") em vez de rolar para baixo
-  const KB = { pag: {}, alt: 70, por: 0 };
+  const KB = { pag: (() => { try { return JSON.parse(sessionStorage.getItem('tf-kanban-pag') || '{}') || {}; } catch (_) { return {}; } })(), alt: 70, por: 0 };
+  const kbGuardar = () => { try { sessionStorage.setItem('tf-kanban-pag', JSON.stringify(KB.pag)); } catch (_) {} };   // a página de cada coluna continua depois de atualizar
   const kbLim = n => Math.max(3, Math.min(12, n));
   function kbSobra(board){   // quanto a coluna mais alta passa do fim da janela (negativo = espaço livre)
     return Math.max(0, ...[...board.querySelectorAll('.kanban-col')].map(x => x.getBoundingClientRect().bottom)) - (window.innerHeight - 16);
   }
-  window.kanbanPagina = function(col, passo){ KB.pag[col] = (KB.pag[col] || 0) + passo; desenharKB(KB.por || 6); };
+  window.kanbanPagina = function(col, passo){ KB.pag[col] = (KB.pag[col] || 0) + passo; desenharKB(KB.por || 6); kbGuardar(); };
   // calcula quantos cartões cabem (no abrir da tela e ao mudar o tamanho da janela); a paginação usa sempre esse número
   window.renderKanban = function(){
     const board = document.getElementById('kanban-board'); if (!board) return;
@@ -282,7 +283,8 @@
       const s = kbSobra(board);
       const novo = s > 0 ? kbLim(por - Math.ceil(s / passo())) : s < -passo() ? kbLim(por + Math.floor(-s / passo())) : por;
       if (novo === por) break;
-      desenharKB(novo, por); if (novo > por && kbSobra(board) > 0) { desenharKB(por, novo); break; }
+      const conv = KB.por ? por : 0;   // na primeira conta (ao abrir/atualizar) não converte a página guardada
+      desenharKB(novo, conv); if (novo > por && kbSobra(board) > 0) { desenharKB(por, conv && novo); break; }
       por = novo;
     }
     KB.por = por;

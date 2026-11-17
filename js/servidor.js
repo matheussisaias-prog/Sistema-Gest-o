@@ -381,6 +381,23 @@
   }
   window.addEventListener('beforeunload', ev => { if (E.salvando || E.erro || E.timer && document.querySelector('.tf-sync.pendente')) { ev.preventDefault(); ev.returnValue = ''; } });
 
+  /* ── Mesma tela depois de atualizar a página ── guarda na aba do navegador (sessionStorage) a tela aberta e a obra */
+  function lembrarTela() {
+    const trocar = window.switchView;
+    window.switchView = function (nome, el) {
+      trocar(nome, el);
+      try { sessionStorage.setItem('tf-tela', JSON.stringify({ u: E.usuario.id, nome, nav: (el && el.id) || null, obra: nome === 'obra' && window.tfObra ? tfObra.estado.id : null })); } catch (_) {}
+    };
+  }
+  function voltarTela() {
+    let t = null; try { t = JSON.parse(sessionStorage.getItem('tf-tela') || 'null'); } catch (_) {}
+    if (!t || !t.nome || t.u !== E.usuario.id || !document.getElementById('view-' + t.nome)) return false;
+    if (t.nome === 'obra') { if (!t.obra || !window.tfObra || !(typeof projects !== 'undefined' ? projects : []).some(p => +p._sid === +t.obra)) return false; setTimeout(() => tfObra.abrir(t.obra), 0); return true; }
+    const el = (t.nav && document.getElementById(t.nav)) || document.querySelector(`.sidebar .nav-item[onclick*="'${t.nome}'"]`);
+    if (!el || !document.body.contains(el)) return false;           // tela que este perfil não tem → começa pela tela padrão
+    setTimeout(() => window.switchView(t.nome, el), 0); return true;
+  }
+
   /* ── Início (chamado pelo inicio.js) ─────────── */
   async function iniciar() {
     try { E.usuario = (await api('eu')).usuario; try { localStorage.setItem('tf-usuario', JSON.stringify(E.usuario)); } catch (_) {} }
@@ -403,7 +420,9 @@
     window.save = function () { try { vincularAtividadesProjetos(); } catch (_) {} agendar(); };
     window.scheduleGistSave = function () {};                       // a cópia no Gist deixa de ser usada
     montarCabecalho();
-    if (['encarregado', 'funcionario'].includes(E.usuario.perfil) && window.tfMinhas) setTimeout(() => tfMinhas.abrir(), 0);   // quem é do campo começa pelas suas atividades
+    lembrarTela();
+    if (voltarTela()) {}                                            // atualizou a página (F5): volta para a mesma tela
+    else if (['encarregado', 'funcionario'].includes(E.usuario.perfil) && window.tfMinhas) setTimeout(() => tfMinhas.abrir(), 0);   // quem é do campo começa pelas suas atividades
     else if (['administrador', 'gestor'].includes(E.usuario.perfil) && window.tfInicio) setTimeout(() => tfInicio.abrir(), 0);   // a gestão começa pela gestão à vista
     setTimeout(oferecerImportacao, 900);
     return true;
