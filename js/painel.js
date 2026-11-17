@@ -266,7 +266,7 @@ function renderFullCharts() {
     chartProjFull = new Chart(c3, {
       type:'bar',
       data:{
-        labels:projects.map(p=>p.name),
+        labels:projects.map(p=>p.code || (p.name.length > 18 ? p.name.slice(0, 17) + '…' : p.name)),   // código curto: o nome inteiro deitava o eixo
         datasets:[
           { label:'Concluídas', data:projects.map(p=>activities.filter(a=>a.project===p.name&&a.status==='Concluído').length), backgroundColor:'rgba(5,150,105,.7)', borderRadius:4 },
           { label:'Em dia',     data:projects.map(p=>activities.filter(a=>a.project===p.name&&a.status!=='Concluído'&&a.status!=='Vencido').length), backgroundColor:'rgba(37,99,235,.5)', borderRadius:4 },
