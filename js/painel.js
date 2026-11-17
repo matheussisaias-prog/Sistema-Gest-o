@@ -243,7 +243,7 @@ function renderFullCharts() {
     chartStatusFull = new Chart(c1, {
       type:'doughnut',
       data:{ labels:statuses, datasets:[{ data:statuses.map(s=>activities.filter(a=>a.status===s).length), backgroundColor:colors, borderWidth:0 }] },
-      options:{ responsive:true, plugins:{ legend:{ position:'right', labels:{ font:{family:'DM Sans',size:11}, color:'#64748b' } } } }
+      options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{ position:'right', labels:{ boxWidth:12, font:{family:'DM Sans',size:11}, color:'#64748b' } } } }
     });
   }
 
@@ -258,7 +258,7 @@ function renderFullCharts() {
           { label:'Vencidas', data:people.map(p=>activities.filter(a=>a.responsible===p && a.status==='Vencido').length), backgroundColor:'rgba(220,38,38,.6)', borderRadius:5, borderSkipped:false },
         ]
       },
-      options:{ responsive:true, plugins:{legend:{labels:{font:{family:'DM Sans',size:11},color:'#64748b'}}}, scales:{x:{grid:{display:false},ticks:{color:'#94a3b8',font:{family:'DM Sans',size:10}}},y:{grid:{color:'rgba(100,116,139,.08)'},ticks:{color:'#94a3b8',font:{family:'DM Sans',size:10}}}} }
+      options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{labels:{font:{family:'DM Sans',size:11},color:'#64748b'}}}, scales:{x:{grid:{display:false},ticks:{color:'#94a3b8',font:{family:'DM Sans',size:10}}},y:{grid:{color:'rgba(100,116,139,.08)'},ticks:{color:'#94a3b8',font:{family:'DM Sans',size:10}}}} }
     });
   }
 
@@ -273,7 +273,7 @@ function renderFullCharts() {
           { label:'Vencidas',   data:projects.map(p=>activities.filter(a=>a.project===p.name&&a.status==='Vencido').length), backgroundColor:'rgba(220,38,38,.6)', borderRadius:4 },
         ]
       },
-      options:{ responsive:true, plugins:{legend:{labels:{font:{family:'DM Sans',size:11},color:'#64748b'}}}, scales:{x:{grid:{display:false},ticks:{color:'#94a3b8',font:{family:'DM Sans',size:10}}},y:{grid:{color:'rgba(100,116,139,.08)'},ticks:{color:'#94a3b8',font:{family:'DM Sans',size:10}}}} }
+      options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{labels:{font:{family:'DM Sans',size:11},color:'#64748b'}}}, scales:{x:{grid:{display:false},ticks:{color:'#94a3b8',font:{family:'DM Sans',size:10}}},y:{grid:{color:'rgba(100,116,139,.08)'},ticks:{color:'#94a3b8',font:{family:'DM Sans',size:10}}}} }
     });
   }
 }
