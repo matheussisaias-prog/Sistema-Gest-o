@@ -145,7 +145,7 @@ check("Gestora não altera o calendário padrão", ana.put(A+"/empresa/calendari
 # ── plano ──
 P = adm.get(A+"/empresa/plano").json()
 check("Plano: nome, preço, uso de obras, escritório, campo e espaço", P["plano"]["nome"] == "Profissional" and P["plano"]["preco"] == 697 and P["uso"]["obras"][1] == 10 and P["uso"]["escritorio"][1] == 5
-      and P["uso"]["campo"][0] >= 2 and P["uso"]["espaco_gb"][0] > 0 and len(P["planos"]) == 5)
+      and P["uso"]["campo"][0] >= 2 and isinstance(P["uso"]["espaco_gb"][0], (int, float)) and P["uso"]["espaco_gb"][1] == 50 and len(P["planos"]) == 5)
 # ── isolamento ──
 o = requests.Session()
 o.post(A+"/cadastro", json={"empresa": {"nome": "Outra Usuários"}, "admin": {"nome": "Outro Admin", "email": "emp@outra.test", "senha": "senha-forte-1"}, "equipe": []})

@@ -187,6 +187,10 @@ $rotas = [
     'PATCH fale-conosco/#'      => 'rota_fale_conosco_marcar',
     'GET painel/empresas'       => 'rota_painel_empresas',
     'PATCH painel/empresas/#'   => 'rota_painel_empresa_situacao',
+    'DELETE painel/empresas/#'  => 'rota_painel_empresa_excluir',
+    'GET painel/acessos'        => 'rota_painel_acessos',
+    'POST painel/plataforma/limpar' => 'rota_painel_plataforma_limpar',
+    'DELETE fale-conosco/#'     => 'rota_fale_conosco_excluir',
 ];
 
 try {

@@ -136,10 +136,11 @@ function rota_entrar(): array {
 }
 
 function dados_eu(int $id): array {
-    $r = um('SELECT u.id, u.nome, u.email, u.telefone, u.perfil, u.funcionario_id, u.empresa_id, e.nome AS empresa, (e.logo IS NOT NULL) AS empresa_logo
+    $r = um('SELECT u.id, u.nome, u.email, u.telefone, u.perfil, u.funcionario_id, u.empresa_id, e.nome AS empresa, (e.logo IS NOT NULL) AS empresa_logo, e.plataforma AS empresa_plataforma
              FROM usuarios u JOIN empresas e ON e.id = u.empresa_id WHERE u.id = ?', [$id]);
     $r['empresa_logo'] = (int)$r['empresa_logo'];
     $r['dono_plataforma'] = eh_dono_plataforma($r['email']) ? 1 : 0;
+    $r['empresa_plataforma'] = (int)$r['empresa_plataforma'];   // conta da administração: o login abre direto o painel
     return $r;
 }
 function rota_eu(): array { $u = exigir_login(); return ['usuario' => dados_eu((int)$u['id'])]; }

@@ -28,7 +28,7 @@ an = sessao()
 r = J(an, "get", "/saude"); check("Saúde responde sem banco instalado? (deve falhar ao consultar)", r.status_code in (200, 500))
 r = J(an, "post", "/instalar", json={"token": "errado"}); check("Instalador recusa token errado", r.status_code == 403)
 r = J(an, "post", "/instalar", json={"token": "token-de-instalacao-de-teste-123456"})
-d = r.json(); check("Instalador cria o banco", r.status_code == 200 and d.get("tabelas") == 38 and d.get("documentos_nr") == 43, d)
+d = r.json(); check("Instalador cria o banco", r.status_code == 200 and d.get("tabelas") == 39 and d.get("documentos_nr") == 43, d)
 check("Trava de prazo da NR instalada no banco", d.get("trava_no_banco") is True, d)
 r = J(an, "post", "/instalar", json={"token": "token-de-instalacao-de-teste-123456"}); check("Instalador não roda duas vezes", r.status_code == 409)
 r = J(an, "get", "/saude"); check("Saúde: banco conectado", r.json().get("banco") is True)
@@ -195,7 +195,8 @@ def c4(n, c, x=""):
     else: falhas4 += 1; print("FALHA", n, x)
 c4("Admin de cliente não vê o painel de empresas", o2.get(B+"/painel/empresas").status_code == 403)
 r = li.get(B+"/painel/empresas"); emp = {e["nome"]: e for e in r.json().get("empresas", [])}
-c4("Dono lista todas as empresas", r.status_code == 200 and {"Rawtech", "Outra Engenharia"} <= set(emp), list(emp))
+c4("Dono lista as empresas clientes; a da administração vem à parte", r.status_code == 200 and "Outra Engenharia" in emp and "Rawtech" not in emp and r.json()["plataforma"]["nome"] == "Rawtech", list(emp))
+emp["Rawtech"] = r.json()["plataforma"]
 c4("Números da empresa (obras, usuários, funcionários, último acesso)", emp["Rawtech"]["obras"] >= 2 and emp["Rawtech"]["usuarios"] >= 3 and emp["Rawtech"]["funcionarios"] >= 3 and emp["Rawtech"]["ultimo_acesso"], emp.get("Rawtech"))
 c4("Marca a própria empresa", emp["Rawtech"]["sua"] is True and emp["Outra Engenharia"]["sua"] is False)
 r = li.patch(B+f"/fale-conosco/{mid}", json={"anotacao": "Liguei, quer demonstração na terça."})

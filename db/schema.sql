@@ -27,6 +27,7 @@ CREATE TABLE empresas (
   logo_cor      VARCHAR(7)   NULL,               -- cor principal da logo (linha do cabeçalho dos PDFs)
   plano         VARCHAR(30)  NOT NULL DEFAULT 'teste',
   situacao      ENUM('teste','ativo','suspenso') NOT NULL DEFAULT 'teste',
+  plataforma    TINYINT(1)   NOT NULL DEFAULT 0,   -- 1 = empresa da administração do Aprumo (fica fora das listas do painel)
   fuso          VARCHAR(40)  NOT NULL DEFAULT 'America/Sao_Paulo',
   dias_uteis    VARCHAR(20)  NOT NULL DEFAULT '1,2,3,4,5',
   regras        TEXT NULL,                       -- regras do campo (JSON): foto, comentário, Travou, RDO
@@ -779,6 +780,18 @@ CREATE TABLE custos (
   KEY ix_custo_obra (projeto_id, data),
   CONSTRAINT fk_custo_empresa FOREIGN KEY (empresa_id) REFERENCES empresas(id),
   CONSTRAINT fk_custo_obra FOREIGN KEY (projeto_id) REFERENCES projetos(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- acessos por pessoa e por dia (horário de Brasília), para o painel da plataforma
+CREATE TABLE acessos (
+  usuario_id INT UNSIGNED NOT NULL, dia DATE NOT NULL, empresa_id INT UNSIGNED NOT NULL,
+  visitas SMALLINT UNSIGNED NOT NULL DEFAULT 0,      -- login ou volta depois de 30 min parado
+  entradas SMALLINT UNSIGNED NOT NULL DEFAULT 0,     -- logins com senha
+  primeiro DATETIME NOT NULL, ultimo DATETIME NOT NULL,
+  celular TINYINT(1) NOT NULL DEFAULT 0, computador TINYINT(1) NOT NULL DEFAULT 0,
+  PRIMARY KEY (usuario_id, dia), KEY ix_acessos_empresa (empresa_id, dia),
+  CONSTRAINT fk_acessos_usuario FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE,
+  CONSTRAINT fk_acessos_empresa FOREIGN KEY (empresa_id) REFERENCES empresas(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 SET FOREIGN_KEY_CHECKS = 1;

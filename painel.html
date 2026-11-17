@@ -5,25 +5,25 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Painel Mercurium · Aprumo</title>
 <meta name="robots" content="noindex"/>
-<link rel="icon" type="image/svg+xml" href="img/icone.svg?v=2026.11.16.26"/>
-<link rel="icon" type="image/png" sizes="32x32" href="img/favicon-32.png?v=2026.11.16.26"/>
-<link rel="apple-touch-icon" href="img/apple-touch-icon.png?v=2026.11.16.26"/>
+<link rel="icon" type="image/svg+xml" href="img/icone.svg?v=2026.11.17.2"/>
+<link rel="icon" type="image/png" sizes="32x32" href="img/favicon-32.png?v=2026.11.17.2"/>
+<link rel="apple-touch-icon" href="img/apple-touch-icon.png?v=2026.11.17.2"/>
 <meta name="theme-color" content="#0b1220"/>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=DM+Sans:wght@400;500;600&family=Space+Grotesk:wght@700&family=Manrope:wght@500&display=swap" rel="stylesheet"/>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
-<link rel="stylesheet" href="css/painel-mercurium.css?v=2026.11.16.8"/>
+<link rel="stylesheet" href="css/painel-mercurium.css?v=2026.11.17.2"/>
 </head>
 <body>
 
 <header class="topo">
   <div class="topo-marca">
-    <img src="img/marca.svg?v=2026.11.16.26" width="34" height="34" alt=""/>
+    <img src="img/marca.svg?v=2026.11.17.2" width="34" height="34" alt=""/>
     <span class="logo-nome" aria-label="Aprumo"><span><svg class="tf-lam" viewBox="0 0 40 46" aria-hidden="true"><path d="M3 44 L20 4 L37 44" fill="none" stroke="currentColor" stroke-width="8"/></svg>PRUMO</span><small>by mercurium</small></span>
     <span class="selo">Painel</span>
   </div>
   <div class="topo-dir" id="topo-dir" hidden>
     <span class="quem"><b id="quem-nome"></b><small id="quem-email"></small></span>
-    <a class="bt-topo" href="index.html" title="Abrir o sistema"><i class="fa-solid fa-table-columns"></i><span>Abrir o sistema</span></a>
+    <a class="bt-topo" id="bt-sistema" href="index.html" title="Abrir o sistema" hidden><i class="fa-solid fa-table-columns"></i><span>Abrir o sistema</span></a>
     <button class="bt-topo" id="bt-sair" title="Sair"><i class="fa-solid fa-right-from-bracket"></i><span>Sair</span></button>
   </div>
 </header>
@@ -39,13 +39,45 @@
 
 <main class="conteudo" id="conteudo" hidden>
   <nav class="abas" role="tablist">
-    <button class="aba ativa" role="tab" data-aba="contato" aria-selected="true"><i class="fa-regular fa-comment-dots"></i> Fale conosco <b class="cont alerta" id="cont-pend" hidden></b></button>
+    <button class="aba ativa" role="tab" data-aba="acessos" aria-selected="true"><i class="fa-solid fa-chart-column"></i> Acessos</button>
     <button class="aba" role="tab" data-aba="empresas" aria-selected="false"><i class="fa-regular fa-building"></i> Empresas <b class="cont" id="cont-emp"></b></button>
+    <button class="aba" role="tab" data-aba="contato" aria-selected="false"><i class="fa-regular fa-comment-dots"></i> Fale conosco <b class="cont alerta" id="cont-pend" hidden></b></button>
     <span class="atualizado" id="atualizado"></span>
   </nav>
 
+  <!-- ── ACESSOS ────────────────────────────────── -->
+  <section class="aba-corpo" id="aba-acessos">
+    <div class="filtros">
+      <select id="a-dias" aria-label="Período"><option value="7">Últimos 7 dias</option><option value="30" selected>Últimos 30 dias</option><option value="90">Últimos 90 dias</option></select>
+      <select id="a-empresa" aria-label="Empresa"><option value="">Todas as empresas</option></select>
+    </div>
+    <div class="kpis">
+      <div class="kpi k-ok"><span>Entraram hoje</span><b id="a-hoje">0</b><small>pessoas</small></div>
+      <div class="kpi"><span>Pessoas no período</span><b id="a-pessoas">0</b><small id="a-pessoas-sub"></small></div>
+      <div class="kpi"><span>Acessos</span><b id="a-acessos">0</b><small id="a-acessos-sub"></small></div>
+      <div class="kpi"><span>Empresas usando</span><b id="a-emps">0</b><small id="a-emps-sub"></small></div>
+      <div class="kpi"><span>Usam no celular</span><b id="a-cel">0</b><small id="a-cel-sub"></small></div>
+      <div class="kpi"><span>Registros feitos</span><b id="a-acoes">0</b><small>avanços, RDOs, cadastros…</small></div>
+    </div>
+    <div class="cartao">
+      <div class="cartao-cab"><h2>Pessoas que entraram por dia</h2><span class="leg">passe o mouse na barra para ver os acessos do dia</span></div>
+      <div id="a-grafico" class="grafico"></div>
+    </div>
+    <div class="filtros">
+      <label class="busca"><i class="fa-solid fa-magnifying-glass"></i><input id="a-busca" type="search" placeholder="Buscar pessoa, e-mail ou empresa"/></label>
+      <select id="a-quem" aria-label="Quem"><option value="">Todas as pessoas</option><option value="entrou">Entraram no período</option><option value="nao">Ainda não entraram</option></select>
+    </div>
+    <div class="tabela-caixa">
+      <table class="tabela" id="a-tabela">
+        <thead><tr><th>Pessoa</th><th>Empresa</th><th>Perfil</th><th>Último acesso</th><th class="num">Acessos</th><th class="num">Dias</th><th>Aparelho</th></tr></thead>
+        <tbody id="a-corpo"></tbody>
+      </table>
+    </div>
+    <p class="nota-rodape">Um acesso conta quando a pessoa entra com a senha ou volta a usar o sistema depois de 30 minutos parada. Dias = dias diferentes em que entrou. A conta da administração não entra nestes números.</p>
+  </section>
+
   <!-- ── FALE CONOSCO ───────────────────────────── -->
-  <section class="aba-corpo" id="aba-contato">
+  <section class="aba-corpo" id="aba-contato" hidden>
     <div class="kpis">
       <div class="kpi k-alerta"><span>Pendentes</span><b id="k-pend">0</b></div>
       <div class="kpi k-ok"><span>Respondidas</span><b id="k-resp">0</b></div>
@@ -66,6 +98,7 @@
 
   <!-- ── EMPRESAS ───────────────────────────────── -->
   <section class="aba-corpo" id="aba-empresas" hidden>
+    <div class="plataforma" id="plataforma" hidden></div>
     <div class="kpis">
       <div class="kpi"><span>Empresas</span><b id="k-emp">0</b></div>
       <div class="kpi k-ok"><span>Ativas</span><b id="k-ativ">0</b></div>
@@ -79,7 +112,7 @@
     </div>
     <div class="tabela-caixa">
       <table class="tabela" id="e-tabela">
-        <thead><tr><th>Empresa</th><th>Administrador</th><th class="num">Usuários</th><th class="num">Obras</th><th class="num">Equipe</th><th>Último acesso</th><th>Cadastro</th><th>Situação</th><th></th></tr></thead>
+        <thead><tr><th>Empresa</th><th>Administrador</th><th class="num" title="Pessoas diferentes que entraram nos últimos 7 dias, do total de usuários">Ativos 7 dias</th><th class="num">Acessos 30 dias</th><th class="num">Obras</th><th class="num">Equipe</th><th>Último acesso</th><th>Situação</th><th></th></tr></thead>
         <tbody id="e-corpo"></tbody>
       </table>
     </div>
@@ -88,6 +121,6 @@
 
 <div class="toast" id="toast" role="status" hidden></div>
 
-<script src="js/painel-mercurium.js?v=2026.11.16.8"></script>
+<script src="js/painel-mercurium.js?v=2026.11.17.2"></script>
 </body>
 </html>

@@ -83,8 +83,8 @@
     if (!senha.value) return marcarErro(senha, 'Digite a senha.');
     const b = f.querySelector('button[type=submit]'); ocupado(b, true);
     try {
-      await api('entrar', { email: email.value.trim(), senha: senha.value });
-      window.location.href = destino();
+      const r = await api('entrar', { email: email.value.trim(), senha: senha.value });
+      window.location.href = destino(r && r.usuario);
     } catch (err) { avisar(err.message); senha.select(); }
     finally { ocupado(b, false); }
   });
@@ -211,7 +211,10 @@
   });
 
   // para onde ir depois de entrar: só destinos conhecidos (nada de endereço vindo de fora)
-  function destino() { return new URLSearchParams(location.search).get('voltar') === 'painel' ? 'painel.html' : 'index.html'; }
+  function destino(u) {
+    if (u && +u.dono_plataforma && +u.empresa_plataforma) return 'painel.html';   // administração da plataforma: só o painel
+    return new URLSearchParams(location.search).get('voltar') === 'painel' ? 'painel.html' : 'index.html';
+  }
 
   /* ── Início: links que chegam por e-mail ─────── */
   async function iniciar() {
@@ -237,7 +240,7 @@
     if (location.hash === '#cadastro') { ir('cadastro-1'); return; }
     if (location.hash === '#contato') { ir('contato'); return; }
     ir('entrar');
-    try { await api('eu'); window.location.href = destino(); } catch (_) { /* não está logado: fica no login */ }
+    try { const r = await api('eu'); window.location.href = destino(r && r.usuario); } catch (_) { /* não está logado: fica no login */ }
   }
   window.addEventListener('hashchange', () => {
     if (location.hash === '#contato') ir('contato');

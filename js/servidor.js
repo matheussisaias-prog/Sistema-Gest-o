@@ -413,7 +413,12 @@
 
   /* ── Início (chamado pelo inicio.js) ─────────── */
   async function iniciar() {
-    try { E.usuario = (await api('eu')).usuario; try { localStorage.setItem('tf-usuario', JSON.stringify(E.usuario)); } catch (_) {} }
+    try {
+      E.usuario = (await api('eu')).usuario;
+      // a conta da administração da plataforma não tem obras: abre direto o painel
+      if (+E.usuario.dono_plataforma && +E.usuario.empresa_plataforma) { location.replace('painel.html'); return false; }
+      try { localStorage.setItem('tf-usuario', JSON.stringify(E.usuario)); } catch (_) {}
+    }
     catch (e) {
       if (!e.rede) return false;
       // sem internet: quem já entrou neste aparelho abre Minhas atividades com a última lista guardada

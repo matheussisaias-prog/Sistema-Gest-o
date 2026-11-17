@@ -12,6 +12,7 @@ const TF_SESSAO_COOKIE = 'tf_sessao';
 const TF_SESSAO_DIAS = 30;
 const TF_MAX_TENTATIVAS = 5;
 const TF_BLOQUEIO_MIN = 15;
+const TF_VISITA_MIN = 30;               // minutos parado para contar uma nova visita no painel de acessos
 const TF_CONVITE_DIAS = 7;
 const TF_PERFIS = ['administrador', 'gestor', 'encarregado', 'funcionario'];
 
@@ -282,6 +283,17 @@ const TF_MIGRACOES = [
               CONSTRAINT fk_custo_empresa FOREIGN KEY (empresa_id) REFERENCES empresas(id),
               CONSTRAINT fk_custo_obra FOREIGN KEY (projeto_id) REFERENCES projetos(id)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"],
+    // painel da plataforma: a empresa da administração (fica fora das listas) e o registro diário de acessos
+    13 => [['coluna', 'empresas', 'plataforma', "ALTER TABLE empresas ADD COLUMN plataforma TINYINT(1) NOT NULL DEFAULT 0 AFTER situacao"],
+           "CREATE TABLE IF NOT EXISTS acessos (
+              usuario_id INT UNSIGNED NOT NULL, dia DATE NOT NULL, empresa_id INT UNSIGNED NOT NULL,
+              visitas SMALLINT UNSIGNED NOT NULL DEFAULT 0, entradas SMALLINT UNSIGNED NOT NULL DEFAULT 0,
+              primeiro DATETIME NOT NULL, ultimo DATETIME NOT NULL,
+              celular TINYINT(1) NOT NULL DEFAULT 0, computador TINYINT(1) NOT NULL DEFAULT 0,
+              PRIMARY KEY (usuario_id, dia), KEY ix_acessos_empresa (empresa_id, dia),
+              CONSTRAINT fk_acessos_usuario FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE,
+              CONSTRAINT fk_acessos_empresa FOREIGN KEY (empresa_id) REFERENCES empresas(id) ON DELETE CASCADE
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"],
 ];
 function migrar(PDO $pdo): void {
     $alvo = max(array_keys(TF_MIGRACOES));
@@ -353,8 +365,10 @@ function hash_token(string $t): string { return hash('sha256', $t); }
 /* ── Sessão ──────────────────────────────────────────────────── */
 function abrir_sessao(int $usuario_id, ?int $dispositivo_id = null): void {
     $t = token();
-    q('INSERT INTO sessoes (id, usuario_id, dispositivo_id, aparelho, ip, expira_em) VALUES (?,?,?,?,?, DATE_ADD(UTC_TIMESTAMP(), INTERVAL ? DAY))',
+    q('INSERT INTO sessoes (id, usuario_id, dispositivo_id, aparelho, ip, usado_em, expira_em) VALUES (?,?,?,?,?, UTC_TIMESTAMP(), DATE_ADD(UTC_TIMESTAMP(), INTERVAL ? DAY))',
       [hash_token($t), $usuario_id, $dispositivo_id, mb_substr($_SERVER['HTTP_USER_AGENT'] ?? '', 0, 160), $_SERVER['REMOTE_ADDR'] ?? null, TF_SESSAO_DIAS]);
+    $emp = um('SELECT empresa_id FROM usuarios WHERE id = ?', [$usuario_id]);
+    if ($emp) registrar_acesso($usuario_id, (int)$emp['empresa_id'], (string)($_SERVER['HTTP_USER_AGENT'] ?? ''), true, true);   // login, convite aceito, nova senha, tablet
     $seguro = (config()['cookie_seguro'] ?? true) === true;
     setcookie(TF_SESSAO_COOKIE, $t, ['expires' => time() + TF_SESSAO_DIAS * 86400, 'path' => '/', 'secure' => $seguro, 'httponly' => true, 'samesite' => 'Strict']);
 }
@@ -370,12 +384,29 @@ function usuario_atual(): ?array {
     $t = $_COOKIE[TF_SESSAO_COOKIE] ?? '';
     $u = null;
     if ($t === '') return null;
-    $r = um('SELECT u.id, u.empresa_id, u.nome, u.email, u.perfil, u.funcionario_id, e.nome AS empresa_nome
+    $r = um('SELECT u.id, u.empresa_id, u.nome, u.email, u.perfil, u.funcionario_id, e.nome AS empresa_nome, TIMESTAMPDIFF(SECOND, s.usado_em, UTC_TIMESTAMP()) AS sessao_parada, s.aparelho AS sessao_aparelho
              FROM sessoes s JOIN usuarios u ON u.id = s.usuario_id JOIN empresas e ON e.id = u.empresa_id
              WHERE s.id = ? AND s.expira_em > UTC_TIMESTAMP() AND u.excluido_em IS NULL AND u.desativado_em IS NULL AND e.excluido_em IS NULL AND e.situacao <> "suspenso"',
             [hash_token($t)]);
-    if ($r) { q('UPDATE sessoes SET usado_em = UTC_TIMESTAMP() WHERE id = ?', [hash_token($t)]); $r['dono_plataforma'] = eh_dono_plataforma($r['email']) ? 1 : 0; $u = $r; }
+    if ($r) {
+        q('UPDATE sessoes SET usado_em = UTC_TIMESTAMP() WHERE id = ?', [hash_token($t)]);
+        registrar_acesso((int)$r['id'], (int)$r['empresa_id'], (string)$r['sessao_aparelho'], (int)$r['sessao_parada'] > TF_VISITA_MIN * 60, false);
+        unset($r['sessao_parada'], $r['sessao_aparelho']);
+        $r['dono_plataforma'] = eh_dono_plataforma($r['email']) ? 1 : 0; $u = $r;
+    }
     return $u;
+}
+/** Acessos por pessoa e por dia (horário de Brasília). Uma "visita" começa no login ou depois de TF_VISITA_MIN minutos parado.
+    Nunca derruba a requisição: se a tabela ainda não existir, só não registra. */
+function registrar_acesso(int $usuario, int $empresa, string $aparelho, bool $visita, bool $entrada): void {
+    $cel = preg_match('/Mobi|Android|iPhone|iPad|iPod/i', $aparelho) ? 1 : 0;
+    try {
+        q('INSERT INTO acessos (usuario_id, dia, empresa_id, visitas, entradas, primeiro, ultimo, celular, computador)
+           VALUES (?, DATE(UTC_TIMESTAMP() - INTERVAL 3 HOUR), ?, ?, ?, UTC_TIMESTAMP(), UTC_TIMESTAMP(), ?, ?)
+           ON DUPLICATE KEY UPDATE visitas = visitas + VALUES(visitas), entradas = entradas + VALUES(entradas), ultimo = UTC_TIMESTAMP(),
+                                   celular = GREATEST(celular, VALUES(celular)), computador = GREATEST(computador, VALUES(computador))',
+          [$usuario, $empresa, ($visita || $entrada) ? 1 : 0, $entrada ? 1 : 0, $cel, 1 - $cel]);
+    } catch (Throwable $e) { error_log('[Aprumo acessos] ' . $e->getMessage()); }
 }
 function exigir_login(): array {
     $u = usuario_atual();

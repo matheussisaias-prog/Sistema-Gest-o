@@ -49,7 +49,7 @@ button { cursor: pointer; }
 .bt-mini { height: 32px; padding: 0 11px; font-size: .8rem; }
 
 /* ── Conteúdo e abas ───────────────────────────── */
-.conteudo { max-width: 1280px; margin: 0 auto; padding: 22px 28px 40px; }
+.conteudo { max-width: 1440px; margin: 0 auto; padding: 22px 28px 40px; }
 .abas { display: flex; align-items: center; gap: 6px; border-bottom: 1px solid var(--border); margin-bottom: 20px; }
 .aba { display: inline-flex; align-items: center; gap: 8px; background: none; border: 0; border-bottom: 2.5px solid transparent; padding: 10px 14px 12px;
   font-family: var(--font-head); font-weight: 600; font-size: .98rem; color: var(--text-3); margin-bottom: -1px; }
@@ -121,8 +121,8 @@ button { cursor: pointer; }
 /* ── Empresas ──────────────────────────────────── */
 .tabela-caixa { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow-x: auto; }
 .tabela { width: 100%; border-collapse: collapse; font-size: .86rem; }
-.tabela th { text-align: left; font-size: .72rem; text-transform: uppercase; letter-spacing: .04em; color: var(--text-3); font-weight: 700; padding: 12px 14px; background: var(--surface2); border-bottom: 1px solid var(--border); white-space: nowrap; }
-.tabela td { padding: 13px 14px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+.tabela th { text-align: left; font-size: .72rem; text-transform: uppercase; letter-spacing: .04em; color: var(--text-3); font-weight: 700; padding: 12px 11px; background: var(--surface2); border-bottom: 1px solid var(--border); white-space: nowrap; }
+.tabela td { padding: 12px 11px; border-bottom: 1px solid var(--border); vertical-align: middle; }
 .tabela tr:last-child td { border-bottom: 0; }
 .tabela tr.susp td { background: #fffafa; }
 .tabela .num { text-align: right; font-variant-numeric: tabular-nums; }
@@ -130,6 +130,41 @@ button { cursor: pointer; }
 .em-sub, .ad-sub { font-size: .76rem; color: var(--text-3); margin-top: 2px; }
 .sua { font-size: .66rem; font-weight: 700; color: var(--blue); background: var(--blue-dim); padding: 2px 7px; border-radius: 10px; }
 .td-vazio { text-align: center; color: var(--text-4); padding: 40px 10px !important; }
+
+/* ── Acessos ───────────────────────────────────── */
+.kpi small { display: block; font-size: .74rem; color: var(--text-4); margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cartao { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px 18px 10px; margin-bottom: 16px; }
+.cartao-cab { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 6px; }
+.cartao-cab h2 { font-family: var(--font-head); font-size: 1rem; font-weight: 700; }
+.leg { display: inline-flex; align-items: center; gap: 6px; font-size: .76rem; color: var(--text-3); }
+.leg i { width: 10px; height: 10px; border-radius: 3px; display: inline-block; margin-left: 6px; }
+.leg .q-p { background: var(--blue); } .leg .q-a { background: #bfd3fb; }
+.graf { width: 100%; height: auto; display: block; }
+.g-eixo { stroke: var(--border2); stroke-width: 1; }
+.g-alvo { fill: transparent; } g:hover .g-alvo { fill: var(--blue-dim); } .g-p { fill: var(--blue); }
+.g-num { font-size: 11px; font-weight: 700; fill: var(--text-2); text-anchor: middle; font-family: var(--font-sans); }
+.g-dia { font-size: 11px; fill: var(--text-4); text-anchor: middle; font-family: var(--font-sans); }
+.graf-vazio { color: var(--text-4); text-align: center; padding: 34px 10px; }
+.graf-vazio i { font-size: 1.6rem; margin-bottom: 8px; }
+.nunca { color: var(--text-4); font-style: italic; }
+.aparelhos { display: inline-flex; gap: 10px; color: var(--text-3); }
+.tabela tr.sem-acesso td { color: var(--text-3); }
+.em-nome .chip { font-size: .64rem; padding: 2px 7px; }
+.nota-rodape { font-size: .76rem; color: var(--text-4); margin-top: 12px; line-height: 1.5; }
+
+/* ── Empresas: administração e ações ───────────── */
+.plataforma { display: flex; align-items: center; gap: 14px; background: var(--amber-dim); border: 1px solid rgba(217,119,6,.3); border-radius: 12px; padding: 14px 16px; margin-bottom: 16px; }
+.plataforma.limpa { background: var(--surface); border-color: var(--border); }
+.pl-ic { width: 40px; height: 40px; border-radius: 10px; background: var(--surface); color: var(--amber); display: flex; align-items: center; justify-content: center; flex-shrink: 0; border: 1px solid var(--border); }
+.plataforma.limpa .pl-ic { color: var(--green); }
+.pl-txt { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.pl-txt b { font-size: .92rem; } .pl-txt span { font-size: .82rem; color: var(--text-2); line-height: 1.45; }
+.plataforma .chip { white-space: nowrap; }
+.acoes { display: flex; gap: 6px; justify-content: flex-end; flex-wrap: nowrap; }
+.bt-icone { width: 32px; padding: 0; }
+.digite-rot { display: block; font-size: .84rem; color: var(--text-2); margin: 16px 0 6px; }
+.digite { width: 100%; height: 40px; border: 1.5px solid var(--border2); border-radius: 9px; padding: 0 12px; font-size: .92rem; }
+.digite:focus { outline: 0; border-color: var(--red); box-shadow: 0 0 0 3px var(--red-dim); }
 
 /* ── Confirmação e aviso ───────────────────────── */
 .fundo { position: fixed; inset: 0; background: rgba(11,18,32,.55); display: flex; align-items: center; justify-content: center; padding: 20px; z-index: 50; }
@@ -171,9 +206,15 @@ button { cursor: pointer; }
   .tabela td.td-emp, .tabela td.td-acao { display: block; text-align: left; }
   .tabela td.td-emp::before, .tabela td.td-acao::before { content: none; }
   .tabela td.td-emp { padding-top: 10px; border-bottom: 1px solid var(--border); margin-bottom: 4px; padding-bottom: 10px; }
-  .tabela td.td-acao .bt { width: 100%; }
+  .tabela td.td-acao .acoes { justify-content: stretch; }
+  .tabela td.td-acao .bt { flex: 1 1 auto; }
+  .tabela td.td-acao .bt-icone { flex: 0 0 38px; }
+  .plataforma { flex-wrap: wrap; }
+  .plataforma .bt { width: 100%; }
+  .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .tabela .num { text-align: right; }
 }
+.td-acao { width: 1%; white-space: nowrap; }
 .em-plano { display: block; margin-top: 6px; height: 30px; border: 1px solid #cbd5e1; border-radius: 8px; padding: 0 6px; font: 12.5px inherit; background: #fff; color: #0f172a; }
 
 .tf-lam { width: .74em; height: .8em; vertical-align: -.04em; margin-right: .1em; display: inline-block; }
