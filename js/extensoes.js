@@ -264,8 +264,32 @@
     PROJECT_COLORS_MAP[name] = selectedColor;
     save(); closeModal('modal-project'); renderAll();
   };
+  // Kanban compacto: cada coluna mostra só os cartões que cabem na tela e pagina ("‹ 1/4 ›") em vez de rolar para baixo
+  const KB = { pag: {}, alt: 70, por: 0 };
+  const kbLim = n => Math.max(3, Math.min(12, n));
+  function kbSobra(board){   // quanto a coluna mais alta passa do fim da janela (negativo = espaço livre)
+    return Math.max(0, ...[...board.querySelectorAll('.kanban-col')].map(x => x.getBoundingClientRect().bottom)) - (window.innerHeight - 16);
+  }
+  window.kanbanPagina = function(col, passo){ KB.pag[col] = (KB.pag[col] || 0) + passo; desenharKB(KB.por || 6); };
+  // calcula quantos cartões cabem (no abrir da tela e ao mudar o tamanho da janela); a paginação usa sempre esse número
   window.renderKanban = function(){
     const board = document.getElementById('kanban-board'); if (!board) return;
+    const passo = () => KB.alt + 8;
+    let por = KB.por || kbLim(Math.floor((window.innerHeight - Math.max(board.getBoundingClientRect().top, 0) - 130) / passo()));
+    desenharKB(por);
+    const c = board.querySelector('.kb-c'); if (c) KB.alt = Math.round(c.getBoundingClientRect().height) || KB.alt;
+    for (let i = 0; i < 4; i++) {
+      const s = kbSobra(board);
+      const novo = s > 0 ? kbLim(por - Math.ceil(s / passo())) : s < -passo() ? kbLim(por + Math.floor(-s / passo())) : por;
+      if (novo === por) break;
+      desenharKB(novo, por); if (novo > por && kbSobra(board) > 0) { desenharKB(por, novo); break; }
+      por = novo;
+    }
+    KB.por = por;
+  };
+  function desenharKB(por, antes){
+    const board = document.getElementById('kanban-board'); if (!board) return;
+    if (antes && antes !== por) for (const k in KB.pag) KB.pag[k] = Math.floor(KB.pag[k] * antes / por);   // mantém o primeiro cartão visível
     const cols = [
       { key:'Pendente', label:'Pendente', dot:'#3b82f6' },
       { key:'Em Andamento', label:'Em Andamento', dot:'#d97706' },
@@ -274,25 +298,34 @@
       { key:'Concluído', label:'Concluído', dot:'#059669' },
     ];
     board.innerHTML = cols.map(col => {
-      const cards = activities.filter(a => a.status === col.key).sort((a,b) => (a.dueDate||'').localeCompare(b.dueDate||''));
+      const todos = activities.filter(a => a.status === col.key).sort((a,b) => (a.dueDate||'').localeCompare(b.dueDate||''));
+      const paginas = Math.max(1, Math.ceil(todos.length / por));
+      const pg = KB.pag[col.key] = Math.min(Math.max(KB.pag[col.key] || 0, 0), paginas - 1);
+      const cards = todos.slice(pg * por, pg * por + por);
+      const k = esc(col.key).replace(/'/g, '&#39;');
       return `<div class="kanban-col">
-        <div class="kanban-col-header"><div class="kanban-dot" style="background:${col.dot}"></div><span class="kanban-col-title">${col.label}</span><span class="kanban-col-count">${cards.length}</span></div>
-        <div class="kanban-dropzone" data-status="${col.key}" ondragover="kanbanAllowDrop(event)" ondrop="kanbanDrop(event,'${col.key}')" ondragleave="kanbanDragLeave(event)">
+        <div class="kanban-col-header"><div class="kanban-dot" style="background:${col.dot}"></div><span class="kanban-col-title">${col.label}</span><span class="kanban-col-count">${todos.length}</span></div>
+        <div class="kanban-dropzone" data-status="${col.key}" ondragover="kanbanAllowDrop(event)" ondrop="kanbanDrop(event,'${k}')" ondragleave="kanbanDragLeave(event)">
           <div class="kanban-cards">
           ${cards.length ? cards.map(a => {
             const diff = diffDays(a.dueDate);
-            const detail = a.parentId ? '<span class="badge badge-purple" style="font-size:.55rem">SUB</span>' : '';
-            return `<div class="kanban-card" draggable="true" data-id="${a.id}" ondragstart="kanbanDragStart(event)" ondragend="kanbanDragEnd(event)" onclick="editAct('${a.id}')">
-              <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px"><div class="kanban-card-title">${esc(a.description)}</div>${detail}</div>
-              <div class="kanban-card-meta"><span class="kanban-card-proj"><span class="project-dot" style="background:${projColor(a.project)}"></span>${esc(a.project)}</span><div class="kanban-card-avatar" title="${esc(a.responsible||'Sem responsável')}">${(a.responsible||'?')[0].toUpperCase()}</div></div>
-              <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;font-size:.64rem;color:var(--text-4)"><span>${esc(a.responsible||'Sem responsável')}</span><span>${diff<0?Math.abs(diff)+'d atraso':a.dueDate?fmtDate(a.dueDate):'Sem data'}</span></div>
+            const atras = diff < 0 && col.key !== 'Concluído';
+            const sub = a.parentId ? '<span class="badge badge-purple kb-sub">SUB</span>' : '';
+            const resp = a.responsible || 'Sem responsável';
+            return `<div class="kanban-card kb-c" draggable="true" data-id="${a.id}" ondragstart="kanbanDragStart(event)" ondragend="kanbanDragEnd(event)" onclick="editAct('${a.id}')" title="${esc(a.description)}">
+              <div class="kb-t">${sub}${esc(a.description)}</div>
+              <div class="kb-m"><span class="kb-p"><span class="project-dot" style="background:${projColor(a.project)}"></span><span>${esc(a.project)}</span></span>
+                <span class="kb-d${atras ? ' atras' : ''}">${atras ? Math.abs(diff) + 'd atraso' : a.dueDate ? fmtDate(a.dueDate) : 'Sem data'}</span>
+                <div class="kanban-card-avatar" title="${esc(resp)}">${esc((a.responsible || '?').replace(/\([^)]*\)/g, '').trim()[0] || '?').toUpperCase()}</div></div>
             </div>`;
-          }).join('') : '<div style="padding:12px;text-align:center;font-size:.72rem;color:var(--text-4)">Arraste cards para cá</div>'}
+          }).join('') : '<div class="kb-vazio">Arraste cards para cá</div>'}
           </div>
         </div>
+        ${paginas > 1 ? `<div class="kb-pag"><button type="button" class="kb-bt" aria-label="Página anterior" ${pg === 0 ? 'disabled' : ''} onclick="kanbanPagina('${k}',-1)"><i class="fa-solid fa-chevron-left"></i></button><span>${pg + 1}/${paginas}</span><button type="button" class="kb-bt" aria-label="Próxima página" ${pg >= paginas - 1 ? 'disabled' : ''} onclick="kanbanPagina('${k}',1)"><i class="fa-solid fa-chevron-right"></i></button></div>` : ''}
       </div>`;
     }).join('');
   };
+  window.addEventListener('resize', (() => { let t; return () => { clearTimeout(t); t = setTimeout(() => { const v = document.getElementById('view-kanban'); if (v && v.classList.contains('active')) { KB.por = 0; renderKanban(); } }, 150); }; })());
   window.kanbanDragStart = function(ev){ draggedKanbanId = ev.currentTarget.dataset.id; ev.currentTarget.classList.add('dragging'); };
   window.kanbanDragEnd = function(ev){ ev.currentTarget.classList.remove('dragging'); document.querySelectorAll('.kanban-dropzone').forEach(z=>z.classList.remove('drag-over')); };
   window.kanbanAllowDrop = function(ev){ ev.preventDefault(); ev.currentTarget.classList.add('drag-over'); };
